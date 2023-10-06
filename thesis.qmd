@@ -1,0 +1,7 @@
+---
+title: "Cognitive predictors of cognitive decline in Parkinson's disease treated by subthalamic deep brain stimulation"
+author: "Josef Mana"
+format: pdf
+---
+
+

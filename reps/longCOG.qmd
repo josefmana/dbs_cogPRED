@@ -1,0 +1,139 @@
+---
+title: "Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease"
+shorttitle: "Cognition in PD after STN DBS"
+author:
+  - name: Josef Mana
+    corresponding: false
+    orcid: "0000-0002-7817-3978"
+    email: "josef.mana@protonmail.com"
+    role:
+      - Conceptualization
+      - Data curation
+      - Investigation
+      - Formal analysis
+      - Methodology
+      - Software
+      - Visualization
+      - Writing - original draft
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Ondrej Bezdicek
+    corresponding: true
+    orcid: "0000-0002-5108-0181"
+    email: "ondrej.bezdicek@gmail.com"
+    role:
+      - Conceptualization
+      - Data curation
+      - Investigation
+      - Methodology
+      - Supervision
+      - Writing - original draft
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Filip Ruzicka
+    corresponding: false
+    email: "filr@seznam.cz"
+    role:
+      - Investigation
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Anna Fecikova
+    corresponding: false
+    email: "Anna.Fecikova@vfn.cz"
+    role:
+      - Investigation
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Olga Klempirova
+    corresponding: false
+    email: "novakovaol@seznam.cz"
+    role:
+      - Investigation
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Tomas Nikolai
+    corresponding: false
+    email: "nikolai@centrum.cz"
+    role:
+      - Investigation
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Tereza Uhrova
+    corresponding: false
+    email: "tereza.uhrova@vfn.cz"
+    role:
+      - Investigation
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Evzen Ruzicka
+    corresponding: false
+    email: "eruzi@lf1.cuni.cz"
+    role:
+      - Conceptualization
+      - Funding acquisition
+      - Investigation
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Dusan Urgosik
+    corresponding: false
+    email: "urgosik@gmail.com"
+    role:
+      - Investigation
+    affiliations:
+      - id: "NHH"
+        name: "Na Homolce Hospital, Prague, Czech Republic"
+        department: "Department of stereotactic and radiation neurosurgery"
+  - name: Robert Jech
+    corresponding: false
+    orcid: "0000-0002-9732-8947"
+    email: "jech@cesnet.cz"
+    role:
+      - Conceptualization
+      - Data curation
+      - Funding acquisition
+      - Investigation
+      - Resources
+      - Supervision
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+abstract: "Cognitive decline represents a severe non-motor symptom of Parkinson’s disease (PD) that can significantly reduce benefits of subthalamic deep brain stimulation (STN DBS). Here, we aimed to identify pre-surgery cognitive profile associated with faster post-surgery cognitive decline in STN DBS treated PD patients to characterize patients who could benefit from more monitoring during treatment course. A retrospective observational study of 126 PD patients treated by STN DBS combined with oral dopaminergic therapy followed for 3.54 years on average (SD = 2.32) with repeated assessments of cognition was conducted. Pre-surgery cognitive profile was obtained via a comprehensive neuropsychological examination. Data were analyzed using exploratory factor analysis for pre-surgery cognitive profile extraction and Bayesian generalized linear mixed models for description of the longitudinal cognitive outcome. Overall, we observed a mild annual cognitive decline of 0.90 points from a total of 144 points in the Mattis Dementia Rating Scale (95% posterior probability interval (PPI) [-1.19, -0.62]). Pre-surgery executive deficit predicted the rate of post-surgery cognitive decline (b = -0.39, 95% PPI [-0.63, -0.15]). The predictive utility of pre-surgery executive deficit resulted from summing small effects of several single test scores. Patients with PD treated with STN DBS experience only mild annual post-surgery cognitive decline. According to our data and models patients with worse long-term cognitive prognosis can be identified via pre-surgery examination of executive functions. Aggregating results from multiple executive tests to estimate cognitive prognosis of PD patients treated with STN DBS is likely superior to examining single test scores."
+keywords:
+  - Parkinson’s disease
+  - deep brain stimulation
+  - cognition
+  - longitudinal
+  - latent variable analysis
+format:
+ apaquarto-pdf:
+   documentmode: man
+   a4paper: true
+   pdf-engine: lualatex
+   floatsintext: false
+   keep-tex: false
+---
+
+{{< include _extensions/wjschne/apaquarto/_apa_title.qmd >}}

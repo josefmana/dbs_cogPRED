@@ -134,6 +134,33 @@ format:
    pdf-engine: lualatex
    floatsintext: false
    keep-tex: false
+bibliography: references.bib
 ---
 
 {{< include _extensions/wjschne/apaquarto/_apa_title.qmd >}}
+
+# Introduction
+
+Bilateral subthalamic nucleus (STN) deep brain stimulation (DBS) is an advanced symptomatic treatment of Parkinson’s disease (PD) that can successfully reduce motor symptoms and improve patients’ quality of life [@armstrong2020; @bratsos2018]. On the other hand, prior research revealed considerable heterogeneity in cognitive outcomes after STN DBS with a small to moderate post-surgery decline in verbal fluency and equivocal results for other cognitive domains [@combs2015; @mehanna2017; @parsons2006]. The ability to predict which patients are likely to develop post-surgery cognitive decline can thus prove useful for patient selection and for guiding post-surgery patient monitoring. In this article, we aim to describe pre-surgery cognitive profile extractable from clinically available neuropsychological evaluation that indicates higher risk of long-term post-surgery cognitive decline in everyday clinical settings.
+
+Studies addressing the task of predicting post-surgery cognitive decline in STN DBS treated PD patients can be broadly divided to two groups, randomized controlled trials (RCT) and long-term observational studies. In a typical RCT, patients are randomized to treatment and placebo groups and outcomes are compared in a full factorial design (evaluating interactions between group and time of assessment as the estimand of interest). Courtesy of their experimental control RCTs allow for causal inference and are well suited for providing guidelines for patient selection. However, even though RCTs are regarded as a gold standard for causal inference, it is ethically unacceptable to deny DBS treatment for PD patients for longer time intervals than necessary. Long-term (i.e., more than three years after surgery) outcomes can thus be best described by observational studies. While observational studies usually do not allow for causal inference and are not well suited for guiding patient selection due to a lack of proper control group and resulting collider bias [@cinelli2022], they are well suited for description of patients’ long-term outcomes. Longitudinal observational studies can serve as a basis for selecting high-risk STN DBS treated patients that would benefit from increased monitoring.
+
+Previous longitudinal observational studies reported that PD patients treated with STN DBS showing pre-surgery deficit in attention and executive functions are at risk of faster post- surgery cognitive decline or developing dementia [@bove2020; @gruber2019; @kim2014; @kishore2019; @smeding2009]. However, previous studies aimed at identifying any possible pre-surgery predictors of post-surgery cognitive decline accepting high false positive error rates in the process. In this study, we complement prior findings by identifying a sparse solution to the problem of identifying pre-surgery cognitive profile that is predictive of long-term post-surgery cognitive decline in naturalistic clinical settings. In other words, we aim to describe a minimal significant pre-surgery cognitive profile that predicts higher rate of post-surgery cognitive decline in a sample derived from everyday clinical practice.
+
+In a typical observational study aiming to determine pre-surgery risk factors of post- surgery cognitive decline the authors employ the following two-step procedure. In the first step, a series of separate univariate analyses for each potential predictor is conducted to pre-select variables for further analysis. In the second step, predictors that achieved an arbitrary threshold (e.g., p \< 0.05) are used to predict the cognitive decline in a subsequent multiple regression model [@bove2020; @gruber2019; @kim2014; @smeding2009]. This procedure can lead to false positive error rates that are magnitudes higher than the expected nominal five percent. To overcome this shortcoming, we apply to our data the Bayesian Lasso regression, a method developed for identifying small amount of significant predictors out of a larger pool of possible predictors such as results from a comprehensive neuropsychological battery [@park2008].
+
+Another way to achieve sparsity in prediction of post-surgery cognitive decline is to reduce the number of potential predictors. In the context of neuropsychological assessment this can be accomplished straightforwardly via a latent variable approach such as factor analysis that statistically extracts commonalities across several cognitive tasks. Added benefit of employing such a procedure to pre-surgery predictors is that latent variable approaches can reduce the impact of the task impurity problem – the observation that any cognitive task involves several cognitive functions at once [@burgess2014; @whitney2010a].
+
+Overall, in this study we aimed to derive a sparse solution to the task of identifying pre- surgery cognitive profile predictive of long-term post-surgery cognitive decline in STN DBS treated PD patients. In other words, instead of identifying any pre-surgery cognitive variables that can be predictive of post-surgery decline, we aimed to identify only the most likely predictive ones. To this end, we asked the following research questions: *RQ1)* What is the size of expected long-term rate of cognitive decline after STN DBS in PD patients? *RQ2)* What is the pre-surgery cognitive profile that is predictive of long-term post-surgery cognitive decline in STN DBS treated PD? To answer these questions, we analyzed data of retrospectively sampled longitudinally followed STN DBS treated PD patients with a single pre-surgery comprehensive neuropsychological assessment and up to five post-surgery cognitive screening assessments.
+
+
+# Methods
+
+
+# Results
+
+
+# Discussion
+
+
+# References

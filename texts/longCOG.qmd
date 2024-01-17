@@ -153,14 +153,22 @@ Another way to achieve sparsity in prediction of post-surgery cognitive decline 
 
 Overall, in this study we aimed to derive a sparse solution to the task of identifying pre- surgery cognitive profile predictive of long-term post-surgery cognitive decline in STN DBS treated PD patients. In other words, instead of identifying any pre-surgery cognitive variables that can be predictive of post-surgery decline, we aimed to identify only the most likely predictive ones. To this end, we asked the following research questions: *RQ1)* What is the size of expected long-term rate of cognitive decline after STN DBS in PD patients? *RQ2)* What is the pre-surgery cognitive profile that is predictive of long-term post-surgery cognitive decline in STN DBS treated PD? To answer these questions, we analyzed data of retrospectively sampled longitudinally followed STN DBS treated PD patients with a single pre-surgery comprehensive neuropsychological assessment and up to five post-surgery cognitive screening assessments.
 
+# Materials and methods
 
-# Methods
+## Participants
 
+The data of all patients diagnosed with idiopathic PD following United Kingdom Parkinson’s Disease Society Brain Bank Criteria [@hughes1992] that underwent cognitive evaluation for STN DBS treatment at General University Hospital in Prague between years 2000 and 2020 were retrospectively gathered from clinical records and considered for inclusion in the study. Patients with atypical parkinsonian syndromes, dementia, depression at the time of pre- surgery assessment (according to an independent psychiatric evaluation), recurrent psychotic conditions or a gait disorder despite optimal dopaminergic therapy during pre-surgery assessment were not implanted and were thus not included in the study. Furthermore, only patients who underwent pre-surgery and at least one post-surgery assessment were included. All included patients were treated via continuous bilateral STN DBS in conjunction with dopaminergic therapy. Bilateral STN DBS implantation was performed as previously described [@jech2012; @jech2006; @urgosik2011]. All patients provided signed informed consent and the study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic.
+
+## Assessments
+
+All patients underwent a comprehensive pre-surgery assessment including neuropsychological and neurological examinations. The patients were followed up post-surgery with similar examination protocol at varying time intervals according to their options. Post- surgery, patients were first contacted one year after the surgery and every two years afterwards. The pre-surgery assessment was performed with the usual dopaminergic therapy (ON medication). In the post-surgery assessment, patients were examined in the ON medication condition and STN DBS ON with optimal stimulation parameters.
+
+### Pre-surgery neuropsychological measures
+
+The neuropsychological assessment was arranged analogously to the standard International Parkinson and Movement Disorder Society (MDS) neuropsychological battery at Level II for mild cognitive impairment in Parkinson’s disease (PD-MCI) [@bezdicek2017; @litvan2012]. The battery consisted of 10 tests in 5 cognitive domains: (i) attention: Trail Making Test, part A (TMT-A) [@bezdicek2012; @bezdicek2017a; @partington1949] and dot color naming condition from Prague Stroop Test (PST-D) [@bezdicek2015a] for sustained visual attention; (ii) executive functions: Trail Making Test, part B (TMT-B) [@bezdicek2012; @bezdicek2017a; @partington1949] for set shifting, and Tower of London task (TOL) [@michalec2017; @shallice1982] for planning; (iii) language: Similarities (Sim.) from Wechsler Adult Intelligence Scale, third revision (WAIS-III) [@wechsler2010] for conceptualization, and category verbal fluency test (CFT, category Animals) [@nikolai2015] for speeded word production; (iv) working memory: Digit Span backward (DS-B) from WAIS-III [@wechsler2010] and Spatial Span backward (SS-B) from Wechsler Memory Scale, third edition (WMS-III) [@wechsler2011] for auditory and spatial working memory respectively; and (v) memory: Rey Auditory Verbal Learning Test delayed recall (RAVLT-DR) [@bezdicek2014; @frydrychova2018] for explicit verbal learning and memory, and WMS-III Family Pictures delayed recall (FP-DR) for visuo-spatial memory [@wechsler2011].
 
 # Results
 
-
 # Discussion
-
 
 # References

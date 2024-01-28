@@ -1,0 +1,27 @@
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-flow}Patients inclusion/exclusion flowchart.}
+
+{\centering \includegraphics{../figs/inclusion_flowchart.png}
+
+}
+
+\end{figure*}
+\efloatseparator
+ 
+\begin{figure*}[hbt]
+\ifnextchar[{\eatarg}{}
+
+
+\caption{\label{fig-desc}Distribution of assessments. Distribution of
+(A) follow-up years and (B) number of assessments per patient for N =
+126 patients. Negative values on horizontal axis in (A) represent
+pre-surgery assessments.}
+
+{\centering \includegraphics[width=1\textwidth,height=0.8\textheight]{../figs/assessments_desc.jpg}
+
+}
+
+\end{figure*}

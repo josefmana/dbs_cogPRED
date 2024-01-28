@@ -135,6 +135,8 @@ format:
    floatsintext: false
    keep-tex: false
 bibliography: references.bib
+warning: false
+echo: false
 ---
 
 {{< include _extensions/wjschne/apaquarto/_apa_title.qmd >}}
@@ -214,6 +216,334 @@ To validate the assumption that our analysis provides lower false positive rates
 All GLMMs were fitted using via Stan’s (version 2.21.0) build-in Hamiltonian Monte Carlo sampler accessed via R version 4.2.0 using package “brms” [@bürkner2017; @rsoft; @stan]. Four parallel chains were run each for 2,500 iterations for each GLMM. The first 500 iterations served as a warm-up and were discarded. Convergence was checked numerically by inspection of the R̂s and visually by inspection of trace plots. We used R packages “tidyverse” and “dplyr” for data operations, “tidybayes” for operation with model posteriors, and “DiagrammeR, “ggplot2” and “patchwork” for plotting [@DiagrammeR; @ggplot2; @patchwork]. This study’s design and its analysis were not pre-registered. The data are not publicly available due to privacy or ethical restrictions. The computer code used in our data analysis as well as synthetic data and replicable code for simulations to estimate false positive error rates can be accessed at https://github.com/josefmana/dbs_longCOG.
 
 # Results
+
+```{r}
+#| label: import
+
+library(here) # reading & saving files
+library(tidyverse) # data wrangling
+library(gt) # tables formatting
+library(DiagrammeR) # flowchart
+library(ggplot2) # general plotting
+
+# set ggplot theme
+theme_set( theme_classic(base_size = 12) )
+
+# create folders for models, figures, and tablesto store results in
+# prints TRUE and creates the folder if it was not present
+# prints NULL if the folder was already present
+#sapply( c("mods", "figs", "tabs"), function(i) if( !dir.exists(i) ) dir.create(i) )
+
+# read the data set and prepare subsets for individual analyses
+d0 <- read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," )
+d1 <- d0[ d0$included == 1 , ] # only STN-DBS treated patients with pre- and post-surgery data
+d2 <- d1[ d1$ass_type == "pre" , ] # only pre-surgery assessments of included patients
+
+# read a file containing mapping of variables' names used in the script to variables' names for the manuscript
+v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8")
+
+# IN-HOUSE FUNCTIONS ----
+
+# printing rounded number
+rprint <- function(x,dec=2) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+
+# IN-TEXT STATS ----
+
+itstats <-
+  
+  with(
+    
+    d1, list(
+      
+      # number of patients
+    n = c( tot = length( unique(d0$id) ), incl = length( unique(id) ) ),
+    
+    # duration of follow-up
+    fudur =
+      
+      sapply(
+        c("mean","sd","median","min","max"), # stats to compute
+        function(i)
+          do.call( i, list( time_y[ complete.cases(drs_tot) & ass_type != "pre" ] ) ) %>%
+          rprint(2)
+      ),
+    
+    # number of assessments per patient
+    nass =
+      
+      sapply(
+        c("median","min","max"),
+        function(i) do.call( i, list( table( id[ complete.cases(drs_tot) ] ) ) )
+      )
+      
+    )
+  )
+
+```
+
+## Characterizing the sample
+
+A total of `r itstats[['n']][['tot']]` patients with PD who underwent cognitive evaluation for STN DBS between 2000 and 2020 were identified by a retrospective search of local database in General University Hospital in Prague and a total of `r itstats[['n']][['incl']]` patients met inclusion criteria (see @fig-flow). All included patients were Caucasians and were speaking Czech as their primary language. Baseline demographic and clinical characteristics as well as stimulation parameters of the sample are presented in @tbl-base and baseline cognitive characteristics are presented in @tbl-cog. Mean duration of a follow-up after the surgery was `r itstats[['fudur']][['mean']]` years (SD = `r itstats[['fudur']][['sd']]`, median = `r itstats[['fudur']][['median']]`, range = `r itstats[['fudur']][['min']]`–`r itstats[['fudur']][['max']]`) with a median number of `r itstats[['nass']][['median']]` assessments per patient (range = `r itstats[['nass']][['min']]`–`r itstats[['nass']][['max']]`) (see also @fig-desc).
+
+```{r}
+#| label: fig1
+
+# check that when selecting only rows containing pre-surgery assessment there ain't no patient duplicated
+#with( d0, isTRUE( all.equal( id[ass_type=="pre"], unique(id[ass_type=="pre"]) ) ) )
+# TRUE
+
+# print a table summarizing reasons for excluding patients
+#table( d0[ d0$ass_type == "pre" , ]$why_excluded )
+
+# packages for saving the results
+library(DiagrammeRsvg)
+library(rsvg)
+
+# using numbers from t0 create an inclusion/exclusion flowchart
+f1 <- " digraph {
+  
+  /// define nodes which will include numbers reflecting the inclusion/exclusion process
+  node [ fontname = Calibri, fontsize = 10, shape = box, style = rounded , width = 2.75 , margin= 0.1 , penwidth = 1 ];
+  
+  /// create a box for all patients, i.e., sum(t) = 200 patients
+  all_pats [ label =<
+  <b>200 consecutive<br/>PD patients </b><br/><br/>Local database 2000-2020<br/>General University Hospital<br/>in Prague
+  >];
+         
+  /// create a box for all STN-DBS patients, i.e., sum(t[c(1,4,5,6,7,8,9,11)])) = 173 patients
+  all_stn [ label =<
+  <b>173 patients </b><br/><br/>implanted with STN-DBS
+  >];
+  
+  /// create a box for all included patients, i.e., t[4] = 126 patients
+  all_incl [ label =<
+  <b>126 patients </b><br/><br/>followed-up longitudinally
+  >];
+  
+  /// create nodes for exluded patients, specifying only these characteristics that will differ from the nodes above
+  node [ fixedsize = T, width = 2.5, height = .75, margin= 0.2 ];
+  
+  /// create a box for non-STN-DBS patients, i.e., t[c(3,13,2,10,12)] with sum(t[c(3,13,2,10,12)]) = 27 patients
+  excl_nostn [ label =<
+  <b>27 patients excluded due to</b><br align = 'left'/><br align = 'left'/>
+  12 GPi-DBS<br align = 'left'/>
+  4 VIM-DBS<br align = 'left'/>
+  4 duodopa<br align = 'left'/>
+  5 rejected<br align = 'left'/>
+  2 suspended<br align = 'left'/>
+  >];
+  
+  /// create a box for STN-DBS excluded patients, i.e., t[c(1,7,9, 8, 6,11, 5)], sum(t[c(1,7,9,8,6,11,5)]) = 47 patients
+  excl_stn [ label =<
+  <b>47 patients excluded due to</b><br align = 'left'/><br align = 'left'/>
+  24 pre-surgery data missing<br align = 'left'/>
+  18 follow-up data missing<br align = 'left'/>
+  3 unilateral STN-DBS<br align = 'left'/>
+  2 not speaking Czech<br align = 'left'/>
+  >];
+  
+  /// create dummy nodes for horizontally forking out of the vertical 'inclusion flow' to excluded sides
+  node [ shape = rectangle, width = 0, height = 0, label = '', fill = black ];
+  
+  /// create directed edges in the inclusion (from dummy/fork vertically to inclusion boxes)
+  /// and the exlusion (from forks horizontally to exclusion boxes) parts of the flowchart
+  /// first make the arrows bigger
+  edge [ arrowsize = .75, penwidth = 1 ]
+  
+  /// specifiy paths
+  fork1 -> all_stn; fork2 -> all_incl;
+  
+  /// for the horizontal paths use 'rank = same' to ensure their nodes are level
+  { rank = same ; fork1 -> excl_nostn }
+  { rank = same ; fork2 -> excl_stn }
+  
+  /// create non-directed edges from the inclusion boxes to dummy/fork boxes (vertically)
+  edge [ dir = none, penwidth = 1 ]
+  all_pats -> fork1; all_stn -> fork2;
+
+  /// seperate dummy/fork nodes from exclusion boxes by some reasonable distance (in inches)
+  nodesep = .75
+  }"
+
+# save the flowchart as Fig 1
+grViz(f1) %>% export_svg() %>% charToRaw() %>% rsvg_png( here("figs","inclusion_flowchart.png") )
+
+```
+
+![Patients inclusion/exclusion flowchart.](../figs/inclusion_flowchart.png){#fig-flow}
+
+```{r}
+#| label: tabs-prep
+
+# function for calculating the stats
+dstat <-
+  
+  function(x,dec1,dec2) {
+    
+    if (is.numeric(x) ) {
+      c( N = sum( !is.na(x) ),
+         Md = rprint( median(x,na.rm=T), dec1 ),
+         `Min-Max` = paste0( rprint( min(x,na.rm=T), dec1 ),"-",rprint( max(x,na.rm=T), dec1 ) ) ,
+         M = rprint( mean(x,na.rm=T), dec2 ),
+         SD = rprint( sd(x,na.rm=T), dec2 )
+         )
+    } else rep( NA, 5 ) # print NAs for non-numeric variables
+    
+  }
+
+# list all variables for Tab 1 (clinics and stimulation parameters) and Tab 2 (neuropsychology)
+nms <-
+  
+  list(
+    dems = names(d2)[which(names(d2)=="age_stim_y"):which(names(d2)=="mds_updrs_iii_med_off")],
+    pars = names(d1)[which(names(d1)=="current_r_mA"):which(names(d1)=="frequency_l_Hz")],
+    tests = names(d2)[which(names(d2)=="drs_tot"):which(names(d2)=="fp_dr")]
+  )
+
+# extract stats for description of the sample
+t <-
+  
+  lapply(
+    setNames( names(nms), names(nms) ),
+    function(i)
+      # stimulation parameters calculated from d1, others from d2
+      sapply( nms[[i]], function(j) if ( i == "pars" ) dstat(d1[[j]],1,2) else dstat(d2[[j]],0,2) ) %>% t()
+  )
+
+# add count of males
+t$dems["sex","N"] <-
+  
+  paste0(
+    table(d2$sex)["male"], " (", # frequency
+    sprintf( "%.0f" , round( 100 * ( table(d2$sex)[ "male" ] / sum( table(d2$sex) ) ), 0 ) ), " %)" # percentage, rounded to integers
+  )
+
+# fill-in number of patients in each row of stimulation parameters table
+t$pars[ ,"N"] <- c( rep(67,2) , rep(59,2) , rep(nrow(d2),4) )
+
+
+# loop through all variables the pre-tables and change their names accordingly
+for ( i in names(t) ) {
+  
+  t[[i]] <-
+    
+    t[[i]] %>%
+    as.data.frame() %>%
+    rownames_to_column( var = "Characteristic" ) %>% # prepare the first column
+    mutate( Characteristic = sapply( 1:nrow(.), function(j) v[Characteristic[j], ] ) ) # rename
+
+}
+
+# prepare Table 1 of clinical & stimulation variables
+t1 <-
+  
+  lapply( names(t)[1:2], function(i) t[[i]] %>% mutate( Type = i, .after = 1 ) ) %>% # add type of variable
+  do.call( rbind.data.frame, . ) %>%
+  mutate( Type = case_when( Type == "dems" ~ "Baseline characteristics", Type == "pars" ~ "Stimulation parameters") ) %>%
+  mutate( across( everything(), ~ ifelse( is.na(.x), "-", .x) ) )
+
+# prepare a neuropsychology table
+t2 <- t$tests %>% rename( "Test" = "Characteristic" )
+
+# save both of them as .csv
+write.table( t1, file = here("tabs","clinical_characteristics.csv"), sep = ",", row.names = F, quote = F )
+write.table( t2, file = here("tabs","baseline_neuropsychology.csv"), sep = ",", row.names = F, quote = F )
+
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-base
+#| tbl-cap: Clinical characteristics of the sample of included patients
+
+# prepare a gt object
+t1 <-
+  
+  gt( t1, rowname_col = "Characteristic", groupname_col = "Type" ) %>%
+  cols_align( align = "center", columns = -1 ) %>%
+  tab_footnote(
+    footnote = "Each measurement of each electrode considered independently. For stimulation parameters, column N indicate number of patients with current/voltage mode of stimulation.",
+    locations = cells_row_groups( groups = "Stimulation parameters" )
+  ) %>%
+  tab_source_note(
+    source_note = "M: mean; SD: standard deviation; MDS-UPDRS III: Movement Disorder Society Unified Parkinson’s Disease Rating Scale, motor part; LEDD: levodopa equivalent daily dose; Levodopa test: a percentage change of the MDS-UPDRS III score from medication OFF to medication ON state during the levodopa test as described in the main text; V: Volts; mA: milliampere; μs: microseconds; Hz: Hertz."
+  )
+
+# save & print it
+gtsave( data = t1, filename = here("tabs","clinical_characteristics.docx") )
+t1
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: tbl-cog
+#| tbl-cap: Pre-surgery neuropsychological measures of included patients
+
+# prepare a gt object
+t2 <-
+  
+  gt( t2, rowname_col = "Characteristic" ) %>%
+  cols_align( align = "center", columns = -1 ) %>%
+  tab_source_note(
+    source_note = "M: mean; SD: standard deviation; DRS-2: Dementia Rating Scale, second edition; BDI-II: Beck Depression Rating Scale, second edition; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT- Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall; Secs: seconds; Total words: word count in two minutes (one minute per each letter P and K); words/min.: word count in one minute time limit."
+  )
+
+# save & print it
+gtsave( data = t2, filename = here("tabs","baseline_neuropsychology.docx") )
+t2
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| label: fig2
+
+# patchwork package for glueing plots together
+library(patchwork)
+
+# prepare both sub-figures
+fig2 <- 
+  
+  list(
+    
+    # need to use the complete.cases command because three patients have duplicated rows
+    # due to more than one stimulation parameter
+    hist =
+      d1[ complete.cases(d1$drs_tot) , ] %>% 
+      ggplot( aes(x = time_y) ) +
+      stat_bin( breaks = seq(-2,12,.5) ) + # creates bars
+      stat_bin( breaks = seq(-2,12,.5), geom = "text", aes(label = after_stat(count) ), vjust = -1.0, size = 2.5 ) + # add numbers
+      labs( x = "Time from STN-DBS surgery (years)", y = "Number of Assessments" ) +
+      scale_y_continuous( expand = c(0, 0), limits = c(0, 107), breaks = seq(0, 100, 10), labels = seq(0, 100, 10) ) +
+      scale_x_continuous( limits = c(-2, 12), breaks = seq(-2, 12, 1), labels = seq(-2, 12, 1) ),
+    
+    # prepare a bin plot showing distribution of the number of assessments per patient (Fig S1b)
+    bin =
+      table( d1[ complete.cases(d1$drs_tot) , ]$id ) %>%
+      as.data.frame() %>%
+      ggplot( aes(x = Freq) ) +
+      geom_bar( width = .25 ) +
+      geom_text( stat = "count", aes(label = after_stat(count) ), vjust = -1.0, size = 2.5 ) +
+      scale_y_continuous( expand = c(0, 0), limits = c(0, 65) ) +
+      labs( x = "Number of Assessments per Patient", y = "Number of Patients" )
+    
+  )
+
+# save them
+ggsave(
+  plot = with( fig2, hist / bin ) +
+    plot_annotation( tag_levels = "A" ) &
+    theme( plot.tag = element_text(face = "bold") ),
+  filename = here("figs","assessments_desc.jpg"),
+  dpi = 300
+) 
+
+```
+
+![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments.](../figs/assessments_desc.jpg){#fig-desc width=100% height=80%}
+
 
 # Discussion
 

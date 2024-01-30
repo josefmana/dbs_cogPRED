@@ -495,8 +495,6 @@ gtsave( data = t2, filename = here("tabs","baseline_neuropsychology.docx") )
 t2
 ```
 
-{{< pagebreak >}}
-
 ```{r}
 #| label: fig2
 
@@ -542,8 +540,56 @@ ggsave(
 
 ```
 
-![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments.](../figs/assessments_desc.jpg){#fig-desc width=100% height=80%}
+![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments.](../figs/assessments_desc.jpg){#fig-desc width=100% height=90%}
+{{< pagebreak >}}
 
+```{r}
+#| label: fact-anal
+
+#library(psych) # using psych to read the results
+
+# read the EFA results
+efa <- readRDS( here("mods","factanal.rds") )
+
+# choosing 7-factor solution due to good performance indexes,
+# and theoretically sound loading patterns across imputed data sets
+nf = 7
+
+# extract M and SD of percentage of variance accounted for across imputations for in-text reporting
+vaccount <-
+  
+  sapply(
+    
+    c("mean","sd"),
+    function(i)
+      
+      (
+        do.call(
+        i,
+        list( sapply( 1:length(efa), function(j) max( efa[[j]][[nf-2]]$Vaccounted[ "Cumulative Var", ] ) ) )
+        ) * 100 
+      ) %>%
+      
+      rprint(1) %>%
+      paste0( ., " %" )
+      
+  )
+
+```
+
+## Pre-surgery cognitive profile
+
+Detailed summaries of the fit statistics of all EFA models are presented in the Supplementary material (see Table S1 and Figure S1). Most importantly, raising the number of factors from six to seven resulted in a clear improvement. Out of the one hundred imputed data sets, the six-factor model showed good fit according to RMSEA in 96 cases and it showed good fit according to the TLI in 76 cases. On the other hand, the seven-factor model showed good fit according to RMSEA in 99 cases and good fit according to TLI in 97 cases. Moreover, the seven-factor model was more consistent across imputations. Finally, while the eight-factor resulted in the best fit statistics, factors identified by this model were often substantially loaded on by only a single cognitive test score (with a factor loading above 0.3) which impedes theoretical interpretation of such factors. Consequently, the seven-factor model was retained for subsequent analyses. On average, the seven factors accounted for a total of `r vaccount["mean"]` of variance (SD = `r vaccount["sd"]`) and corresponded to seven cognitive functions: 1) executive functions/attention (EF/Att.) was loaded on primarily by PST tasks, TMT tasks, verbal fluency tests and TOL, 2) episodic memory (EM) was loaded on primarily by indexes of RAVLT except for the recall of interference list (RAVLT-B), 3) verbal working memory (VWM) was loaded on primarily by Digit Span tasks, LNS and Similarities, 4) visuospatial memory (VM) was loaded on primarily by indexes of the Family Pictures test, 5) set shifting (SS) was loaded on primarily by TMT tasks and RAVLT-B, 6) anxiety (An.) was loaded on primarily by STAI, and 7) spatial working memory (SWM) was loaded on primarily by Spatial Span tasks (see @tbl-factanal).
+
+```{r}
+#| label: tbl-factanal
+#| tbl-cap: Summary of factor loadings
+
+
+```
+
+
+## Pre-surgery cognitive profile
 
 # Discussion
 

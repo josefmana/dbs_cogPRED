@@ -226,6 +226,9 @@ library(gt) # tables formatting
 library(DiagrammeR) # flowchart
 library(ggplot2) # general plotting
 
+# clear environment
+rm( list = ls() )
+
 # set ggplot theme
 theme_set( theme_classic(base_size = 12) )
 
@@ -283,7 +286,7 @@ itstats <-
 
 ## Characterizing the sample
 
-A total of `r itstats[['n']][['tot']]` patients with PD who underwent cognitive evaluation for STN DBS between 2000 and 2020 were identified by a retrospective search of local database in General University Hospital in Prague and a total of `r itstats[['n']][['incl']]` patients met inclusion criteria (see @fig-flow). All included patients were Caucasians and were speaking Czech as their primary language. Baseline demographic and clinical characteristics as well as stimulation parameters of the sample are presented in @tbl-base and baseline cognitive characteristics are presented in @tbl-cog. Mean duration of a follow-up after the surgery was `r itstats[['fudur']][['mean']]` years (SD = `r itstats[['fudur']][['sd']]`, median = `r itstats[['fudur']][['median']]`, range = `r itstats[['fudur']][['min']]`–`r itstats[['fudur']][['max']]`) with a median number of `r itstats[['nass']][['median']]` assessments per patient (range = `r itstats[['nass']][['min']]`–`r itstats[['nass']][['max']]`) (see also @fig-desc).
+A total of `r itstats[['n']][['tot']]` patients with PD who underwent cognitive evaluation for STN DBS between 2000 and 2020 were identified by a retrospective search of local database in General University Hospital in Prague and a total of `r itstats[['n']][['incl']]` patients met inclusion criteria (see @fig-flow). All included patients were Caucasians and were speaking Czech as their primary language. Baseline demographic and clinical characteristics as well as stimulation parameters of the sample are presented in @tbl-base and baseline cognitive characteristics are presented in @tbl-cog. Mean duration of a follow-up after the surgery was `r itstats[['fudur']][['mean']]` years (SD = `r itstats[['fudur']][['sd']]`, median = `r itstats[['fudur']][['median']]`, range = `r itstats[['fudur']][['min']]`–`r itstats[['fudur']][['max']]`) with a median number of `r itstats[['nass']][['median']]` assessments per patient (range = `r itstats[['nass']][['min']]`–`r itstats[['nass']][['max']]`) (see also @fig-dist).
 
 ```{r}
 #| label: fig1
@@ -540,7 +543,8 @@ ggsave(
 
 ```
 
-![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments.](../figs/assessments_desc.jpg){#fig-desc width=100% height=90%}
+![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments.](../figs/assessments_desc.jpg){#fig-dist width=100% height=90%}
+
 {{< pagebreak >}}
 
 ```{r}
@@ -548,30 +552,49 @@ ggsave(
 
 #library(psych) # using psych to read the results
 
+# clear environment
+rm( list = ls()[ !ls() %in% c("v","rprint","nms") ] )
+
 # read the EFA results
 efa <- readRDS( here("mods","factanal.rds") )
 
 # choosing 7-factor solution due to good performance indexes,
 # and theoretically sound loading patterns across imputed data sets
-nf = 7
+nf <- 7
+
+# extract number of imputations used
+imp <- length(efa)
+
+# list all the domains
+doms <-
+  
+  c(
+    "exec_fun", # loaded on primarily by PST, the first factor in 82% data sets
+    "epis_mem", # loaded on primarily by RAVLT, the second factor in 79% data sets
+    "verb_wm", # loaded on primarily by DS, the third factor in 62% data sets
+    "visp_mem", # loaded on primarily by FP, the fourth factor in 45% data sets
+    "set_shift", # loaded on primarily by TMT and RAVLT-B, the fifth factor in 28% data sets
+    "anxiety", # loaded on primarily by STAI, the sixth factor in 60% data sets
+    "visp_wm" # loaded on primarily by SS, the seventh factor in 49% data sets
+  )
 
 # extract M and SD of percentage of variance accounted for across imputations for in-text reporting
 vaccount <-
   
   sapply(
     
-    c("mean","sd"),
+    c("mean","sd"), # loop through summary stats of interest
     function(i)
       
-      (
+      ( # extract all total cumulative variability accounted for by 7-factor model & calculate summaries
         do.call(
         i,
         list( sapply( 1:length(efa), function(j) max( efa[[j]][[nf-2]]$Vaccounted[ "Cumulative Var", ] ) ) )
-        ) * 100 
+        ) * 100 # make it percentages
       ) %>%
       
       rprint(1) %>%
-      paste0( ., " %" )
+      paste0(.," %")
       
   )
 
@@ -581,15 +604,163 @@ vaccount <-
 
 Detailed summaries of the fit statistics of all EFA models are presented in the Supplementary material (see Table S1 and Figure S1). Most importantly, raising the number of factors from six to seven resulted in a clear improvement. Out of the one hundred imputed data sets, the six-factor model showed good fit according to RMSEA in 96 cases and it showed good fit according to the TLI in 76 cases. On the other hand, the seven-factor model showed good fit according to RMSEA in 99 cases and good fit according to TLI in 97 cases. Moreover, the seven-factor model was more consistent across imputations. Finally, while the eight-factor resulted in the best fit statistics, factors identified by this model were often substantially loaded on by only a single cognitive test score (with a factor loading above 0.3) which impedes theoretical interpretation of such factors. Consequently, the seven-factor model was retained for subsequent analyses. On average, the seven factors accounted for a total of `r vaccount["mean"]` of variance (SD = `r vaccount["sd"]`) and corresponded to seven cognitive functions: 1) executive functions/attention (EF/Att.) was loaded on primarily by PST tasks, TMT tasks, verbal fluency tests and TOL, 2) episodic memory (EM) was loaded on primarily by indexes of RAVLT except for the recall of interference list (RAVLT-B), 3) verbal working memory (VWM) was loaded on primarily by Digit Span tasks, LNS and Similarities, 4) visuospatial memory (VM) was loaded on primarily by indexes of the Family Pictures test, 5) set shifting (SS) was loaded on primarily by TMT tasks and RAVLT-B, 6) anxiety (An.) was loaded on primarily by STAI, and 7) spatial working memory (SWM) was loaded on primarily by Spatial Span tasks (see @tbl-factanal).
 
+{{< pagebreak >}}
+
 ```{r}
 #| label: tbl-factanal
 #| tbl-cap: Summary of factor loadings
 
+# prepare an array for loading matrices of each imputed EFA
+loads <-
+  
+  # create an empty 25 ( 23 tests + 2 variance accounted) x 7 (factors) x 100 (imputations) array
+  array(
+    data = NA,
+    dim = c(25, nf, imp),
+    dimnames = list( c( rownames(efa[[1]][[nf-2]]$loadings) , "Proportion Var", "Cumulative Var" ), doms, 1:imp )
+  )
+
+# fill-in all loadings from efa objects prepared above
+for( i in 1:imp ) {
+
+  loads[ , ,i] <-
+    
+    # extract loadings
+    efa[[i]][[nf-2]]$loadings %>%
+    as.data.frame() %>%
+    
+    # add proportion of variability accounted for
+    bind_rows( efa[[i]][[nf-2]]$Vaccounted[ "Proportion Var", ] ) %>%
+    bind_rows( apply( t(efa[[i]][[nf-2]]$Vaccounted[ "Proportion Var", ]), 1 , cumsum ) %>% t() %>% as.data.frame() ) %>%
+    
+    as.matrix() # re-format
+  
+}
+
+# prepare the table
+t3 <-
+  
+  sapply(
+    
+    dimnames(loads)[[1]],
+    function(i)
+      paste0(
+        rprint( colMeans( t(loads[i, , ]) ), 2 ), " (",
+        rprint( apply( t(loads[i, , ]) , 2, sd ), 2 ), ")"
+      )
+    
+  ) %>%
+  
+  t() %>%
+  as.data.frame() %>%
+  `rownames<-`( sapply( rownames(.), function(i) v[ i, ] ) ) %>%
+  `colnames<-`( sapply( dimnames(loads)[[2]], function(i) v[ i, ] ) ) %>%
+  rownames_to_column("Test") %>%
+  
+  gt( rowname_col = "Test" ) %>%
+  cols_align( align = "center", columns = -1 ) %>%
+  tab_source_note(
+    source_note = "Values represent mean (SD) across one hundred imputations. Factor loadings used for interpretation (|loading| > 0.30) are printed in bold. TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP- DR: Family Pictures, delayed recall; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI- X2: State-Trait Anxiety Inventory, the trait version; Secs: seconds; Total words: word count in two minutes (one minute per each letter P and K); words/min.: word count in one minute time limit. Proportion Var: Proportion of variance in data accounted for by each factor (column); Cumulative Var: Cumulative variance accounted for by each factor and factors that preceded it (columns to the left); EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory."
+  ) %>%
+  tab_options( quarto.disable_processing = T )
+
+# save & print it
+gtsave( data = t3, filename = here("tabs","factanal_loadings.docx") )
+t3
+```
+
+{{< pagebreak >}}
+
+## Describing post-surgery cognitive decline
+
+```{r}
+#| label: long-desc
+
+library(brms) # brms to read the results
+library(tidybayes) # tidybayes for posterior manipulations
+
+# clear environment
+rm( list = ls()[ !ls() %in% c("v","rprint","nms") ] )
+
+# read the data and models
+for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
+
+# read models
+m <-
+  
+  lapply(
+    # read descriptive linear and non-linear (T2 splines) models
+    setNames( c("m0_linear","m0_spline"), c("Linear","Non-linear") ),
+    function(i)
+      readRDS( here( "mods", paste0(i,".rds") ) )
+  )
+
+# extract the highest Rhat for chains convergence and Pareto-k for influential outliers
+dia <- 
+  
+  cbind.data.frame(
+    Rhat = round( sapply( names(m) , function(i) max( rhat(m[[i]]), na.rm = T ) ), 3 ),
+    Park = round( sapply( names(m) , function(i) max( loo(m[[i]])$diagnostics$pareto_k, na.rm = T ) ), 3 )
+  )
+
+# diagnostics for in-text reporting
+rhatmax <- with( dia, ifelse( round(max(Rhat),2) > max(Rhat), rprint(max(Rhat),2), rprint(max(Rhat)+.01,2) ) )
+parkmax <- with( dia, ifelse( round(max(Park),1) > max(Park), rprint(max(Park),1), rprint(max(Park)+.1,1) ) )
+
+# compare the models via PSIS-LOO
+loocomp <-
+  
+  # extract ELPD_dif and its SE
+  with( m, loo_compare(Linear,`Non-linear`)[2,paste0(c("elpd","se"),"_diff") ] ) %>%
+  t() %>%
+  as.data.frame() %>%
+  
+  # flip the sign of elpd_diff such that positive means m0_linear had better predictive performance
+  mutate( elpd_diff = ifelse( rownames( with( m, loo_compare(Linear,`Non-linear`) ) )[1] == "Linear" , -elpd_diff, elpd_diff ) ) %>%
+  
+  # add 95% PPI
+  mutate(
+    ci_low = rprint( qnorm(.025,elpd_diff,se_diff), 2 ),
+    ci_hig = rprint( qnorm(.975,elpd_diff,se_diff), 2 ),
+    across( ends_with("diff"), ~ rprint(.x,2) ),
+    print = paste0( elpd_diff, ", 95% CI [", ci_low,", ", ci_hig, "]" )
+  )
+
+# expected cognitive decline in DRS-2 points/year as approximated by the linear model
+# i.e., the estimand #1
+b <-
+  
+  spread_draws( m$Linear, `b_.*`, regex = T ) %>% # extract parameter estimates
+  
+  # calculate model group-level intercept and slope summaries in the correct scale
+  median_hdi(
+    b_Intecept = with( scl, (b_Intercept * SD$drs ) + M$drs ),
+    b_slope = b_time * scl$SD$drs,
+    .width = .95
+  ) %>%
+  
+  # prepare a table of parameters the table
+  select( starts_with("b_") ) %>%
+  mutate( b_slope = abs(b_slope) ) %>% # slope will be reported in absolute value
+  mutate_all( rprint, 2 ) %>%
+  matrix(
+    nrow = 2, ncol = 3, byrow = T,
+    dimnames = list( c("intercept","slope"), c("median","ppi_low","ppi_hig") )
+  ) %>%
+  
+  # finishing touches
+  as.data.frame() %>%
+  mutate( ppi = paste0("[",ppi_low,", ",ppi_hig,"]") )
+
 
 ```
 
+Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers.The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b["slope","median"]` DRS-2 points/year (95% PPI `r b["slope","ppi"]`) from an average pre-surgery DRS-2 performance of `r b["intercept","median"]` out of 144 points (95% PPI `r b["intercept","ppi"]`).
 
-## Pre-surgery cognitive profile
+## Predicting post-surgery cognitive decline
+
+
+## Evaluating false positive error rates
 
 # Discussion
 

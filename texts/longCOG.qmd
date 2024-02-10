@@ -248,7 +248,23 @@ v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encodin
 # IN-HOUSE FUNCTIONS ----
 
 # printing rounded number
-rprint <- function(x,dec=2) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+rprint <- function( x, dec=2 ) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+
+# upper bound
+ubound <- function( x, dec=2 ) ifelse( round(x,dec) > x, rprint(x,dec), rprint( x+1/(10^dec), dec ) )
+
+# read models
+mread <- function( files, names ) {
+  
+  lapply(
+    
+    setNames(files,names),
+    function(i)
+      readRDS( here( "mods", paste0(i,".rds") ) )
+
+  )
+
+}
 
 # IN-TEXT STATS ----
 
@@ -553,7 +569,7 @@ ggsave(
 #library(psych) # using psych to read the results
 
 # clear environment
-rm( list = ls()[ !ls() %in% c("v","rprint","nms") ] )
+rm( list = ls()[ !ls() %in% c("v","rprint","ubound","mread","nms") ] )
 
 # read the EFA results
 efa <- readRDS( here("mods","factanal.rds") )
@@ -680,32 +696,17 @@ library(brms) # brms to read the results
 library(tidybayes) # tidybayes for posterior manipulations
 
 # clear environment
-rm( list = ls()[ !ls() %in% c("v","rprint","nms") ] )
+rm( list = ls()[ !ls() %in% c("v","rprint","ubound","mread","nms","imp") ] )
 
 # read the data and models
 for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
 
 # read models
-m <-
-  
-  lapply(
-    # read descriptive linear and non-linear (T2 splines) models
-    setNames( c("m0_linear","m0_spline"), c("Linear","Non-linear") ),
-    function(i)
-      readRDS( here( "mods", paste0(i,".rds") ) )
-  )
+m <- mread( c("m0_linear","m0_spline"), c("Linear","Non-linear") )
 
 # extract the highest Rhat for chains convergence and Pareto-k for influential outliers
-dia <- 
-  
-  cbind.data.frame(
-    Rhat = round( sapply( names(m) , function(i) max( rhat(m[[i]]), na.rm = T ) ), 3 ),
-    Park = round( sapply( names(m) , function(i) max( loo(m[[i]])$diagnostics$pareto_k, na.rm = T ) ), 3 )
-  )
-
-# diagnostics for in-text reporting
-rhatmax <- with( dia, ifelse( round(max(Rhat),2) > max(Rhat), rprint(max(Rhat),2), rprint(max(Rhat)+.01,2) ) )
-parkmax <- with( dia, ifelse( round(max(Park),1) > max(Park), rprint(max(Park),1), rprint(max(Park)+.1,1) ) )
+rhatmax <- round( sapply( names(m) , function(i) max( rhat(m[[i]]), na.rm = T ) ), 3 ) %>% max() %>% ubound(2)
+parkmax <- round( sapply( names(m) , function(i) max( loo(m[[i]])$diagnostics$pareto_k, na.rm = T ) ), 3 ) %>% max() %>% ubound(1)
 
 # compare the models via PSIS-LOO
 loocomp <-
@@ -806,6 +807,33 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 
 ## Predicting post-surgery cognitive decline
 
+```{r}
+#| label: long-pred
+
+#library(brms) # brms to read the results
+#library(tidybayes) # tidybayes for posterior manipulations
+
+# clear environment
+rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","rprint","mread","nms","imp","cbPal") ] )
+
+m <- mread( c("m1_lasso_doms","m2_lasso_tests"), c("Domains","Tests") ) # read models
+l <- readRDS( here("mods","lasso_psis_loo.rds") ) %>% `names<-`( names(m) ) # read PSIS-LOO results
+
+# check the highest Rhat for chains convergence
+rhatmax <- sapply( names(m) , function(i) max(m[[i]]$rhats, na.rm = T ) ) %>% max()
+
+# check the highest Pareto-k for influential outliers
+parkmax <-
+  sapply(
+    names(l),
+        function(i)
+          sapply( 1:imp, function(j) max( l[[i]][[j]]$diagnostics$pareto_k ) )
+  ) %>%
+  apply(., 2, max ) %>%
+  max()
+```
+
+Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}$ 2) with all observations having Pareto-k below 0.7.
 
 ## Evaluating false positive error rates
 

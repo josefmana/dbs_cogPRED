@@ -814,26 +814,34 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 #library(tidybayes) # tidybayes for posterior manipulations
 
 # clear environment
-rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","rprint","mread","nms","imp","cbPal") ] )
+rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","rprint","ubound","mread","nms","imp","cbPal") ] )
 
 m <- mread( c("m1_lasso_doms","m2_lasso_tests"), c("Domains","Tests") ) # read models
 l <- readRDS( here("mods","lasso_psis_loo.rds") ) %>% `names<-`( names(m) ) # read PSIS-LOO results
 
 # check the highest Rhat for chains convergence
-rhatmax <- sapply( names(m) , function(i) max(m[[i]]$rhats, na.rm = T ) ) %>% max()
+rhatmax <-
+  
+  sapply( names(m) , function(i) max(m[[i]]$rhats, na.rm = T ) ) %>%
+  max() %>%
+  ubound(2)
 
 # check the highest Pareto-k for influential outliers
 parkmax <-
+  
   sapply(
     names(l),
         function(i)
           sapply( 1:imp, function(j) max( l[[i]][[j]]$diagnostics$pareto_k ) )
   ) %>%
+  
   apply(., 2, max ) %>%
-  max()
+  max() %>%
+  ubound(1)
+
 ```
 
-Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}$ 2) with all observations having Pareto-k below 0.7.
+Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery performance on DRS-2 while there was no cognitive test that clearly indicated pre-surgery impairment in DRS-2 performance (see Tables S2 and S3 in Supplementary materials).
 
 ## Evaluating false positive error rates
 

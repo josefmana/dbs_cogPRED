@@ -797,7 +797,6 @@ f3 <-
   scale_fill_manual( values = cbPal[c(1,8)] ) +
   theme( legend.position = c(0.15,0.21), legend.key.width = unit(2.2,"cm"), legend.key.height = unit(1.2,"cm") )
 
-# save it
 # save them
 ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 300 )
 
@@ -816,7 +815,7 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 # clear environment
 rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","rprint","ubound","mread","nms","imp","cbPal") ] )
 
-m <- mread( c("m1_lasso_doms","m2_lasso_tests"), c("Domains","Tests") ) # read models
+m <- mread( c("m1_lasso_doms","m2_lasso_tests"), c("factor scores","test scores") ) # read models
 l <- readRDS( here("mods","lasso_psis_loo.rds") ) %>% `names<-`( names(m) ) # read PSIS-LOO results
 
 # check the highest Rhat for chains convergence
@@ -841,9 +840,152 @@ parkmax <-
 
 ```
 
-Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery performance on DRS-2 while there was no cognitive test that clearly indicated pre-surgery impairment in DRS-2 performance (see Tables S2 and S3 in Supplementary materials).
+```{r}
+#| label: posteriors
+#| cache: true
+
+
+# extract and summarize posteriors of the "fixed-effects"
+post <-
+  
+  lapply(
+    
+    setNames( names(m), names(m) ),
+    function(i)
+      
+      m[[i]] %>%
+      spread_draws( `b_.*`, regex = T ) %>% # extract all "fixed-effect" parameters
+      select( contains("b_") ) %>% # get rid of the info about chains
+      
+      # re-scale to DRS-2 raw scale
+      mutate(
+        b_Intercept = ( b_Intercept * scl$SD$drs ) + scl$M$drs,
+        across( !b_Intercept, function(x) { x * scl$SD$drs } )
+      ) %>%
+      
+      # calculate median posterior, 95% PPI and probability of being negative
+      apply( . , 2 , function(x) { c(b = median(x), PPI = hdi(x,.width =.95), pd = sum(x<0)/length(x) ) } ) %>%
+      
+      # relocate time such that it is after the baseline effects
+      as.data.frame() %>%
+      relocate( b_time, .after = ifelse( i == "factor scores", "b_visp_wm", "b_sc_staix2") ) %>%
+      
+      # tidy up
+      t() %>%
+      as.data.frame() %>%
+      rownames_to_column( var = "Parameter" )
+
+  )
+
+# prepare the figure
+f4 <-
+  
+  lapply(
+    
+    setNames( names(post), names(post) ),
+    function(i)
+      
+      post[[i]] %>%
+      
+      # select only the estimands (i.e., the interaction terms and the global time effect for comparison)
+      slice( which( grepl("time", Parameter) ) ) %>%
+      
+      # rename the Parameter column according to the var_nms file such that the predictors are
+      # named in accordance with the in-text math model (i.e., delta[predictor] )
+      mutate( Parameter = sub( "time:", "", Parameter ) %>% sapply( ., function(x) v[x, ] ) ) %>%
+      
+      # plotting proper
+      ggplot() +
+      aes( x = reorder(Parameter, b, decreasing = T), y = b, ymin = PPI1, ymax = PPI2 ) +
+      geom_linerange( linewidth = 3, color = alpha( case_when( i == "factor scores" ~ cbPal[7], i == "test scores" ~ cbPal[6] ), alpha = .3 ) ) +
+      geom_point( size = 3, color = alpha( case_when( i == "factor scores" ~ cbPal[7], i == "test scores" ~ cbPal[6] ), alpha = 1 ) ) +
+      geom_hline( yintercept = 0, size = 1, linetype = "dashed", color = "black" ) +
+      labs( x = NULL, y = "DRS-2 (points per year)") +
+      scale_y_continuous( limits = c(-1,1) ) +
+      scale_x_discrete( labels = function(x) parse( text = paste0( "delta[", x, "]" ) ) ) + # add predictor parameter names
+      theme( axis.text = element_text( size = 12 ) ) +
+      coord_flip()
+    
+  )
+
+# align and save the plots
+ggsave(
+  plot = ( f4$`test scores` | f4$`factor scores` ) +
+    plot_annotation( tag_levels = "A" ) &
+    theme( plot.tag = element_text(face = "bold") ),
+  filename = here("figs","posterior_summaries.jpg"),
+  dpi = 300
+)
+
+# extract statistically clear result for in-text reporting
+delta_ef <-
+  
+  with(
+    post$`factor scores`,
+    c(
+      b = rprint( abs(b[Parameter == "b_time:exec_fun"] ) ), # absolute value of the estimate due to semantics
+      PPI =
+        paste0(
+        "[", rprint( PPI1[Parameter == "b_time:exec_fun"] ),
+        ", ", rprint( PPI2[Parameter == "b_time:exec_fun"] ), "]"
+        )
+    )
+  )
+
+```
+
+Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery performance on DRS-2 while there was no cognitive test that clearly indicated pre-surgery impairment in DRS-2 performance (see Tables S2 and S3 in Supplementary materials). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postsum). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[["b"]]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[["PPI"]]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero). Notably, both models generated similar predictions for majority of included patients (see Figure S2 in Supplementary material). The only difference in terms of model predictions was that the “cognitive tests” model showed marginally better fit to outlying observations which coupled with the fact that it also showed marginally higher Pareto-k values (see Figure S6 in Supplementary material) indicates that the “cognitive tests” model exhibited less regularization than the “cognitive functions” model. Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S3 and S4 in Supplementary material).
+
+![Interaction terms of the “test scores” (A) and the “factor scores” (B) models predicting post-surgery cognitive decline. Acronyms are explained in the text.](../figs/posterior_summaries.jpg){#fig-postsum width=100% height=83%}
+
 
 ## Evaluating false positive error rates
+
+```{r}
+#| label: sims
+
+rm( list = ls()[ !ls() %in% c("d","df") ] ) # clear environment
+s <- readRDS( here("mods","sims.rds") ) # read the simulations
+
+# collapse simulation results for Lasso and Two-step procedures
+for( i in names(s)[-1] ) {
+  # average decline
+  for ( j in names( s[[i]] ) ) {
+    # covariance structure
+    for ( k in names( s[[i]][[j]] ) ) {
+      # data set
+      for ( l in 1:length( s[[i]][[j]][[k]] ) ) s[[i]][[j]][[k]][[l]] <- s[[i]][[j]][[k]][[l]] %>% mutate( meth = i, decl = j, covariance = k, dataset = l )# collapse all data sets within covariance structures across methods and decline
+      s[[i]][[j]][[k]] <- do.call( rbind.data.frame, s[[i]][[j]][[k]] )
+    }
+    # collapse data sets within decline levels across methods
+    s[[i]][[j]] <- do.call( rbind.data.frame, s[[i]][[j]] )
+  }
+  # collapse data sets within methods
+  s[[i]] <- do.call( rbind.data.frame, s[[i]] )
+}
+
+# summarise of false positives conditional on null hypothesis
+falsepos <-
+  
+  do.call( rbind.data.frame, s[c("l0","t0")] ) %>%
+  mutate( sig = ifelse(p < .05, 1, 0 ) ) %>% # flag findings significant on 5% level
+  pivot_wider( id_cols = c("dataset","meth","covariance","decl"), values_from = sig, names_from = var ) %>% # pivot again such that each potential predictor has its own column with indicator of a "hit" per simulation/method pairs
+  mutate( fp = rowSums( across( starts_with("p") ), na.rm = T ) ) %>% # calculate number of "hits"/false positives across variables for each simulation/method pair
+  select( meth, covariance, decl, fp ) %>% # keep only variables of interest
+    
+  # prepare a table of frequencies of false positives per method
+  table() %>%
+  as.data.frame() %>%
+  
+  # extract numbers of simulaions with at least one false positive
+  filter( meth == "t0" & fp != 0 ) %>%
+  pivot_wider( names_from = "fp", values_from = "Freq") %>%
+  select( where( is.numeric ) ) %>%
+  rowSums()
+
+```
+
+Results of simulations used to estimate false positive rates of the two-step procedure and the Bayesian Lasso are summarised in Supplementary Materials Figure S6. Overall, the Bayesian Lasso showed almost no false positives across simulation settings whereas the false positive rates of the two-step procedure ranged from `r min(falsepos)` to `r max(falsepos)` of analyses including at least one false positive. In the case of our data structure, the false positive rates were attenuated when all twenty-three predictors covaried or when we reduced the number of predictors to seven independent variables.
 
 # Discussion
 

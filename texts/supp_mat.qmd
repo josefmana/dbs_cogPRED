@@ -1,0 +1,316 @@
+---
+title: 'Supplementary material for "Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease"'
+shorttitle: "Cognition in PD after STN DBS"
+author:
+  - name: Josef Mana
+    corresponding: true
+    email: "josef.mana@protonmail.com"
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Ondrej Bezdicek
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Filip Ruzicka
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Anna Fecikova
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Olga Klempirova
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Tomas Nikolai
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Tereza Uhrova
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Evzen Ruzicka
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Dusan Urgosik
+    affiliations:
+      - id: "NHH"
+        name: "Na Homolce Hospital, Prague, Czech Republic"
+        department: "Department of stereotactic and radiation neurosurgery"
+  - name: Robert Jech
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+format:
+ apaquarto-pdf:
+   documentmode: man
+   a4paper: true
+   pdf-engine: lualatex
+   floatsintext: false
+   keep-tex: false
+bibliography: references.bib
+warning: false
+echo: false
+toc: true
+---
+
+{{< include _extensions/wjschne/apaquarto/_apa_title.qmd >}}
+
+```{r}
+#| label: import
+
+library(here) # reading & saving files
+library(tidyverse) # data wrangling
+library(gt) # tables formatting
+library(ggplot2) # general plotting
+library(patchwork) # organising plots
+
+# clear environment
+rm( list = ls() )
+
+# set ggplot theme
+theme_set( theme_classic(base_size = 12) )
+
+# prepare colors to use in graphs (a colorblind-friendly palette)
+cbPal <- c( "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7" )
+
+# read a file containing mapping of variables' names used in the script to variables' names for the manuscript
+v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8")
+
+
+# IN-HOUSE FUNCTIONS ----
+
+# printing rounded number
+rprint <- function( x, dec=2 ) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+
+# upper bound
+ubound <- function( x, dec=2 ) ifelse( round(x,dec) > x, rprint(x,dec), rprint( x+1/(10^dec), dec ) )
+
+# print percentages of columns in a data.frame
+percprint <-
+  
+  function( input, thres, more, less, denom ) {
+    
+    input %>%
+    as.data.frame() %>%
+    mutate( across( everything() , ~ case_when( .x > thres ~ more, .x < thres ~ less ) ) ) %>%
+    colSums() * 100 / denom
+    
+  }
+
+# read models
+mread <-
+  
+  function( files, names ) {
+    
+    lapply(
+      setNames(files,names),
+      function(i)
+        readRDS( here( "mods", paste0(i,".rds") ) )
+      )
+
+  }
+```
+
+In this supplementary material we present additional information to manuscript *“Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease”* including further presentation of the results that was not included in the main text due to space constraints. All procedures described in this supplementary material are accompanied by R code used to implement the steps described herein and Stan code for Bayesian generalized linear mixed models (GLMMs) fitted during this project. The R code and Stan models as well as raw files containing all images and tables are available at [https://github.com/josefmana/dbs_longCOG](https://github.com/josefmana/dbs_longCOG). Since the data used for model fitting in our study contain medical records of included patients, they are not publicly available for privacy reasons. Moreover, because the GLMMs reported in this article are exceedingly large for purposes of online storage (> 2 GB each), only the R and Stan codes are included.
+
+# Pre-surgery cross-sectional exploratory factor analysis
+
+## Data pre-processing
+
+For exploratory factor analyses (EFAs) we first log transformed all response time-based tasks (i.e., Trail Making Test and Stroop test), then standardized (i.e., mean-centered and scaled by their in-sample standard deviation) all variables before applying multiple imputations for missing values. EFA was then fitted on each imputed data set via ordinary least squares to find the minimal residual (minres) solution. This procedure was repeated for three up to eight factor solutions.
+
+## Supplementary presentation of results
+
+```{r}
+#| label: fact-anal
+
+#library(psych) # using psych to read the results
+
+efa <- readRDS( here("mods","factanal.rds") ) # read the EFA results
+nf <- 7 # choosing 7-factor solution
+imp <- length(efa) # extract number of imputations used
+
+# list all the domains
+doms <-
+  
+  c(
+    "exec_fun", # loaded on primarily by PST, the first factor in 82% data sets
+    "epis_mem", # loaded on primarily by RAVLT, the second factor in 79% data sets
+    "verb_wm", # loaded on primarily by DS, the third factor in 62% data sets
+    "visp_mem", # loaded on primarily by FP, the fourth factor in 45% data sets
+    "set_shift", # loaded on primarily by TMT and RAVLT-B, the fifth factor in 28% data sets
+    "anxiety", # loaded on primarily by STAI, the sixth factor in 60% data sets
+    "visp_wm" # loaded on primarily by SS, the seventh factor in 49% data sets
+  )
+
+# prepare a table for performance indexes of each solution for each imputed data set
+fat <-
+  
+  # create an empty 6 (factor solutions) x 5 (performance indexes) x 100 (imputations) array
+  array(
+    
+    data = NA, dim = c( length( efa[[1]] ), 5, imp ),
+    
+    # add dimension names
+    dimnames =
+      list(
+        paste0( 1:length(efa[[1]])+2, "-factor" ), # number of factors
+        c("TLI", "RMSEA", "RMSEA_90_CI_low", "RMSEA_90_CI_upp", "var_account"), # performance indexes
+        1:imp # number of imputed data set
+      )
+
+  )
+
+# loop through the array and gather all performance indexes
+for ( i in 1:imp ) {
+  for ( j in 1:length(efa[[i]]) ) {
+    
+    fat[ j , , i ] <-
+      
+      c(
+        efa[[i]][[j]]$TLI, # Tucker-Lewis Index, TLI > 0.9 is considered good
+        efa[[i]][[j]]$RMSEA[1], # Root-Mean Square Error of Approximation, RMSEA < 0.08 is considered good
+        efa[[i]][[j]]$RMSEA[2], # 90% CI RMSEA, lower boundary
+        efa[[i]][[j]]$RMSEA[3], # 90% CI RMSEA, upper boundary (ideally should be less than 0.08)
+        max( efa[[i]][[j]]$Vaccounted["Cumulative Var",] ) # total variance "accounted for" by all included factors (i.e., the highest one from "Cumulative Var")
+      )
+
+  }
+}
+
+
+```
+
+Supplementary EFA results are presented in @tbl-perf and @fig-perf (see below). @tbl-perf presents numerical summary of fit indexes of each three to eight factor solutions across one hundred imputations. Note that Tucker-Lewis Index (TLI) was above the threshold implying good fit (TLI > 0.9) in only three out of four six-factor models, but it was above this threshold in all but three out of one hundred seven-factor models. Similar information is visually presented in @fig-perf which depicts density plots of TLI and upper 90% confidence interval boundary of root-mean-square-error approximation (RMSEA) of all models across imputations. This clear improvement in fit of seven- compared to six-factor model, only modest improvement of eight- compared to seven-factor model, and overall theoretical plausibility of factors identified by the seven-factor model led us to retain seven factors for further analyses.
+
+```{r}
+#| label: tbl-perf
+#| caption: Summary of fit indexes of the exploratory factor analysis across one hundred imputed datasets
+
+# prepare a table with performance indexes
+t1 <-
+  
+  data.frame( Model = paste0( 3:8, "-factor"), TLI = NA, RMSEA = NA, RMSEA_90_CI_upp = NA, var_account = NA ) %>%
+  
+  # add indexes
+  mutate(
+    
+    # present mean (SD) for each index
+    across(
+      !contains("Model"),
+      ~ sapply(
+        Model, # loop through model names
+        function(i)
+          paste0( rprint( mean(fat[ i, cur_column(), ]) )," (",rprint( sd(fat[ i, cur_column(), ]) ),")" )
+      )
+    ),
+    
+    # extract percentages of 'good' RMSEA and TLI
+    `upper bound RMSEA < 0.08 (%)` = percprint( t( fat[ , "RMSEA_90_CI_upp" , ] ), .08, 0, 1, imp ),
+    `TLI > 0.90 (%)` = percprint( t( fat[ , "TLI" , ] ), .9, 1, 0, imp )
+    
+  ) %>%
+  
+  
+  gt() %>%
+  cols_align( align = "center", columns = -1 ) %>%
+  cols_label(
+    "RMSEA_90_CI_upp" = "RMSEA 90% CI (upper bound)",
+    "var_account" = "Total variance accounted for"
+  ) %>%
+  
+  tab_source_note( source_note = "Values represent mean (SD) or percentages if indicated in brackets." ) %>%
+  tab_source_note( source_note = "TLI Tucker-Lewis Index. RMSEA root-mean-square-error approximation. CI confidence interval" ) %>%
+  tab_options( quarto.disable_processing = T )
+
+# save & print it
+gtsave( data = t1, filename = here("tabs","factanal_performance.docx") )
+t1
+```
+
+```{r}
+#| label: figs1
+
+# prepare plots of model performance indexes
+f1 <-
+  
+  lapply(
+    
+    setNames( c("TLI","RMSEA_90_CI_upp"), c("TLI","RMSEA_90_CI_upp") ),
+    function(i)
+      
+      fat[ , i , ] %>%
+      
+      # re-format the table for plotting
+      t() %>%
+      as.data.frame() %>%
+      pivot_longer( everything() , names_to = "Model" , values_to = all_of(i) ) %>%
+      rename( "index" = i ) %>%
+      
+      # plotting proper
+      ggplot( aes( x = index , fill = Model) ) +
+      geom_density( alpha = .4 , color = NA ) +
+      scale_fill_manual( values = cbPal[3:8] ) + # use colorblind-friendly palette
+      geom_vline( linetype = "dashed", size = 1.2, xintercept = case_when( i == "TLI" ~ .9, i == "RMSEA_90_CI_upp" ~ .08 ) ) + # add a vertical line depicting good performance heuristics
+    labs( y = "Density", x = case_when( i == "TLI" ~ "TLI", i == "RMSEA_90_CI_upp" ~ "RMSEA (upper 90% CI)" ) ) +
+    scale_x_continuous(
+      limits = case_when( i == "TLI" ~ c(0.6,1.05), i == "RMSEA_90_CI_upp" ~ c(0.03, 0.12) ),
+      breaks = case_when( i == "TLI" ~ seq(.6,1,.1), i == "RMSEA_90_CI_upp" ~ seq(.04,.12,.02) ),
+      labels = case_when(
+        i == "TLI" ~ sprintf( "%.1f", round( seq(.6, 1, .1), 1) ),
+        i == "RMSEA_90_CI_upp" ~ sprintf( "%.2f", round( seq(.04,.12,.02), 2) )
+      )
+    )
+
+  )
+
+# align and save the plots
+ggsave(
+  plot =
+    ( f1$TLI / f1$RMSEA_90_CI_upp ) +
+    plot_layout( guides = "collect" ) +
+    plot_annotation( tag_levels = "A" ) &
+    theme( plot.tag = element_text(face = "bold") ),
+  filename = here("figs","factanal_performance.jpg"),
+  dpi = 300,
+  width = 9.9,
+  height = 5.88
+)
+```
+
+![Factor analyses fit indexes. Density plots of (A) Tucker-Lewis Index (TLI) and (B) upper boundary of 90% confidence interval (CI) of the root-mean-square-error approximation for three- to eight-factor solutions of factor analysis of pre-surgery cognitive profile. Density plots are taken over one hundred imputed datasets. Vertical lines represent boundaries of good fit according to TLI (i.e., TLI > 0.9) and RMSEA (i.e., RMSEA < 0.08).](../figs/factanal_performance.jpg){#fig-perf}
+
+# Longitudinal generalized linear mixed models
+
+## Data pre-processing
+
+```{r}
+#| label: md-time
+
+# extract median time before surgery of included patients
+mdt <-
+  read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," ) %>%
+    filter( included == 1 & ass_type == "pre" ) %>%
+    select(time_y) %>%
+    abs() %>%
+    unlist() %>%
+    median() %>%
+    rprint(2)
+
+```
+
+To simplify the process of choosing appropriate prior distributions and minimize multicollinearity, all variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) before the analyses. The only variable that was not pre-processed this way was time after surgery. This variable was entered into all models in its raw scale (i.e., years after surgery) shifted forward by a median time of pre-surgery assessment (i.e., `r mdt` years). Consequently, model intercepts represent estimates of patients’ cognitive performance in Mattis Dementia Rating Scale (DRS-2) at pre-surgery assessment (`r mdt` years before surgery) and time slopes represent DRS-2 annual post-surgery cognitive decline. Before they were entered into the models, all pre-surgery cognitive functions’ scores were coded such that higher values indicated poorer performance.

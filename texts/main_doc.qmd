@@ -232,11 +232,6 @@ rm( list = ls() )
 # set ggplot theme
 theme_set( theme_classic(base_size = 12) )
 
-# create folders for models, figures, and tablesto store results in
-# prints TRUE and creates the folder if it was not present
-# prints NULL if the folder was already present
-#sapply( c("mods", "figs", "tabs"), function(i) if( !dir.exists(i) ) dir.create(i) )
-
 # read the data set and prepare subsets for individual analyses
 d0 <- read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," )
 d1 <- d0[ d0$included == 1 , ] # only STN-DBS treated patients with pre- and post-surgery data
@@ -244,6 +239,7 @@ d2 <- d1[ d1$ass_type == "pre" , ] # only pre-surgery assessments of included pa
 
 # read a file containing mapping of variables' names used in the script to variables' names for the manuscript
 v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8")
+
 
 # IN-HOUSE FUNCTIONS ----
 
@@ -910,7 +906,8 @@ f4 <-
 
 # align and save the plots
 ggsave(
-  plot = ( f4$`test scores` | f4$`factor scores` ) +
+  plot =
+    ( f4$`test scores` | f4$`factor scores` ) +
     plot_annotation( tag_levels = "A" ) &
     theme( plot.tag = element_text(face = "bold") ),
   filename = here("figs","posterior_summaries.jpg"),
@@ -938,7 +935,7 @@ delta_ef <-
 
 Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery performance on DRS-2 while there was no cognitive test that clearly indicated pre-surgery impairment in DRS-2 performance (see Tables S2 and S3 in Supplementary materials). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postsum). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[['b']]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[['PPI']]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero). Notably, both models generated similar predictions for majority of included patients (see Figure S2 in Supplementary material). The only difference in terms of model predictions was that the “cognitive tests” model showed marginally better fit to outlying observations which coupled with the fact that it also showed marginally higher Pareto-k values (see Figure S6 in Supplementary material) indicates that the “cognitive tests” model exhibited less regularization than the “cognitive functions” model. Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S3 and S4 in Supplementary material).
 
-![Interaction terms of the “test scores” (A) and the “factor scores” (B) models predicting post-surgery cognitive decline. Acronyms are explained in the text.](../figs/posterior_summaries.jpg){#fig-postsum width}
+![Interaction terms of the “test scores” (A) and the “factor scores” (B) models predicting post-surgery cognitive decline. Acronyms are explained in the text.](../figs/posterior_summaries.jpg){#fig-postsum}
 
 ## Evaluating false positive error rates
 
@@ -950,17 +947,22 @@ s <- readRDS( here("mods","sims.rds") ) # read the simulations
 
 # collapse simulation results for Lasso and Two-step procedures
 for( i in names(s)[-1] ) {
+  
   # average decline
   for ( j in names( s[[i]] ) ) {
+    
     # covariance structure
     for ( k in names( s[[i]][[j]] ) ) {
+      
       # data set
       for ( l in 1:length( s[[i]][[j]][[k]] ) ) s[[i]][[j]][[k]][[l]] <- s[[i]][[j]][[k]][[l]] %>% mutate( meth = i, decl = j, covariance = k, dataset = l )# collapse all data sets within covariance structures across methods and decline
       s[[i]][[j]][[k]] <- do.call( rbind.data.frame, s[[i]][[j]][[k]] )
     }
+    
     # collapse data sets within decline levels across methods
     s[[i]][[j]] <- do.call( rbind.data.frame, s[[i]][[j]] )
   }
+  
   # collapse data sets within methods
   s[[i]] <- do.call( rbind.data.frame, s[[i]] )
 }

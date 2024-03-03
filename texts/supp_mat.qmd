@@ -64,7 +64,6 @@ format:
 bibliography: references.bib
 warning: false
 echo: false
-toc: true
 ---
 
 {{< include _extensions/wjschne/apaquarto/_apa_title.qmd >}}
@@ -168,7 +167,7 @@ Supplementary EFA results are presented in @tbl-perf and @fig-perf (see below). 
 
 ```{r}
 #| label: tbl-perf
-#| caption: Summary of fit indexes of the exploratory factor analysis across one hundred imputed datasets
+#| tbl-cap: Summary of fit indexes of the exploratory factor analysis across one hundred imputed datasets
 
 # prepare a table with performance indexes
 t1 <-
@@ -299,7 +298,8 @@ v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encodin
 # read the data
 for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
 
-# extract posterior draws from all models
+
+# extract posterior draws ----
 post <-
   
   lapply(
@@ -322,8 +322,16 @@ post <-
         across( !b_Intercept, function(x) { x * scl$SD$drs } )
       ) %>%
       
-      # calculate median posterior and 95% PPI
-      apply( . , 2 , function(x) { c( b = median(x), PPI = hdi(x, .width = .95) ) } ) %>%
+      # calculate summaries
+      apply(
+        . , 2 , function(x) {
+          c(
+            b = median(x), # posterior median
+            PPI = hdi(x, .width = .95), # 95% PPI
+            pdir = sum(x<0)/length(x) # Pr(b<0)
+          )
+        }
+      ) %>%
       t() %>%
       as.data.frame() %>%
       rownames_to_column("Parameter") %>%
@@ -345,10 +353,52 @@ post <-
   rownames_to_column("Predicted by:") %>%
   mutate( `Predicted by:` = sub( "\\..*" , "", `Predicted by:` ) )
 
-# set ggplot theme
-theme_set( theme_classic(base_size = 10) )
 
-# prepare figures
+# prepare tables ----
+
+t2 <-
+  
+  lapply(
+    
+    setNames( c("factor","test"), c("factor","test") ),
+    function(i)
+      
+      post[ post$`Predicted by:` == paste0(i," scores"), ] %>%
+    
+      # prepare variables
+      mutate(
+        Parameter = sapply( Parameter, function(j) v[ j, "name" ] ), # get publication-ready names
+        `95% PPI` = paste0( "[", rprint(PPI1,2), ", ", rprint(PPI2,2),"]" ), # prepare 95% PPI bracket
+        b = rprint( b, 2 ), # round median posterior
+        pdir = rprint(pdir,3), # round Pr(b<0)
+      ) %>%
+      
+      # finish the table
+      select( Parameter, b, `95% PPI`, pdir, Group ) %>%
+      arrange(Group) %>%
+      
+      # gt (pre-)formatting
+      gt( groupname_col = "Group" ) %>%
+      cols_align( columns = -1, align = "center" ) %>%
+      cols_label( b ~ "{{*b*}}", pdir ~ "Pr({{*b*}}<0)" ) %>%
+      text_transform(
+        locations = cells_row_groups(),
+        fn = function(x) case_when(
+            x == "alpha" ~ "Global intercept (α)",
+            x == "beta" ~ "Baseline correlates (β) ",
+            x == "delta" ~ "Time-dependent effects (𝛿)"
+        )
+
+    )
+    
+  )
+
+
+# prepare figures ----
+
+theme_set( theme_classic(base_size = 10) ) # set ggplot theme
+
+# plot it
 f2 <-
   
   lapply(
@@ -434,38 +484,95 @@ for ( i in names(f2) ) {
 
 ## Posterior predictive check
 
-To validate the in-sample fit of our predictive models, we computed models’ “predictions” for each included patient and compared these predictions to observed values (see @fig-ppc).
+To validate the in-sample fit of our predictive models, we computed models’ “predictions” for each included patient and compared these predictions to observed values (see @fig-ppc). Note that since one of the advantages of multilevel modelling is partial pooling, i.e., shrinking parameter estimates towards each other and thus down-weighting the effect of influential outliers to reduce overfitting, the model is neither expected nor required to replicate observed values exactly. Our models show reasonable fit to most patients with clear shrinkage in case of outliers (for instance patient S045 in @fig-ppc). Furthermore, while the “test scores” and the “factor scores” model provide similar posterior predictions for our patients, the “test scores” model was evidently more influenced by outlying values to a small degree (for instance patients S023, S107 or S124).
+
+![Posterior predictive checks. Posterior predictions of included patients’ performance according to the predictive generalized linear mixed models (GLMMs) reported in the main text. Lines represent expected (median) performance, shades represent 95% posterior probability intervals (PPIs) of the performance according to the GLMMs, dots represent observed values.](../figs/posterior_predictions.jpg){#fig-ppc}
 
 ```{r}
 #| label: post-pred
 
 # read posterior predictions
-ppred <- read.csv( here("_data","ppred.csv"), sep = "," ) %>% rename( "Predicted by:" = "Predicted.by.")
+ppred <-
+  
+  read.csv( here("_data","ppred.csv"), sep = "," ) %>%
+  rename( "Predicted by:" = "Predicted.by." ) %>%
+  mutate( anid = as.numeric( as.factor(id) ) %>% sprintf("%03d",.) %>% paste0( "S",.) ) # anonymise patients
+
+# extract mapping to anonymize patients
+anon <- ppred[ with( ppred, time_y  == -2 & `Predicted by:` == "factor scores" ), c("id","anid") ]
 
 # plot predictions and observed data for each subject separately
 f4 <-
   
   d %>%
-  mutate( drs = drs_tot ) %>%
-  filter( complete.cases(drs) ) %>%
+  filter( complete.cases(drs_tot) ) %>%
+  mutate( anid = sapply( 1:nrow(.), function(i) anon[ anon$id == id[i], "anid" ] ), drs = drs_tot ) %>%
   
   # plotting proper
   ggplot( aes(x = time_y, y = drs) ) +
   
   # add prediction lines and 95% compatibility intervals
-  geom_line( data = ppred, size = 1, aes(x = time_y, y = drs, group = `Predicted by:`, color = `Predicted by:` ) ) +
+  geom_line( data = ppred, size = .5, aes(x = time_y, y = drs, group = `Predicted by:`, color = `Predicted by:` ) ) +
   geom_ribbon( data = ppred, alpha = .2, aes(x = time_y, y = drs, ymin = drs.lower, ymax = drs.upper, group = `Predicted by:`, fill = `Predicted by:` ) ) +
   
   # add observed points
-  geom_point( color = "black", size = 1.25 ) +
+  geom_point( color = "black", size = .4 ) +
   
   # finish the plot with the last cosmetic changes
   scale_color_manual( values = cbPal[c(2,3)] ) +
   scale_fill_manual( values = cbPal[c(2,3)] ) +
-  facet_wrap( ~ id, nrow =  14 ) + # arrange to a 14 x 9 grid
+  facet_wrap( ~ anid, nrow =  14 ) + # arrange to a 14 x 9 grid
   labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
-  theme_classic( base_size = 7 ) +
+  theme_classic( base_size = 4 ) +
   theme( legend.position = "bottom" )
 
+# save it
+ggsave( plot = f4, filename = here("figs","posterior_predictions.jpg"), dpi = 300, width = 6.8, height = 7.8 )
 
 ```
+
+## Supplementary presentation of results
+
+In @tbl-posttest we present numerical summary of group-level posterior parameters of the “test scores” model while in @tbl-postfact we present numerical summary of group-level posterior parameters of the “factor scores” model which supplement the information presented in Figure 3 in the main text. Since only the interaction terms (i.e., the $\delta$ parameters) comprised empirical estimands for our query (*RQ2*), the remaining parameters were omitted from the main text.
+
+```{r}
+#| label: tbl-posttest
+#| tbl-cap: Summary of group-level effects’ posteriors from the “test scores” generalized linear mixed model reported in the main text
+
+# add footnotes
+t2$test <-
+  
+  t2$test %>%
+    tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory.") %>%
+    tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
+
+# save & print it
+gtsave( data = t2$test, filename = here("tabs","posteriors_test.docx") )
+t2$test
+```
+
+```{r}
+#| label: tbl-postfact
+#| tbl-cap: Summary of group-level effects’ posteriors from the “factor scores” generalized linear mixed model reported in the main text
+
+# add footnotes
+t2$factor <-
+  
+  t2$factor %>%
+    tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory.") %>%
+    tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory." )
+
+# save & print it
+gtsave( data = t2$factor, filename = here("tabs","posteriors_fact.docx") )
+t2$factor
+```
+
+## Robustness checks
+
+To confirm that our results are robust to effects of aging, dopaminergic medication, and depressive symptoms, we carried out a robustness check by fitting parallel “test scores” and “factor scores” models with additional group-level predictors age, levodopa equivalent daily dose (LEDD) and Beck Depression Inventory (BDI-II). Stan code for each of these models with the exact specification is available at https://github.com/josefmana/dbs_longCOG and is equivalent to the models reported in the main text. For this reason, we do not present their mathematical definitions here in sake of brevity.
+
+Side-to-side comparison of models’ group-level parameters’ posterior summaries is presented in @fig-robtest for the “test scores” model and in @fig-robfact for the “factor scores” model. All models arrived at similar posteriors implying our results are robust to effects of aging, dopaminergic medication, and depressive symptoms. Importantly, the empirical estimands relating to *RQ2* (i.e., the time-dependent effects represented by the $\delta$ parameters) are similar across models leading to identical substantive conclusions.
+
+![Posteriors medians and 95% posterior probability intervals (PPIs) of group-level effects from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery cognitive test scores without (“test scores”) and with adjustment for covariates (“test scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory. See main text for acronyms.](../figs/test_postsum.jpg){#fig-robtest}
+
+![Robustness check (the “factor scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level effects from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery latent cognitive factor scores without (“factor scores”) and with adjustment for covariates (“factor scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory. See main text for acronyms.](../figs/factor_postsum.jpg){#fig-robfact}

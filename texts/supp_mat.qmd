@@ -87,17 +87,11 @@ theme_set( theme_classic(base_size = 12) )
 # prepare colors to use in graphs (a colorblind-friendly palette)
 cbPal <- c( "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7" )
 
-# read a file containing mapping of variables' names used in the script to variables' names for the manuscript
-v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8")
-
 
 # IN-HOUSE FUNCTIONS ----
 
 # printing rounded number
 rprint <- function( x, dec=2 ) sprintf( paste0("%.",dec,"f"), round( x , dec) )
-
-# upper bound
-ubound <- function( x, dec=2 ) ifelse( round(x,dec) > x, rprint(x,dec), rprint( x+1/(10^dec), dec ) )
 
 # print percentages of columns in a data.frame
 percprint <-
@@ -111,18 +105,6 @@ percprint <-
     
   }
 
-# read models
-mread <-
-  
-  function( files, names ) {
-    
-    lapply(
-      setNames(files,names),
-      function(i)
-        readRDS( here( "mods", paste0(i,".rds") ) )
-      )
-
-  }
 ```
 
 In this supplementary material we present additional information to manuscript *“Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease”* including further presentation of the results that was not included in the main text due to space constraints. All procedures described in this supplementary material are accompanied by R code used to implement the steps described herein and Stan code for Bayesian generalized linear mixed models (GLMMs) fitted during this project. The R code and Stan models as well as raw files containing all images and tables are available at [https://github.com/josefmana/dbs_longCOG](https://github.com/josefmana/dbs_longCOG). Since the data used for model fitting in our study contain medical records of included patients, they are not publicly available for privacy reasons. Moreover, because the GLMMs reported in this article are exceedingly large for purposes of online storage (> 2 GB each), only the R and Stan codes are included.
@@ -143,19 +125,6 @@ For exploratory factor analyses (EFAs) we first log transformed all response tim
 efa <- readRDS( here("mods","factanal.rds") ) # read the EFA results
 nf <- 7 # choosing 7-factor solution
 imp <- length(efa) # extract number of imputations used
-
-# list all the domains
-doms <-
-  
-  c(
-    "exec_fun", # loaded on primarily by PST, the first factor in 82% data sets
-    "epis_mem", # loaded on primarily by RAVLT, the second factor in 79% data sets
-    "verb_wm", # loaded on primarily by DS, the third factor in 62% data sets
-    "visp_mem", # loaded on primarily by FP, the fourth factor in 45% data sets
-    "set_shift", # loaded on primarily by TMT and RAVLT-B, the fifth factor in 28% data sets
-    "anxiety", # loaded on primarily by STAI, the sixth factor in 60% data sets
-    "visp_wm" # loaded on primarily by SS, the seventh factor in 49% data sets
-  )
 
 # prepare a table for performance indexes of each solution for each imputed data set
 fat <-
@@ -258,7 +227,7 @@ f1 <-
       # re-format the table for plotting
       t() %>%
       as.data.frame() %>%
-      pivot_longer( everything() , names_to = "Model" , values_to = all_of(i) ) %>%
+      pivot_longer( everything(), names_to = "Model" , values_to = i ) %>%
       rename( "index" = i ) %>%
       
       # plotting proper
@@ -303,14 +272,200 @@ ggsave(
 
 # extract median time before surgery of included patients
 mdt <-
+  
   read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," ) %>%
-    filter( included == 1 & ass_type == "pre" ) %>%
-    select(time_y) %>%
-    abs() %>%
-    unlist() %>%
-    median() %>%
-    rprint(2)
+  filter( included == 1 & ass_type == "pre" ) %>%
+  select(time_y) %>%
+  abs() %>%
+  unlist() %>%
+  median() %>%
+  rprint(2)
 
 ```
 
-To simplify the process of choosing appropriate prior distributions and minimize multicollinearity, all variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) before the analyses. The only variable that was not pre-processed this way was time after surgery. This variable was entered into all models in its raw scale (i.e., years after surgery) shifted forward by a median time of pre-surgery assessment (i.e., `r mdt` years). Consequently, model intercepts represent estimates of patients’ cognitive performance in Mattis Dementia Rating Scale (DRS-2) at pre-surgery assessment (`r mdt` years before surgery) and time slopes represent DRS-2 annual post-surgery cognitive decline. Before they were entered into the models, all pre-surgery cognitive functions’ scores were coded such that higher values indicated poorer performance.
+To simplify the process of choosing appropriate prior distributions and minimize multicollinearity, all variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) before the analyses. The only variable that was not pre-processed this way was time after surgery. This variable was entered into all models in its raw scale (i.e., years after surgery) shifted forward by a median time of pre-surgery assessment (i.e., `r mdt` years). Consequently, model intercepts represent estimates of patients’ cognitive performance in Mattis Dementia Rating Scale (DRS-2) at pre-surgery assessment (`r mdt` years before surgery) and time slopes represent DRS-2 annual post-surgery cognitive decline. Before they were entered into the models, all pre-surgery cognitive factors and test scores were coded such that higher values indicated poorer performance. Parameters associated with these variables (see @fig-robtest, @fig-robfact, @tbl-posttest, @tbl-postfact as well as Figure 4 in the main text) thus represent an effect of a (relative) pre-surgery deficit in a corresponding latent cognitive factor or manifest cognitive test score on prediction of pre-surgery DRS-2 (the $\beta$ parameters) and post-surgery annual decline in DRS-2 (the $\delta$ parameters). Negative parameter values imply that a pre-surgery cognitive deficit unfavorably affects the outcome and vice versa for positive parameter values.
+
+```{r}
+#| label: posteriors
+#| cache: true
+
+library(brms) # brms to read the results
+library(tidybayes) # tidybayes for posterior manipulations
+
+rm( list = ls()[ !ls() %in% c("rprint","imp","cbPal") ] ) # clear environment
+
+v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8") # read variable mappings
+
+# read the data
+for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
+
+# extract posterior draws from all models
+post <-
+  
+  lapply(
+    
+    setNames(
+      c("m1_lasso_doms","m2_lasso_tests","m3_doms_cov","m4_tests_cov"),
+      c("factor scores","test scores","factor scores (with covariates)","test scores (with covariates)")
+    ),
+    
+    function(i)
+      
+      readRDS( here( "mods", paste0(i,".rds") ) ) %>%
+      as_draws_df() %>%
+      `colnames<-` ( gsub("_drs","",names(.) ) ) %>% # rename parameters in covariate models to appropriate format
+      select( starts_with( c("b_","bsp_") ) & !starts_with( c("b_bdi","b_led","bsp_bdi") ) ) %>% # keep only fixed-effects
+      
+      # back-transform posteriors to raw DRS-2 (or DRS-2 per year) scale
+      mutate(
+        b_Intercept = ( b_Intercept * scl$SD$drs ) + scl$M$drs,
+        across( !b_Intercept, function(x) { x * scl$SD$drs } )
+      ) %>%
+      
+      # calculate median posterior and 95% PPI
+      apply( . , 2 , function(x) { c( b = median(x), PPI = hdi(x, .width = .95) ) } ) %>%
+      t() %>%
+      as.data.frame() %>%
+      rownames_to_column("Parameter") %>%
+      
+      # flag parameter group
+      mutate(
+        Group =
+          case_when(
+            Parameter == "b_Intercept" ~ "alpha", # global intercept
+            grepl( "time|bdi:time|led:time", Parameter ) ~ "delta", # time varying effects
+            .default = "beta" # pre-surgery associations
+          )
+      )
+
+  ) %>%
+  
+  # pull both "cognitive functions" and "cognitive tests" models together
+  do.call( rbind.data.frame, . ) %>%
+  rownames_to_column("Predicted by:") %>%
+  mutate( `Predicted by:` = sub( "\\..*" , "", `Predicted by:` ) )
+
+# set ggplot theme
+theme_set( theme_classic(base_size = 10) )
+
+# prepare figures
+f2 <-
+  
+  lapply(
+    
+    setNames( c("factor","test"), c("factor","test") ),
+    function(i)
+      
+      lapply(
+        
+        setNames( c("alpha","beta","delta"), c("alpha","beta","delta") ),
+        function(j)
+          
+          post %>%
+          filter( grepl(i,`Predicted by:`) & Group == j ) %>%
+          
+          # prepare the labels
+          mutate(
+            
+            title =
+              case_when(
+                j == "alpha" ~ "Global intercept",
+                j == "beta" ~ "Baseline correlates",
+                j == "delta" ~ "Time-dependent effects"
+              ),
+            
+            Parameter =
+              case_when(
+                j == "delta" ~ sub( "time:", "", Parameter ) %>% sapply( ., function(x) v[x, ] ),
+                j != "delta" ~ Parameter %>% sapply( ., function(x) v[x, ] )
+              )
+            
+          ) %>%
+          
+          # plotting proper
+          ggplot( aes( x = reorder(Parameter, b, decreasing = T), y = b, ymin = PPI1, ymax = PPI2 ) ) +
+          geom_linerange( aes( color = `Predicted by:`), size = 1, position = position_dodge( width = case_when( i == "factor" ~ .4, i == "test" ~ .6 ) ) ) +
+          geom_point( aes( color = `Predicted by:`), size = 4, position = position_dodge( case_when( i == "factor" ~ .4, i == "test" ~ .6 ) ) ) +
+          geom_hline( yintercept = 0, size = 1.1, linetype = "dashed", color = case_when( i == "factor" ~ "black", i == "test" ~ "red" ) ) +
+          
+          # scale the axes and colors
+          scale_x_discrete( labels = ifelse( j == "alpha", parse( text = "alpha"), function(x) parse( text = paste0( j, "[", x, "]" ) ) ) ) +
+          scale_y_continuous( limits = case_when( j == "alpha" ~ c( 139,142 ) ) ) +
+          scale_color_manual( values =  case_when( i == "factor" ~ cbPal[c(7,2)], i == "test" ~ cbPal[c(6,3)] ) ) +
+          
+          # label and flip axes, position legend and add title
+          labs( x = NULL, y = ifelse( j == "delta", "DRS-2 (points per year)", "DRS-2" ) ) +
+          theme( axis.text = element_text( size = 10 ), legend.position = "bottom" ) +
+          facet_wrap( . ~ title) +
+          coord_flip()
+        
+      )
+    
+  )
+
+# list plot layouts for each figure
+lo <- cbind( factor = c(1,7,11), test = c(1,23,27) )
+
+# save them
+for ( i in names(f2) ) {
+  
+  ggsave(
+    
+    # arrange the subplots
+    plot =
+      with(
+        f2[[i]],
+        (alpha / beta / delta ) +
+          plot_layout( heights = lo[ ,i] , guides = "collect" ) &
+          theme( legend.position = "bottom")
+      ),
+    
+    # specify output file
+    file = here( "figs", paste0(i,"_postsum.jpg") ),
+    dpi = 300,
+    width = 7,
+    height = case_when( i == "test" ~ 20.8, i == "factor" ~ 13.9)
+  
+  )
+
+}
+
+```
+
+## Posterior predictive check
+
+To validate the in-sample fit of our predictive models, we computed models’ “predictions” for each included patient and compared these predictions to observed values (see @fig-ppc).
+
+```{r}
+#| label: post-pred
+
+# read posterior predictions
+ppred <- read.csv( here("_data","ppred.csv"), sep = "," ) %>% rename( "Predicted by:" = "Predicted.by.")
+
+# plot predictions and observed data for each subject separately
+f4 <-
+  
+  d %>%
+  mutate( drs = drs_tot ) %>%
+  filter( complete.cases(drs) ) %>%
+  
+  # plotting proper
+  ggplot( aes(x = time_y, y = drs) ) +
+  
+  # add prediction lines and 95% compatibility intervals
+  geom_line( data = ppred, size = 1, aes(x = time_y, y = drs, group = `Predicted by:`, color = `Predicted by:` ) ) +
+  geom_ribbon( data = ppred, alpha = .2, aes(x = time_y, y = drs, ymin = drs.lower, ymax = drs.upper, group = `Predicted by:`, fill = `Predicted by:` ) ) +
+  
+  # add observed points
+  geom_point( color = "black", size = 1.25 ) +
+  
+  # finish the plot with the last cosmetic changes
+  scale_color_manual( values = cbPal[c(2,3)] ) +
+  scale_fill_manual( values = cbPal[c(2,3)] ) +
+  facet_wrap( ~ id, nrow =  14 ) + # arrange to a 14 x 9 grid
+  labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
+  theme_classic( base_size = 7 ) +
+  theme( legend.position = "bottom" )
+
+
+```

@@ -696,7 +696,7 @@ library(tidybayes) # tidybayes for posterior manipulations
 # clear environment
 rm( list = ls()[ !ls() %in% c("v","itstats","rprint","ubound","mread","nms","imp") ] )
 
-# read the data and models
+# read the data
 for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
 
 # read models

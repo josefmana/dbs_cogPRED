@@ -160,7 +160,6 @@ for ( i in 1:imp ) {
   }
 }
 
-
 ```
 
 Supplementary EFA results are presented in @tbl-perf and @fig-perf (see below). @tbl-perf presents numerical summary of fit indexes of each three to eight factor solutions across one hundred imputations. Note that Tucker-Lewis Index (TLI) was above the threshold implying good fit (TLI > 0.9) in only three out of four six-factor models, but it was above this threshold in all but three out of one hundred seven-factor models. Similar information is visually presented in @fig-perf which depicts density plots of TLI and upper 90% confidence interval boundary of root-mean-square-error approximation (RMSEA) of all models across imputations. This clear improvement in fit of seven- compared to six-factor model, only modest improvement of eight- compared to seven-factor model, and overall theoretical plausibility of factors identified by the seven-factor model led us to retain seven factors for further analyses.
@@ -208,10 +207,11 @@ t1 <-
 # save & print it
 gtsave( data = t1, filename = here("tabs","factanal_performance.docx") )
 t1
+
 ```
 
 ```{r}
-#| label: figs1
+#| label: fig1
 
 # prepare plots of model performance indexes
 f1 <-
@@ -258,6 +258,7 @@ ggsave(
   width = 9.9,
   height = 5.88
 )
+
 ```
 
 ![Factor analyses fit indexes. Density plots of (A) Tucker-Lewis Index (TLI) and (B) upper boundary of 90% confidence interval (CI) of the root-mean-square-error approximation for three- to eight-factor solutions of factor analysis of pre-surgery cognitive profile. Density plots are taken over one hundred imputed datasets. Vertical lines represent boundaries of good fit according to TLI (i.e., TLI > 0.9) and RMSEA (i.e., RMSEA < 0.08).](../figs/factanal_performance.jpg){#fig-perf}
@@ -543,12 +544,13 @@ In @tbl-posttest we present numerical summary of group-level posterior parameter
 t2$test <-
   
   t2$test %>%
-    tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory.") %>%
-    tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
+  tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory." ) %>%
+  tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
 
 # save & print it
 gtsave( data = t2$test, filename = here("tabs","posteriors_test.docx") )
 t2$test
+
 ```
 
 ```{r}
@@ -565,6 +567,7 @@ t2$factor <-
 # save & print it
 gtsave( data = t2$factor, filename = here("tabs","posteriors_fact.docx") )
 t2$factor
+
 ```
 
 ## Robustness checks
@@ -576,3 +579,148 @@ Side-to-side comparison of models’ group-level parameters’ posterior summari
 ![Posteriors medians and 95% posterior probability intervals (PPIs) of group-level effects from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery cognitive test scores without (“test scores”) and with adjustment for covariates (“test scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory. See main text for acronyms.](../figs/test_postsum.jpg){#fig-robtest}
 
 ![Robustness check (the “factor scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level effects from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery latent cognitive factor scores without (“factor scores”) and with adjustment for covariates (“factor scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory. See main text for acronyms.](../figs/factor_postsum.jpg){#fig-robfact}
+
+## Estimation of false positive rates
+
+To test our assumption that the classical two-step procedure of identifying significant pre-surgery predictors of post-surgery cognitive decline leads to inflated false positive rates that can be alleviated by either dimension reduction of the matrix of predictors (e.g., via factor analysis) or applying the Bayesian Lasso, we conducted a series of simulations on the data structure equivalent to our data set with respect to the number of patients, the number of observations per patient, time from surgery of each observation and the number of potential predictors. Simulated data sets used to produce our results as well as generating functions are available at [https://github.com/josefmana/dbs_longCOG.git](https://github.com/josefmana/dbs_longCOG.git). The reader should navigate to the “dbs_longCOG_optbias.R” file to validate our findings and check their robustness to change in parameters which were omitted from current study for parsimony and computational time reasons.
+
+### Data-generating process
+
+```{r}
+#| label: sims
+
+library(reshape2) # for melting correlation matrix for plotting
+
+rm( list = ls()[ !ls() %in% c("rprint","cbPal") ] ) # clear environment
+s <- readRDS( here("mods","sims.rds") ) # read simulation results
+
+
+# CORRELATION STRUCTURE ----
+
+# putative covariation (correlation in this case) structure of predictors in our study
+# based on grouping of tests to common clusters with ~50 % shared variability (i.e., r = .7, R2 = .49) 
+cov23 <-
+  
+  matrix( c(
+    1, .7, rep(0,21), .7, 1, rep(0,21), # State-Trait Anxiety Inventory
+    rep(0,2), 1, .7, rep(0,19), rep(0,2), .7, 1, rep(0,19), # Trail Making Test
+    rep(0,4), 1, rep(.7,2), rep(0,16), rep(0,4), .7, 1, .7, rep(0,16), rep(0,4), rep(.7,2), 1, rep(0,16), # Digit Span
+    rep(0,7), 1, .7, rep(0,14), rep(0,7), .7, 1, rep(0,14), # Spatial Span
+    rep(0,9), 1, rep(0,13), # Tower of London
+    rep(0,10), 1, rep(.7,2), rep(0,10), rep(0,10), .7, 1, .7, rep(0,10), rep(0,10), rep(.7,2), 1, rep(0,10), # Stroop test
+    rep(0,13), 1, .7, rep(0,8), rep(0,13), .7, 1, rep(0,8), # verbal fluency
+    rep(0,15), 1, rep(0,7), # Similarities (abstraction)
+    rep(0,16), 1, rep(.7,4), rep(0,2), rep(0,16), .7, 1, rep(.7,3), rep(0,2), rep(0,16), rep(.7,2), 1, rep(.7,2), rep(0,2), rep(0,16), rep(.7,3), 1, .7, rep(0,2), rep(0,16), rep(.7,4), 1, rep(0,2), # RAVLT 
+    rep(0,21), 1, .7, rep(0,21), .7, 1 # Family Pictures test
+    ),
+    ncol = 23, byrow = T )
+
+# plot the correlation matrix
+f5 <-
+  
+  melt(cov23) %>%
+  rename( "Pearson's r" = "value" ) %>%
+  ggplot( aes(x = Var1, y = rev(Var2), fill = `Pearson's r` ) ) +
+  geom_tile( color = "grey" ) +
+  scale_fill_gradient2( low = "white", high = cbPal[7], limit = c(0,1), midpoint = .33 ) +
+  labs( x = "Row variable", y = "Column variable" ) +
+  scale_x_continuous( breaks = 1:23, labels = 1:23 ) +
+  scale_y_continuous( breaks = 1:23, labels = 23:1 ) +
+  guides( fill = guide_colourbar( barwidth = 1, barheight = 18 ) ) +
+  coord_fixed()
+
+# save the plot
+ggsave(
+  plot = f5,
+  filename = here("figs","sims_corrstruct.jpg"),
+  dpi = 300,
+  width = 8.2,
+  height = 4.7
+)
+
+
+# SIMULATION RESULTS ----
+
+# collapse simulation results for Lasso and Two-step procedures
+for( i in names(s)[-1] ) {
+  
+  # average decline
+  for ( j in names( s[[i]] ) ) {
+    
+    # covariance structure
+    for ( k in names( s[[i]][[j]] ) ) {
+      
+      # data set
+      for ( l in 1:length( s[[i]][[j]][[k]] ) ) s[[i]][[j]][[k]][[l]] <- s[[i]][[j]][[k]][[l]] %>% mutate( meth = i, decl = j, covariance = k, dataset = l )# collapse all data sets within covariance structures across methods and decline
+      s[[i]][[j]][[k]] <- do.call( rbind.data.frame, s[[i]][[j]][[k]] )
+    }
+    
+    # collapse data sets within decline levels across methods
+    s[[i]][[j]] <- do.call( rbind.data.frame, s[[i]][[j]] )
+  }
+  
+  # collapse data sets within methods
+  s[[i]] <- do.call( rbind.data.frame, s[[i]] )
+}
+
+# summarise of false positives conditional on null hypothesis
+falsepos <-
+  
+  do.call( rbind.data.frame, s[c("l0","t0")] ) %>%
+  mutate( sig = ifelse(p < .05, 1, 0 ) ) %>% # flag findings significant on 5% level
+  pivot_wider( id_cols = c("dataset","meth","covariance","decl"), values_from = sig, names_from = var ) %>% # pivot again such that each potential predictor has its own column with indicator of a "hit" per simulation/method pairs
+  mutate( fp = rowSums( across( starts_with("p") ), na.rm = T ) ) %>% # calculate number of "hits"/false positives across variables for each simulation/method pair
+  select( meth, covariance, decl, fp ) %>% # keep only variables of interest
+    
+  # prepare a table of frequencies of false positives per method
+  table() %>%
+  as.data.frame() %>%
+  
+  # prepare variables for plotting
+  mutate(
+    `Method:` = case_when( meth == "l0" ~ "Bayesian Lasso", meth == "t0" ~ "Two-step procedure"  ),
+    Decline =
+      factor(
+        decl,
+        levels = c("none","mild","moderate"),
+        labels = c("No~average~decline~(b[1]==0.0)","Mild~average~decline~(b[1]==-0.3)","Moderate~average~decline~(b[1]==-0.5)"),
+        ordered = T
+      ),
+    Covariance =
+      factor(
+        covariance,
+        levels = c("nocov7","nocov23","yocov23"),
+        labels = c("Independent~predictors~(k==7)","Independent~predictors~(k==23)","Covaried~predictors~(k==23)"),
+        ordered = T
+      ),
+  )
+
+# plot it
+f6 <-
+  
+  falsepos %>%
+  ggplot( aes(x = fp, y = Freq+1, fill = `Method:` ) ) +
+  geom_bar( stat = "identity", position = position_dodge( width = .66), width = .66 ) + # bars
+  geom_text( aes(label = Freq), vjust = -.6, size = 2.5, position = position_dodge(width = .66 ) ) + # counts
+  scale_y_continuous( limits = c(0,105), breaks = seq(1,101,25), labels = seq(0,100,25), name = "Count" ) +
+  scale_x_discrete( name = "False positives per one hundred simulations" ) +
+  scale_fill_manual( values = cbPal[c(2,1)] ) + # colors
+  theme( legend.position = "bottom" ) +
+  facet_grid( Covariance ~ Decline, labeller =  label_parsed )
+
+# save it
+ggsave(
+  plot = f6,
+  filename = here("figs","sims_falsepos.jpg"),
+  dpi = 300,
+  width = 7,
+  height = 7
+)
+
+```
+
+The outcome (representing idealized cognitive screening score) followed Gaussian distribution with unit variation and mean shifted from zero by (i) patient-specific intercept (pre-surgery shift) and slope (post-surgery decline shift) and (ii) an average annual post-surgery decline (i.e., population-level slope denoted *$b_1$* henceforth). The *$b_1$* parameter was set to either no (*$b_1$* = 0), mild (*$b_1$* = -0.3) or moderate (*$b_1$* = -0.5) average annual post-surgery decline (see columns of @fig-sims). Moreover, total of seven or twenty-three potential pre-surgery predictors were generated for each patient. In all cases, all potential pre-surgery predictors were set to have no effect on the outcome so that all effects identified by either the two-step procedure or the Bayesian Lasso were false positives.
+
+For each patient we generated a set of predictors based on either the test scores structure or the latent factor scores structure of our data set. Because there were seven independent latent factors extracted from our data by EFA with varimax rotation, the first set of potential pre-surgery predictors consisted of seven independent Gaussian variables with mean zero and unit variation (see the first row of @fig-sims). Regarding potential pre-surgery predictors based of the test scores structure of our data set, we opted to generate two distinct sets of such potential predictors, one consisted of twenty-three independent variables (see the second row of @fig-sims) while the other consisted twenty-three covaried variables (see the third row of @fig-sims). In both cases, the potential pre-surgery predictors were generated from Gaussian distribution with zero mean and unit variance. Twenty-three independent predictors were generated to test the “best case scenario” whereby data satisfy the assumption of independence of predictors implicit in both the two-step procedure and the Bayesian Lasso. Twenty-three covaried predictors were generated to test the more realistic scenario whereby there is a non-zero covariance structure among potential pre-surgery predictors derived from single test scores (which unlike the varimax rotated factor analysis results do not invoke statistical independence). In these simulations we opted to generate the potential predictors via a multivariate Gaussian distribution with zero marginal means, unit marginal variances and a minimal covariance structure whereby predictors representing test scores derived from the same task (e.g., TMT-A and TMT-B) share about 50% of variance while potential predictors representing test scores derived from distinct tasks (e.g., TMT-A and RAVLT-IR) do not share any variance (see @fig-corr for the exact covariance structure used for our simulations).
+
+### Statistical models

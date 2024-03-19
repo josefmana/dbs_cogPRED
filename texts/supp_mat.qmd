@@ -55,10 +55,10 @@ author:
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
 format:
- apaquarto-pdf:
+ apaquarto-docx:
    documentmode: man
    a4paper: true
-   pdf-engine: lualatex
+   docx-engine: lualatex
    floatsintext: false
    keep-tex: false
 bibliography: references.bib
@@ -300,7 +300,8 @@ v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encodin
 for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
 
 
-# extract posterior draws ----
+# POSTERIOR DRAWS ----
+
 post <-
   
   lapply(
@@ -355,7 +356,7 @@ post <-
   mutate( `Predicted by:` = sub( "\\..*" , "", `Predicted by:` ) )
 
 
-# prepare tables ----
+# TABLE ----
 
 t2 <-
   
@@ -395,7 +396,7 @@ t2 <-
   )
 
 
-# prepare figures ----
+# FIGURES ----
 
 theme_set( theme_classic(base_size = 10) ) # set ggplot theme
 
@@ -723,4 +724,14 @@ The outcome (representing idealized cognitive screening score) followed Gaussian
 
 For each patient we generated a set of predictors based on either the test scores structure or the latent factor scores structure of our data set. Because there were seven independent latent factors extracted from our data by EFA with varimax rotation, the first set of potential pre-surgery predictors consisted of seven independent Gaussian variables with mean zero and unit variation (see the first row of @fig-sims). Regarding potential pre-surgery predictors based of the test scores structure of our data set, we opted to generate two distinct sets of such potential predictors, one consisted of twenty-three independent variables (see the second row of @fig-sims) while the other consisted twenty-three covaried variables (see the third row of @fig-sims). In both cases, the potential pre-surgery predictors were generated from Gaussian distribution with zero mean and unit variance. Twenty-three independent predictors were generated to test the “best case scenario” whereby data satisfy the assumption of independence of predictors implicit in both the two-step procedure and the Bayesian Lasso. Twenty-three covaried predictors were generated to test the more realistic scenario whereby there is a non-zero covariance structure among potential pre-surgery predictors derived from single test scores (which unlike the varimax rotated factor analysis results do not invoke statistical independence). In these simulations we opted to generate the potential predictors via a multivariate Gaussian distribution with zero marginal means, unit marginal variances and a minimal covariance structure whereby predictors representing test scores derived from the same task (e.g., TMT-A and TMT-B) share about 50% of variance while potential predictors representing test scores derived from distinct tasks (e.g., TMT-A and RAVLT-IR) do not share any variance (see @fig-corr for the exact covariance structure used for our simulations).
 
+![Covariance matrix of the covaried test scores predictor structure. The figure represents correlations used for generation of covaried predictors in the covaried test scores data-generating process. The clusters represent high correlations among State-Trait Anxiety Inventory, Tail Making Test, Digit Span, Spatial Span, Stroop task, verbal fluency, Rey Auditory Verbal Learning Test and Family Pictures test respectively. The single non-correlated cells represent the Tower of London task and Similarities task.](../figs/sims_corrstruct.jpg){#fig-corr}
+
 ### Statistical models
+
+For each combination of population-level slope *$b_1$* (none, mild and moderate decline) and potential pre-surgery predictor structure (seven independent, twenty-three independent and twenty-three covaried predictors), total of one hundred two-step procedure and one hundred Bayesian Lasso models were fitted on the same one hundred simulated data sets with null effect of each potential predictor. For the two-step procedure, first an independent linear mixed model (LMM) with correlated patient-level intercepts and slopes was fitted for each predictor (including the effect of time, predictor and their interaction) and if the p-value of the interaction term between predictor and time showed *p* < .2 (the results were not sensitive to this threshold as the reader can validate by running the code themselves while changing the threshold) the predictor was then entered into a multiple LMM with all such predictors included at the same time; all predictors for which their interaction term with time showed *p* < .05 in this second multiple regression LMM were declared significant and constituted a false positive error. For the Bayesian Lasso, a single LMM with correlated patient-level intercepts and slopes including all potential predictors, time and their interactions was fitted and all predictors with probability of direction > 2.5 % (which is equivalent to two-sided *p* < .05) were declared significant and constituted a false positive error.
+
+### Results
+
+The results of simulations are presented in @fig-sims. It is clear that both factors theorized to alleviate the false positive error rates (i.e., the Bayesian Lasso and dimension reduction of the potential predictors structure) can do so in our data structure according to these simulations. Moreover, applying the two-step procedure to our data set seems to incur a high risk of inflated false positive error rates even in the best case scenario.
+
+![Simulation results. The figure presents number of false positives per one hundred simulations dependent on (i) the method used (colour), (ii) the assumed average annual post-surgery decline (columns) and (iii) the potential pre-surgery predictor structure (rows).](../figs/sims_falsepos.jpg){#fig-sims}

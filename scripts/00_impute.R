@@ -11,7 +11,7 @@ library(missMDA) # imputations
 
 # create folders to store results in
 # prints TRUE and creates the folder if it was not present, prints NULL if the folder was already present.
-sapply( c("_data/imputed"), function(i) if( !dir.exists(i) ) dir.create(i) )
+sapply( "_data/imputed", function(i) if( !dir.exists(i) ) dir.create(i) )
 
 
 # READ ----
@@ -44,3 +44,8 @@ for ( i in 1:imp ) write.table( x = cbind( id = d$id, d.imp$res.MI[[i]] ),
                                 row.names = F,
                                 quote = F
                                 )
+
+
+# RENV UPDATE ----
+
+renv::snapshot()

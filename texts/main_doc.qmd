@@ -564,33 +564,11 @@ ggsave(
 ```{r}
 #| label: fact-anal
 
-#library(psych) # using psych to read the results
-
 # clear environment
 rm( list = ls()[ !ls() %in% c("v","itstats","rprint","ubound","mread","nms") ] )
 
-# read the EFA results
-efa <- readRDS( here("mods","factanal.rds") )
-
-# choosing 7-factor solution due to good performance indexes,
-# and theoretically sound loading patterns across imputed data sets
-nf <- 7
-
-# extract number of imputations used
-imp <- length(efa)
-
-# list all the domains
-doms <-
-  
-  c(
-    "exec_fun", # loaded on primarily by PST, the first factor in 82 % data sets
-    "epis_mem", # loaded on primarily by RAVLT, the second factor in 79 % data sets
-    "verb_wm", # loaded on primarily by DS, the third factor in 62 % data sets
-    "visp_mem", # loaded on primarily by FP, the fourth factor in 45 % data sets
-    "set_shift", # loaded on primarily by TMT and RAVLT-B, the fifth factor in 28 % data sets
-    "anxiety", # loaded on primarily by STAI, the sixth factor in 60 % data sets
-    "visp_wm" # loaded on primarily by SS, the seventh factor in 49 % data sets
-  )
+# read EFA-related results
+for( i in names( readRDS( here("mods","factanal.rds") ) ) ) assign( i , readRDS( here("mods","factanal.rds") )[[i]] )
 
 # extract M and SD of percentage of variance accounted for across imputations for in-text reporting
 vaccount <-
@@ -801,7 +779,6 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 ```
 
 ![Comparison of linear versus non-linear models of the longitudinal cognitive trajectory.](../figs/expected_trajectories.jpg){#fig-traj}
-
 ## Predicting post-surgery cognitive decline
 
 ```{r}

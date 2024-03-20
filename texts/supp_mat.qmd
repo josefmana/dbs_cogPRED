@@ -119,11 +119,8 @@ For exploratory factor analyses (EFAs) we first log transformed all response tim
 ```{r}
 #| label: fact-anal
 
-#library(psych) # using psych to read the results
-
-efa <- readRDS( here("mods","factanal.rds") ) # read the EFA results
-nf <- 7 # choosing 7-factor solution
-imp <- length(efa) # extract number of imputations used
+# read EFA-related results
+for( i in names( readRDS( here("mods","factanal.rds") ) ) ) assign( i , readRDS( here("mods","factanal.rds") )[[i]] )
 
 # prepare a table for performance indexes of each solution for each imputed data set
 fat <-
@@ -356,7 +353,7 @@ post <-
   mutate( `Predicted by:` = sub( "\\..*" , "", `Predicted by:` ) )
 
 
-# TABLE ----
+# TABLES ----
 
 t2 <-
   

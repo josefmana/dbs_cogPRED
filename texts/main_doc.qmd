@@ -583,13 +583,13 @@ imp <- length(efa)
 doms <-
   
   c(
-    "exec_fun", # loaded on primarily by PST, the first factor in 82% data sets
-    "epis_mem", # loaded on primarily by RAVLT, the second factor in 79% data sets
-    "verb_wm", # loaded on primarily by DS, the third factor in 62% data sets
-    "visp_mem", # loaded on primarily by FP, the fourth factor in 45% data sets
-    "set_shift", # loaded on primarily by TMT and RAVLT-B, the fifth factor in 28% data sets
-    "anxiety", # loaded on primarily by STAI, the sixth factor in 60% data sets
-    "visp_wm" # loaded on primarily by SS, the seventh factor in 49% data sets
+    "exec_fun", # loaded on primarily by PST, the first factor in 82 % data sets
+    "epis_mem", # loaded on primarily by RAVLT, the second factor in 79 % data sets
+    "verb_wm", # loaded on primarily by DS, the third factor in 62 % data sets
+    "visp_mem", # loaded on primarily by FP, the fourth factor in 45 % data sets
+    "set_shift", # loaded on primarily by TMT and RAVLT-B, the fifth factor in 28 % data sets
+    "anxiety", # loaded on primarily by STAI, the sixth factor in 60 % data sets
+    "visp_wm" # loaded on primarily by SS, the seventh factor in 49 % data sets
   )
 
 # extract M and SD of percentage of variance accounted for across imputations for in-text reporting

@@ -45,7 +45,3 @@ for ( i in 1:imp ) write.table( x = cbind( id = d$id, d.imp$res.MI[[i]] ),
                                 quote = F
                                 )
 
-
-# RENV UPDATE ----
-
-renv::snapshot()

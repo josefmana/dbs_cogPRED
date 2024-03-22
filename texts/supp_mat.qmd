@@ -81,7 +81,7 @@ library(patchwork) # organising plots
 rm( list = ls() )
 
 # set ggplot theme
-theme_set( theme_classic(base_size = 12) )
+theme_set( theme_minimal(base_size = 12) )
 
 # prepare colors to use in graphs (a colorblind-friendly palette)
 cbPal <- c( "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7" )
@@ -290,7 +290,6 @@ library(brms) # brms to read the results
 library(tidybayes) # tidybayes for posterior manipulations
 
 rm( list = ls()[ !ls() %in% c("rprint","imp","cbPal") ] ) # clear environment
-
 v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8") # read variable mappings
 
 # read the data
@@ -395,7 +394,7 @@ t2 <-
 
 # FIGURES ----
 
-theme_set( theme_classic(base_size = 10) ) # set ggplot theme
+theme_set( theme_minimal(base_size = 10) ) # set ggplot theme
 
 # plot it
 f2 <-
@@ -453,7 +452,7 @@ f2 <-
   )
 
 # list plot layouts for each figure
-lo <- cbind( factor = c(1,7,11), test = c(1,23,27) )
+lo <- cbind( factor = c(1,7), test = c(1,23) )
 
 # save them
 for ( i in names(f2) ) {
@@ -464,16 +463,16 @@ for ( i in names(f2) ) {
     plot =
       with(
         f2[[i]],
-        (alpha / beta / delta ) +
-          plot_layout( heights = lo[ ,i] , guides = "collect" ) &
+        ( (alpha / beta + plot_layout( heights = lo[ ,i] ) ) | delta ) +
+          plot_layout( guides = "collect" ) &
           theme( legend.position = "bottom")
       ),
     
     # specify output file
     file = here( "figs", paste0(i,"_postsum.jpg") ),
     dpi = 300,
-    width = 7,
-    height = case_when( i == "test" ~ 20.8, i == "factor" ~ 13.9)
+    width = case_when( i == "test" ~ 10, i == "factor" ~ 7),
+    height = case_when( i == "test" ~ 10, i == "factor" ~ 7)
   
   )
 
@@ -503,7 +502,7 @@ anon <- ppred[ with( ppred, time_y  == -2 & `Predicted by:` == "factor scores" )
 # plot predictions and observed data for each subject separately
 f4 <-
   
-  d %>%
+  d0 %>%
   filter( complete.cases(drs_tot) ) %>%
   mutate( anid = sapply( 1:nrow(.), function(i) anon[ anon$id == id[i], "anid" ] ), drs = drs_tot ) %>%
   
@@ -522,7 +521,7 @@ f4 <-
   scale_fill_manual( values = cbPal[c(2,3)] ) +
   facet_wrap( ~ anid, nrow =  14 ) + # arrange to a 14 x 9 grid
   labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
-  theme_classic( base_size = 4 ) +
+  theme_minimal( base_size = 5 ) +
   theme( legend.position = "bottom" )
 
 # save it
@@ -590,7 +589,6 @@ To test our assumption that the classical two-step procedure of identifying sign
 library(reshape2) # for melting correlation matrix for plotting
 
 rm( list = ls()[ !ls() %in% c("rprint","cbPal") ] ) # clear environment
-s <- readRDS( here("mods","sims.rds") ) # read simulation results
 
 
 # CORRELATION STRUCTURE ----
@@ -599,19 +597,9 @@ s <- readRDS( here("mods","sims.rds") ) # read simulation results
 # based on grouping of tests to common clusters with ~50 % shared variability (i.e., r = .7, R2 = .49) 
 cov23 <-
   
-  matrix( c(
-    1, .7, rep(0,21), .7, 1, rep(0,21), # State-Trait Anxiety Inventory
-    rep(0,2), 1, .7, rep(0,19), rep(0,2), .7, 1, rep(0,19), # Trail Making Test
-    rep(0,4), 1, rep(.7,2), rep(0,16), rep(0,4), .7, 1, .7, rep(0,16), rep(0,4), rep(.7,2), 1, rep(0,16), # Digit Span
-    rep(0,7), 1, .7, rep(0,14), rep(0,7), .7, 1, rep(0,14), # Spatial Span
-    rep(0,9), 1, rep(0,13), # Tower of London
-    rep(0,10), 1, rep(.7,2), rep(0,10), rep(0,10), .7, 1, .7, rep(0,10), rep(0,10), rep(.7,2), 1, rep(0,10), # Stroop test
-    rep(0,13), 1, .7, rep(0,8), rep(0,13), .7, 1, rep(0,8), # verbal fluency
-    rep(0,15), 1, rep(0,7), # Similarities (abstraction)
-    rep(0,16), 1, rep(.7,4), rep(0,2), rep(0,16), .7, 1, rep(.7,3), rep(0,2), rep(0,16), rep(.7,2), 1, rep(.7,2), rep(0,2), rep(0,16), rep(.7,3), 1, .7, rep(0,2), rep(0,16), rep(.7,4), 1, rep(0,2), # RAVLT 
-    rep(0,21), 1, .7, rep(0,21), .7, 1 # Family Pictures test
-    ),
-    ncol = 23, byrow = T )
+  read.csv( here("_data","sim_covstruct.csv"), sep = ",", header = F ) %>%
+  `colnames<-`( 1:ncol(.) ) %>%
+  as.matrix()
 
 # plot the correlation matrix
 f5 <-
@@ -625,6 +613,7 @@ f5 <-
   scale_x_continuous( breaks = 1:23, labels = 1:23 ) +
   scale_y_continuous( breaks = 1:23, labels = 23:1 ) +
   guides( fill = guide_colourbar( barwidth = 1, barheight = 18 ) ) +
+  theme_classic( base_size = 10 ) +
   coord_fixed()
 
 # save the plot
@@ -639,59 +628,10 @@ ggsave(
 
 # SIMULATION RESULTS ----
 
-# collapse simulation results for Lasso and Two-step procedures
-for( i in names(s)[-1] ) {
-  
-  # average decline
-  for ( j in names( s[[i]] ) ) {
-    
-    # covariance structure
-    for ( k in names( s[[i]][[j]] ) ) {
-      
-      # data set
-      for ( l in 1:length( s[[i]][[j]][[k]] ) ) s[[i]][[j]][[k]][[l]] <- s[[i]][[j]][[k]][[l]] %>% mutate( meth = i, decl = j, covariance = k, dataset = l )# collapse all data sets within covariance structures across methods and decline
-      s[[i]][[j]][[k]] <- do.call( rbind.data.frame, s[[i]][[j]][[k]] )
-    }
-    
-    # collapse data sets within decline levels across methods
-    s[[i]][[j]] <- do.call( rbind.data.frame, s[[i]][[j]] )
-  }
-  
-  # collapse data sets within methods
-  s[[i]] <- do.call( rbind.data.frame, s[[i]] )
-}
-
-# summarise of false positives conditional on null hypothesis
 falsepos <-
   
-  do.call( rbind.data.frame, s[c("l0","t0")] ) %>%
-  mutate( sig = ifelse(p < .05, 1, 0 ) ) %>% # flag findings significant on 5% level
-  pivot_wider( id_cols = c("dataset","meth","covariance","decl"), values_from = sig, names_from = var ) %>% # pivot again such that each potential predictor has its own column with indicator of a "hit" per simulation/method pairs
-  mutate( fp = rowSums( across( starts_with("p") ), na.rm = T ) ) %>% # calculate number of "hits"/false positives across variables for each simulation/method pair
-  select( meth, covariance, decl, fp ) %>% # keep only variables of interest
-    
-  # prepare a table of frequencies of false positives per method
-  table() %>%
-  as.data.frame() %>%
-  
-  # prepare variables for plotting
-  mutate(
-    `Method:` = case_when( meth == "l0" ~ "Bayesian Lasso", meth == "t0" ~ "Two-step procedure"  ),
-    Decline =
-      factor(
-        decl,
-        levels = c("none","mild","moderate"),
-        labels = c("No~average~decline~(b[1]==0.0)","Mild~average~decline~(b[1]==-0.3)","Moderate~average~decline~(b[1]==-0.5)"),
-        ordered = T
-      ),
-    Covariance =
-      factor(
-        covariance,
-        levels = c("nocov7","nocov23","yocov23"),
-        labels = c("Independent~predictors~(k==7)","Independent~predictors~(k==23)","Covaried~predictors~(k==23)"),
-        ordered = T
-      ),
-  )
+  read.csv( here("mods","sims_fp.csv"), sep = "," ) %>% # read the results
+  rename( "Method:" = "Method.")
 
 # plot it
 f6 <-

@@ -442,7 +442,7 @@
     },
     "brms": {
       "Package": "brms",
-      "Version": "2.20.4",
+      "Version": "2.17.0",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -466,14 +466,13 @@
         "nlme",
         "parallel",
         "posterior",
-        "rlang",
         "rstan",
         "rstantools",
         "shinystan",
         "stats",
         "utils"
       ],
-      "Hash": "157836c18abea8b51ef394f557309af8"
+      "Hash": "ce2bc3a4a1fa9b35c36ed07a7a790c82"
     },
     "broom": {
       "Package": "broom",

@@ -230,7 +230,7 @@ library(ggplot2) # general plotting
 rm( list = ls() )
 
 # set ggplot theme
-theme_set( theme_classic(base_size = 12) )
+theme_set( theme_minimal(base_size = 12) )
 
 # read the data set and prepare subsets for individual analyses
 d0 <- read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," )
@@ -527,10 +527,11 @@ fig2 <-
       d1[ complete.cases(d1$drs_tot) , ] %>% 
       ggplot( aes(x = time_y) ) +
       stat_bin( breaks = seq(-2,12,.5) ) + # creates bars
-      stat_bin( breaks = seq(-2,12,.5), geom = "text", aes(label = after_stat(count) ), vjust = -1.0, size = 2.5 ) + # add numbers
+      stat_bin( breaks = seq(-2,12,.5), geom = "text", aes(label = after_stat(count) ), vjust = -0.8, size = 3 ) + # add numbers
       labs( x = "Time from STN-DBS surgery (years)", y = "Number of Assessments" ) +
       scale_y_continuous( expand = c(0, 0), limits = c(0, 107), breaks = seq(0, 100, 10), labels = seq(0, 100, 10) ) +
-      scale_x_continuous( limits = c(-2, 12), breaks = seq(-2, 12, 1), labels = seq(-2, 12, 1) ),
+      scale_x_continuous( limits = c(-2, 12), breaks = seq(-2, 12, 1), labels = seq(-2, 12, 1) ) +
+      theme( panel.grid.minor = element_blank() ),
     
     # prepare a bin plot showing distribution of the number of assessments per patient (Fig S1b)
     bin =
@@ -538,9 +539,10 @@ fig2 <-
       as.data.frame() %>%
       ggplot( aes(x = Freq) ) +
       geom_bar( width = .25 ) +
-      geom_text( stat = "count", aes(label = after_stat(count) ), vjust = -1.0, size = 2.5 ) +
-      scale_y_continuous( expand = c(0, 0), limits = c(0, 65) ) +
-      labs( x = "Number of Assessments per Patient", y = "Number of Patients" )
+      geom_text( stat = "count", aes(label = after_stat(count) ), vjust = -0.8, size = 3 ) +
+      scale_y_continuous( expand = c(0, 0), limits = c(0, 65), breaks = seq(0,60,10), labels = seq(0,60,10) ) +
+      labs( x = "Number of Assessments per Patient", y = "Number of Patients" ) +
+      theme( panel.grid.major.x = element_blank(), panel.grid.minor.x = element_blank() )
     
   )
 
@@ -653,8 +655,7 @@ t3 <-
   cols_align( align = "center", columns = -1 ) %>%
   tab_source_note(
     source_note = "Values represent mean (SD) across one hundred imputations. Factor loadings used for interpretation (|loading| > 0.30) are printed in bold. TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP- DR: Family Pictures, delayed recall; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI- X2: State-Trait Anxiety Inventory, the trait version; Secs: seconds; Total words: word count in two minutes (one minute per each letter P and K); words/min.: word count in one minute time limit. Proportion Var: Proportion of variance in data accounted for by each factor (column); Cumulative Var: Cumulative variance accounted for by each factor and factors that preceded it (columns to the left); EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory."
-  ) %>%
-  tab_options( quarto.disable_processing = T )
+  )
 
 # save & print it
 gtsave( data = t3, filename = here("tabs","factanal_loadings.docx") )
@@ -668,8 +669,8 @@ t3
 ```{r}
 #| label: long-desc
 
-library(brms) # brms to read the results
-library(tidybayes) # tidybayes for posterior manipulations
+library(brms) # for model processing
+library(tidybayes) # for posterior manipulations
 
 # clear environment
 rm( list = ls()[ !ls() %in% c("v","itstats","rprint","ubound","mread","nms","imp") ] )
@@ -703,8 +704,7 @@ loocomp <-
     print = paste0( elpd_diff, ", 95% CI [", ci_low,", ", ci_hig, "]" )
   )
 
-# expected cognitive decline in DRS-2 points/year as approximated by the linear model
-# i.e., the estimand #1
+# expected cognitive decline in DRS-2 points/year as approximated by the linear model, i.e., the estimand #1
 b <-
   
   spread_draws( m$Linear, `b_.*`, regex = T ) %>% # extract parameter estimates
@@ -784,9 +784,6 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 ```{r}
 #| label: long-pred
 
-#library(brms) # brms to read the results
-#library(tidybayes) # tidybayes for posterior manipulations
-
 # clear environment
 rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","itstats","rprint","ubound","mread","nms","imp","cbPal") ] )
 
@@ -809,7 +806,7 @@ parkmax <-
           sapply( 1:imp, function(j) max( l[[i]][[j]]$diagnostics$pareto_k ) )
   ) %>%
   
-  apply(., 2, max ) %>%
+  apply( ., 2, max ) %>%
   max() %>%
   ubound(1)
 
@@ -920,44 +917,12 @@ Both predictive longitudinal GLMMs converged within a specified number of iterat
 #| label: sims
 
 rm( list = ls()[ !ls() %in% "itstats" ] ) # clear environment
-s <- readRDS( here("mods","sims.rds") ) # read the simulations
-
-# collapse simulation results for Lasso and Two-step procedures
-for( i in names(s)[-1] ) {
-  
-  # average decline
-  for ( j in names( s[[i]] ) ) {
-    
-    # covariance structure
-    for ( k in names( s[[i]][[j]] ) ) {
-      
-      # data set
-      for ( l in 1:length( s[[i]][[j]][[k]] ) ) s[[i]][[j]][[k]][[l]] <- s[[i]][[j]][[k]][[l]] %>% mutate( meth = i, decl = j, covariance = k, dataset = l )# collapse all data sets within covariance structures across methods and decline
-      s[[i]][[j]][[k]] <- do.call( rbind.data.frame, s[[i]][[j]][[k]] )
-    }
-    
-    # collapse data sets within decline levels across methods
-    s[[i]][[j]] <- do.call( rbind.data.frame, s[[i]][[j]] )
-  }
-  
-  # collapse data sets within methods
-  s[[i]] <- do.call( rbind.data.frame, s[[i]] )
-}
 
 # summarise of false positives conditional on null hypothesis
 falsepos <-
   
-  do.call( rbind.data.frame, s[c("l0","t0")] ) %>%
-  mutate( sig = ifelse(p < .05, 1, 0 ) ) %>% # flag findings significant on 5% level
-  pivot_wider( id_cols = c("dataset","meth","covariance","decl"), values_from = sig, names_from = var ) %>% # pivot again such that each potential predictor has its own column with indicator of a "hit" per simulation/method pairs
-  mutate( fp = rowSums( across( starts_with("p") ), na.rm = T ) ) %>% # calculate number of "hits"/false positives across variables for each simulation/method pair
-  select( meth, covariance, decl, fp ) %>% # keep only variables of interest
-    
-  # prepare a table of frequencies of false positives per method
-  table() %>%
-  as.data.frame() %>%
-  
-  # extract numbers of simulaions with at least one false positive
+  # extract numbers of simulations with at least one false positive
+  read.csv( here("mods","sims_fp.csv"), sep = "," ) %>%
   filter( meth == "t0" & fp != 0 ) %>%
   pivot_wider( names_from = "fp", values_from = "Freq") %>%
   select( where( is.numeric ) ) %>%

@@ -113,8 +113,3 @@ for ( i in 1:imp ) {
 # SAVE RESULTS ----
 
 saveRDS( object = list( efa = efa, imp = imp, nf = nf, doms = doms ), file = here("mods","factanal.rds") )
-
-
-# RENV UPDATE ----
-
-renv::snapshot()

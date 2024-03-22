@@ -142,7 +142,7 @@ for ( i in 1:imp ) {
 }
 
 # save the data and scaling values
-saveRDS( list(d0 = d0, df = d1, scl = scl, tests = tests, doms = doms), here("_data","longitudinal_df.rds") )
+saveRDS( list(d0 = d0, df = d1, scl = scl, tests = tests, doms = doms, imp = imp ), here("_data","longitudinal_df.rds") )
 
 
 # DESCRIPTIVE MODELS ----
@@ -271,7 +271,7 @@ if( !file.exists( here("_data","ppred.rds") ) ) {
     expand.grid( seq( from = -2, to = 12, length.out = n_seq ), levels(d0$id) ) %>%
     `colnames<-` ( c("time_y","id") ) %>%
     mutate( time = time_y + scl$Md$time ) %>%
-    mutate( !!!setNames(rep(NA, length( c(doms,tests) ) ), c(doms,tests) ) ) %>% # add empty columns for predictors
+    mutate( !!!setNames(rep( NA, length( c(doms,tests) ) ), c(doms,tests) ) ) %>% # add empty columns for predictors
     
     # add subjects' median (w.r.t. imputations) cognitive profile
     mutate(
@@ -336,7 +336,7 @@ write.table( ppred, here( "_data","ppred.csv"), sep = ",", row.names = F, quote 
 # ROBUSTNESS CHECK MODELS ----
 
 # clean the environment
-rm( list = ls()[ !( ls() %in% c("d0","d1","doms","tests","ch","it","wu","ad","s") ) ] )
+rm( list = ls()[ !( ls() %in% c("d0","d1","scl","doms","tests","ch","it","wu","ad","s") ) ] )
 gc()
 
 # set-up the linear models for drs
@@ -400,8 +400,3 @@ sapply(
       function(j)
         max( m[[i]]$rhats %>% select( contains(j) ), na.rm = T ) )
 )
-
-
-# RENV UPDATE ----
-
-renv::snapshot()

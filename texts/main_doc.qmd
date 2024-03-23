@@ -728,6 +728,29 @@ b <-
   # finishing touches
   as.data.frame() %>%
   mutate( ppi = paste0("[",ppi_low,", ",ppi_hig,"]") )
+
+
+# post-minus-pre contrast for one year post for fixed only and all effects
+#lapply(
+#    c("fix","all"),
+#    function(i)
+#        
+#        data.frame( id = "sub000", time_y = c(-.3,1) ) %>%
+#        mutate( time = time_y + scl$Md$time ) %>%
+#        add_epred_draws( object = m0$m0_linear, newdata = . , allow_new_levels = T, if (i == "fix") { re_formula = NA }, seed = s ) %>%
+#        mutate( .epred = scl$M$drs + scl$SD$drs * .epred ) %>%
+#        ungroup() %>%
+#        select( id, time_y, .draw, .epred ) %>%
+#        pivot_wider( names_from = time_y, values_from = .epred ) %>%
+#        mutate( diff = `1` - `-0.3` ) %>%
+#        pivot_longer( cols = -c("id",".draw") ) %>%
+#        group_by(name) %>%
+#        median_hdi(value) %>%
+#        mutate( prediction = i, .before = 1 )
+#) %>%
+#    
+#    do.call( rbind.data.frame, . )
+#
 ```
 
 Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers.The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b["slope","ppi"]`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`).

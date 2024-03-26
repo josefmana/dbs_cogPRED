@@ -225,6 +225,9 @@ library(tidyverse) # data wrangling
 library(gt) # tables formatting
 library(DiagrammeR) # flowchart
 library(ggplot2) # general plotting
+library(patchwork) # glueing plots together
+library(brms) # model processing
+library(tidybayes) # posterior manipulations
 library(ggridges) # plotting posteriors
 
 # clear environment
@@ -513,9 +516,6 @@ t2
 ```{r}
 #| label: fig2
 
-# patchwork package for glueing plots together
-library(patchwork)
-
 # prepare both sub-figures
 fig2 <- 
   
@@ -669,9 +669,6 @@ t3
 ```{r}
 #| label: long-desc
 
-library(brms) # for model processing
-library(tidybayes) # for posterior manipulations
-
 # clear environment
 rm( list = ls()[ !ls() %in% c("v","itstats","rprint","ubound","mread","nms","imp") ] )
 
@@ -778,7 +775,7 @@ f5 <-
   geom_pointrange( linewidth = 5, position = position_dodge(width = .25), alpha = .4 ) +
   geom_point( size = 5, position = position_dodge(width = .25) ) +
   geom_hline( yintercept = 0, linewidth = 1, linetype = "dashed", colour = "navyblue" ) +
-  labs( x = NULL, y = parse( text = "Delta~`DRS-2`" ) ) +
+  labs( x = NULL, y = parse( text = "Delta~`DRS-2 (points per year)`" ) ) +
   scale_y_continuous( breaks = seq(-15,5,1), labels = seq(-15,5,1) ) +
   theme( panel.grid.minor = element_blank(), axis.text.x = element_text( angle = 25 ), legend.position = "bottom" ) +
   scale_colour_manual( values = cbPal[c(1,8)] )
@@ -788,7 +785,7 @@ ggsave( plot = f5, filename = here("figs","expectation_contrasts.jpg"), dpi = 30
 
 ```
 
-Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers.The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b["slope","ppi"]`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`).
+Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers.The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b['slope','ppi']`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`).
 
 ```{r}
 #| label: fig3
@@ -880,10 +877,13 @@ gtsave( data = t4, filename = here("tabs","expectation_contrasts.docx") )
 #| label: long-pred
 
 # clear environment
-rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","itstats","rprint","ubound","mread","nms","imp","cbPal") ] )
+rm( list = ls()[ !ls() %in% c("d","df","scl","tests","doms","v","itstats","rprint","ubound","mread","nms","imp","cbPal","b") ] )
 
 m <- mread( c("m1_lasso_doms","m2_lasso_tests"), c("factor scores","test scores") ) # read models
 l <- readRDS( here("mods","lasso_psis_loo.rds") ) %>% `names<-`( names(m) ) # read PSIS-LOO results
+
+
+# MODEL CHECKS ----
 
 # check the highest Rhat for chains convergence
 rhatmax <-
@@ -905,10 +905,8 @@ parkmax <-
   max() %>%
   ubound(1)
 
-```
 
-```{r}
-#| label: posteriors
+# POSTERIORS ----
 
 # extract draws
 drws <-
@@ -931,8 +929,7 @@ drws <-
       relocate( b_time, .after = ifelse( i == "factor scores", "b_visp_wm", "b_sc_staix2") )
 
   )
-  
-  
+
 # extract and summarize posteriors of the "fixed-effects"
 post <-
   
@@ -951,44 +948,44 @@ post <-
 
   )
 
-# prepare the figure
-f4 <-
+# pre-format draws
+drws <- 
   
   lapply(
     
-    setNames( names(post), names(post) ),
+    names(drws),
     function(i)
-      
-      post[[i]] %>%
-      
-      # select only the estimands (i.e., the interaction terms and the global time effect for comparison)
-      slice( which( grepl("time", Parameter) ) ) %>%
-      
-      # rename the Parameter column according to the var_nms file such that the predictors are
-      # named in accordance with the in-text math model (i.e., delta[predictor] )
-      mutate( Parameter = sub( "time:", "", Parameter ) %>% sapply( ., function(x) v[x, ] ) ) %>%
-      
-      # plotting proper
-      ggplot() +
-      aes( x = reorder(Parameter, b, decreasing = T), y = b, ymin = PPI1, ymax = PPI2 ) +
-      geom_linerange( linewidth = 3, color = alpha( case_when( i == "factor scores" ~ cbPal[7], i == "test scores" ~ cbPal[6] ), alpha = .3 ) ) +
-      geom_point( size = 3, color = alpha( case_when( i == "factor scores" ~ cbPal[7], i == "test scores" ~ cbPal[6] ), alpha = 1 ) ) +
-      geom_hline( yintercept = 0, linewidth = 1, linetype = "dashed", color = "black" ) +
-      labs( x = NULL, y = "DRS-2 (points per year)") +
-      scale_y_continuous( limits = c(-1,1) ) +
-      scale_x_discrete( labels = function(x) parse( text = paste0( "delta[", x, "]" ) ) ) + # add predictor parameter names
-      theme( axis.text = element_text( size = 10 ) ) +
-      coord_flip()
+        drws[[i]] %>%
+        select( contains("time") ) %>%
+        pivot_longer( cols = everything() ) %>%
+        mutate( mod = case_when( i == "factor scores" ~ "Factor scores model", i == "test scores" ~ "Test scores model") )
+  
+    ) %>%
     
-  )
+    do.call( rbind.data.frame, . ) %>%
+    mutate( name = sub( "time:", "", name ) %>% sapply( ., function(x) v[x, ] ) ) # this line takes some time to compute
 
-# align and save the plots
+# prepare the figure
+f4 <-
+  
+  drws %>%
+  ggplot() +
+  aes( x = value, y = reorder(name, value, decreasing = T), fill = stat(x) ) +
+  geom_density_ridges_gradient( scale = 1.5, rel_min_height = 0.001 ) +
+  scale_fill_viridis_c( option = "turbo", direction = -1 ) +
+  geom_vline( xintercept = 0, linewidth = .75, linetype = "solid", color = "black" ) +
+  geom_vline( xintercept = -as.numeric(b["slope","median"]), linewidth = .75, linetype = "dashed", color = "navyblue" ) +
+  labs( x = expression(Delta*"DRS-2 (points per year)"), y = NULL ) +
+  scale_x_continuous( limits = c(-1.25,.75) ) +
+  scale_y_discrete( labels = function(x) parse( text = paste0( "delta[", x, "]" ) ) ) + # add predictor parameter names
+  facet_wrap( ~ mod, scales = "free_y" ) +
+  theme_minimal( base_size = 11 ) +
+  theme( legend.position = "none" )
+
+# save the plots
 ggsave(
-  plot =
-    ( f4$`test scores` | f4$`factor scores` ) +
-    plot_annotation( tag_levels = "A" ) &
-    theme( plot.tag = element_text(face = "bold") ),
-  filename = here("figs","posterior_summaries.jpg"),
+  plot = f4,
+  filename = here("figs","posterior_distributions.jpg"),
   dpi = 300,
   width = 7,
   height = 7.7

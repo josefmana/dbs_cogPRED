@@ -172,6 +172,10 @@ m0 <-
   )
 
 
+## POSTERIOR PREDICTIONS ----
+
+
+
 # PREDICTIVE MODELS ----
 
 # set-up the linear models

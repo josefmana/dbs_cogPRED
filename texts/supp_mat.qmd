@@ -76,6 +76,8 @@ library(tidyverse) # data wrangling
 library(gt) # tables formatting
 library(ggplot2) # general plotting
 library(patchwork) # organising plots
+library(brms) # read stan results
+library(tidybayes) # posterior manipulations
 
 # clear environment
 rm( list = ls() )
@@ -286,9 +288,6 @@ To simplify the process of choosing appropriate prior distributions and minimize
 #| label: posteriors
 #| cache: true
 
-library(brms) # brms to read the results
-library(tidybayes) # tidybayes for posterior manipulations
-
 rm( list = ls()[ !ls() %in% c("rprint","imp","cbPal") ] ) # clear environment
 v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8") # read variable mappings
 
@@ -442,7 +441,7 @@ f2 <-
           scale_color_manual( values =  case_when( i == "factor" ~ cbPal[c(7,2)], i == "test" ~ cbPal[c(6,3)] ) ) +
           
           # label and flip axes, position legend and add title
-          labs( x = NULL, y = ifelse( j == "delta", "DRS-2 (points per year)", "DRS-2" ) ) +
+          labs( x = NULL, y = ifelse( j == "delta", expression(Delta*"DRS-2 (points per year)"), "DRS-2" ) ) +
           theme( axis.text = element_text( size = 10 ), legend.position = "bottom" ) +
           facet_wrap( . ~ title) +
           coord_flip()

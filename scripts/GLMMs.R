@@ -148,6 +148,7 @@ saveRDS( list(d0 = d0, df = d1, scl = scl, tests = tests, doms = doms, imp = imp
 
 # set-up the linear model
 f0 <-
+  
   list(
     m0_linear = bf( drs | cens(cens_drs) ~ 1 + time + (1 + time | id) ),
     m0_spline = bf( drs | cens(cens_drs) ~ t2(time) + (1 + time | id) )
@@ -158,7 +159,7 @@ p0 <- NULL
 
 # model fitting
 m0 <-
-  
+
   lapply(
 
     setNames( names(f0), names(f0) ),
@@ -168,18 +169,61 @@ m0 <-
            iter = it, warmup = wu, control = list( adapt_delta = ad ),
            file = here( "mods",paste0(i,".rds") ), save_model = here( "mods", paste0(i,".stan") )
            )
-    
+
   )
 
 
 ## POSTERIOR PREDICTIONS ----
 
+# simulate values for each patient each six months from 2 years before to 12 years after surgery
+n_seq = 24
 
+# re-format id in d to a factor
+d0$id <- factor( d0$id, levels = unique(d0$id) )
+
+# prepare data sets for prediction for each subject in the data set
+d_seq <-
+  
+  # prepare all the columns
+  expand.grid( seq( from = -2, to = 12, length.out = n_seq ), levels(d0$id) ) %>%
+  `colnames<-` ( c("time_y","id") ) %>%
+  mutate( time = time_y + scl$Md$time ) %>%
+  mutate( !!!setNames(rep( NA, length( c(doms,tests) ) ), c(doms,tests) ) ) %>% # add empty columns for predictors
+  
+  # add subjects' median (w.r.t. imputations) cognitive profile
+  mutate(
+    across(
+      all_of( c(doms,tests) ),
+      ~ sapply(
+        1:length(.x),
+        function(i)
+          sapply( 1:imp, function(j) d1[[j]][ d1[[j]]$id == id[i] & d1[[j]]$time < ( 0 + scl$Md$time ) , cur_column() ] ) %>%
+          median()
+      )
+    )
+  )
+
+# calculate posterior predictions
+ppred <- list()
+
+# loop through ids and add predictions
+for ( j in unique(d_seq$id) ) {
+  
+  ppred[[names(m0)[1]]][[j]] <-
+    
+    d_seq[ d_seq$id == j, ] %>%
+    add_predicted_draws( m0[[1]], seed = s ) %>%
+    mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
+    median_hdci( .width = .95 ) %>% # need HDCI instead of HDI to deal with multimodality
+    mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) )
+
+}
 
 # PREDICTIVE MODELS ----
 
 # set-up the linear models
 f1 <-
+  
   list(
     m1_lasso_doms = paste0( "drs | cens(cens_drs) ~ 1 + ", paste("time", doms, sep = " * ", collapse = " + "), " + (1 + time | id)" ) %>% as.formula() %>% bf(),
     m2_lasso_tests = paste0( "drs | cens(cens_drs) ~ 1 + ", paste("time", tests, sep = " * ", collapse = " + "), " + (1 + time | id)" ) %>% as.formula() %>% bf()
@@ -187,6 +231,7 @@ f1 <-
 
 # set-up priors (using the same priors for both models)
 p1 <-
+  
   c(
     # fixed effects
     prior( normal(0.3, .1), class = Intercept ),
@@ -216,7 +261,7 @@ m1 <-
   )
 
 # clean the environment
-rm( list = ls()[ !( ls() %in% c("d0","d1","imp","m1","scl","doms","tests","ch","it","wu","ad","s") ) ] )
+rm( list = ls()[ !( ls() %in% c("d0","d1","d_seq","imp","m1","scl","doms","tests","ch","it","wu","ad","s","ppred") ) ] )
 gc()
 
 # compute PSIS-LOO for each imputation in the primary models
@@ -259,81 +304,69 @@ if ( !exists("l") ) {
 ## POSTERIOR PREDICTIONS ----
 
 # run the code only if they were not predicted yet to save time
-if( !file.exists( here("_data","ppred.rds") ) ) {
+if( !file.exists( here("_data","ppred.csv") ) ) {
   
-  # simulate values for each patient each six months from 2 years before to 12 years after surgery
-  n_seq = 24
-  
-  # re-format id in d to a factor
-  d0$id <- factor( d0$id, levels = unique(d0$id) )
-  
-  # prepare data sets for prediction for each subject in the data set
-  d_seq <-
+  if( !file.exists( here("_data","ppred.rds") ) ) {
     
-    # prepare all the columns
-    expand.grid( seq( from = -2, to = 12, length.out = n_seq ), levels(d0$id) ) %>%
-    `colnames<-` ( c("time_y","id") ) %>%
-    mutate( time = time_y + scl$Md$time ) %>%
-    mutate( !!!setNames(rep( NA, length( c(doms,tests) ) ), c(doms,tests) ) ) %>% # add empty columns for predictors
+    # prepare a list for predictions stratified by subjects chunks
+    # calculating prediction of single data points based on fixed-effects, random-effects and remaining distributional (residual) parameters
+    #ppred <- list()
+    gc()
     
-    # add subjects' median (w.r.t. imputations) cognitive profile
-    mutate(
-      across(
-        all_of( c(doms,tests) ),
-        ~ sapply(
-          1:length(.x),
-          function(i)
-            sapply( 1:imp, function(j) d1[[j]][ d1[[j]]$id == id[i] & d1[[j]]$time < ( 0 + scl$Md$time ) , cur_column() ] ) %>%
-            median()
-        )
-      )
-    )
-  
-  # prepare a list for predictions stratified by subjects chunks
-  # calculating prediction of single data points based on fixed-effects, random-effects and remaining distributional (residual) parameters
-  ppred <- list()
-  gc()
-  
-  # add predictions to ppred
-  for (i in names(m1) ) {
-    for ( j in unique(d_seq$id) ) {
-      
-      ppred[[i]][[j]] <-
+    # add predictions to ppred
+    for (i in names(m1) ) {
+      for ( j in unique(d_seq$id) ) {
         
-        d_seq[ d_seq$id == j, ] %>%
-        add_predicted_draws( m1[[i]], seed = s ) %>%
-        mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
-        median_hdi( .width = .95 ) %>%
-        mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) ) # manual censoring
-      
-    }
-  } # took 6558.316 sec in total
+        ppred[[i]][[j]] <-
+          
+          d_seq[ d_seq$id == j, ] %>%
+          add_predicted_draws( m1[[i]], seed = s ) %>%
+          mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
+          median_hdi( .width = .95 ) %>%
+          mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) ) # manual censoring
+        
+      }
+    } # took 6558.316 sec in total
+    
+    # save the original prediction file as .rds
+    saveRDS( ppred, here("_data","ppred.rds") )
+    
+  } else {
+    
+    ppred <- readRDS( here("_data","ppred.rds") )
+    
+  }
   
-  # save the original prediction file as .rds
-  saveRDS( ppred, here("_data","ppred.rds") )
+  # prepare a table of posterior predictions
+  ppred <-
+    
+    lapply(
+      
+      names(ppred),
+      function(i)
+        do.call( rbind.data.frame, ppred[[i]] ) %>%
+        add_column(
+          `Predicted by:` =
+            case_when(
+              i == "m0_linear" ~ "time only",
+              i == "m1_lasso_doms" ~ "factor scores",
+              i == "m2_lasso_tests" ~ "test scores"
+            )
+        )
+      
+    ) %>%
+    
+    do.call( rbind.data.frame, . ) # collapse to a single file
+  
+  # save as .csv
+  write.table( ppred, here( "_data","ppred.csv"), sep = ",", row.names = F, quote = F )
   
 } else {
   
-  ppred <- readRDS( here("_data","ppred.rds") )
-  
+  ppred <- read.csv( here("_data","ppred.csv"), sep = "," )
+
 }
 
-# prepare a table of posterior predictions
-ppred <-
-  
-  lapply(
-   
-    names(ppred),
-    function(i)
-      do.call( rbind.data.frame, ppred[[i]] ) %>%
-      add_column( `Predicted by:` = ifelse(i == "m1_lasso_doms", "factor scores", "test scores") )
-
-  ) %>%
-  
-  do.call( rbind.data.frame, . ) # collapse to a single file
-
-# save as .csv
-write.table( ppred, here( "_data","ppred.csv"), sep = ",", row.names = F, quote = F )
 
 
 # ROBUSTNESS CHECK MODELS ----

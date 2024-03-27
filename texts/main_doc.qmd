@@ -224,6 +224,8 @@ library(here) # reading & saving files
 library(tidyverse) # data wrangling
 library(gt) # tables formatting
 library(DiagrammeR) # flowchart
+library(DiagrammeRsvg) # saving flowchart
+library(rsvg) # saving flowchart
 library(ggplot2) # general plotting
 library(patchwork) # glueing plots together
 library(brms) # model processing
@@ -312,10 +314,6 @@ A total of `r itstats[['n']][['tot']]` patients with PD who underwent cognitive 
 
 # print a table summarizing reasons for excluding patients
 #table( d0[ d0$ass_type == "pre" , ]$why_excluded )
-
-# packages for saving the results
-library(DiagrammeRsvg)
-library(rsvg)
 
 # using numbers from t0 create an inclusion/exclusion flowchart
 f1 <- " digraph {
@@ -775,7 +773,7 @@ f5 <-
   geom_pointrange( linewidth = 5, position = position_dodge(width = .25), alpha = .4 ) +
   geom_point( size = 5, position = position_dodge(width = .25) ) +
   geom_hline( yintercept = 0, linewidth = 1, linetype = "dashed", colour = "navyblue" ) +
-  labs( x = NULL, y = parse( text = "Delta~`DRS-2 (points per year)`" ) ) +
+  labs( x = NULL, y = parse( text = "Delta~`DRS-2`" ) ) +
   scale_y_continuous( breaks = seq(-15,5,1), labels = seq(-15,5,1) ) +
   theme( panel.grid.minor = element_blank(), axis.text.x = element_text( angle = 25 ), legend.position = "bottom" ) +
   scale_colour_manual( values = cbPal[c(1,8)] )

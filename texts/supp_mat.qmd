@@ -297,6 +297,51 @@ for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, r
 
 # POSTERIOR DRAWS ----
 
+# variance of patient-level parameters (i.e., the 'random effects')
+# extracting for linear time only model and the main in-text predictive models
+reff <-
+
+  lapply(
+    
+    c("m0_linear","m1_lasso_doms","m2_lasso_tests"),
+    function(i)
+      readRDS( here( "mods", paste0(i,".rds") ) ) %>%
+      as_draws_df() %>%
+      select( starts_with("sd_id"), cor_id__Intercept__time ) %>%
+      mutate( across( all_of( starts_with("sd_") ), ~ . * scl$SD$drs ) ) %>%
+      pivot_longer( everything(), names_to = "Parameter", values_to = "Posterior" ) %>%
+      mutate( model = i )
+    
+  ) %>%
+  
+  do.call( rbind.data.frame, . ) %>% # pull the posteriors to a single file
+
+  # format it
+  mutate(
+        
+        Parameter =
+            case_when(
+                grepl("cor",Parameter) ~ "corr",
+                Parameter == "sd_id__time" ~ "slope",
+                Parameter == "sd_id__Intercept" ~ "intercept"
+            ) %>% factor(
+                levels = c("intercept","slope","corr"),
+                ordered = T
+            ),
+        
+        `Model: ` =
+            case_when(
+                grepl("m0",model) ~ "time only",
+                grepl("m1",model) ~ "factor scores",
+                grepl("m2",model) ~ "test scores"
+            ) %>% factor(
+                levels = c("time only","factor scores","test scores"),
+                ordered = T
+            )
+        
+    )
+
+# posterior draws of fixed effects of all prediction models
 post <-
   
   lapply(
@@ -351,6 +396,18 @@ post <-
   mutate( `Predicted by:` = sub( "\\..*" , "", `Predicted by:` ) )
 
 
+# IN-TEXTS ----
+
+itext <-
+  
+  reff %>%
+  group_by( Parameter, `Model: ` ) %>%
+  summarise(
+    Md = rprint( median(Posterior), 2 ),
+    PPI = paste0( "[", rprint( hdi(Posterior)[1], 2 ), ", ", rprint( hdi(Posterior)[2], 2 ), "]" )
+  )
+
+
 # TABLES ----
 
 t2 <-
@@ -393,10 +450,39 @@ t2 <-
 
 # FIGURES ----
 
-theme_set( theme_minimal(base_size = 10) ) # set ggplot theme
+## patient-level variability ----
 
 # plot it
 f2 <-
+  
+  reff %>%
+  ggplot( aes(x = Posterior, y = Parameter, fill = `Model: ` ) ) +
+  geom_density_ridges( rel_min_height = 0.01, linewidth = .75 ) +
+  scale_y_discrete( labels = NULL ) +
+  labs( y = NULL ) +
+  scale_fill_manual( values = alpha( cbPal[c(1,2,3)], .5 ) ) +
+  theme_minimal( base_size = 10 ) +
+  theme( legend.position = "bottom", strip.text = element_text(size = 9) ) +
+  facet_wrap(
+    ~ Parameter,
+    ncol = 1,
+    scales = "free",
+    labeller =
+      as_labeller(
+        c( intercept = "SD(alpha[id])",
+           slope = "SD(delta[id])",
+           corr = "rho(alpha[id],delta[id])"
+        ),
+        label_parsed
+      )
+  )
+
+# save it
+ggsave( plot = f2, file = here("figs","reff_variability.jpg"), dpi = 300, width = 6, height = 8 )
+
+
+## robustness check ----
+f3 <-
   
   lapply(
     
@@ -442,6 +528,7 @@ f2 <-
           
           # label and flip axes, position legend and add title
           labs( x = NULL, y = ifelse( j == "delta", expression(Delta*"DRS-2 (points per year)"), "DRS-2" ) ) +
+          theme_minimal( base_size = 10 ) +
           theme( axis.text = element_text( size = 10 ), legend.position = "bottom" ) +
           facet_wrap( . ~ title) +
           coord_flip()
@@ -454,14 +541,14 @@ f2 <-
 lo <- cbind( factor = c(1,7), test = c(1,23) )
 
 # save them
-for ( i in names(f2) ) {
+for ( i in names(f3) ) {
   
   ggsave(
     
     # arrange the subplots
     plot =
       with(
-        f2[[i]],
+        f3[[i]],
         ( (alpha / beta + plot_layout( heights = lo[ ,i] ) ) | delta ) +
           plot_layout( guides = "collect" ) &
           theme( legend.position = "bottom")
@@ -492,7 +579,7 @@ To validate the in-sample fit of our predictive models, we computed modelsâ€™ â€
 ppred <-
   
   read.csv( here("_data","ppred.csv"), sep = "," ) %>%
-  rename( "Predicted by:" = "Predicted.by." ) %>%
+  mutate( `Predicted by:` = factor( Predicted.by., levels = c("time only","factor scores","test scores"), ordered = T ) ) %>%
   mutate( anid = as.numeric( as.factor(id) ) %>% sprintf("%03d",.) %>% paste0( "S",.) ) # anonymise patients
 
 # extract mapping to anonymize patients
@@ -516,8 +603,8 @@ f4 <-
   geom_point( color = "black", size = .4 ) +
   
   # finish the plot with the last cosmetic changes
-  scale_color_manual( values = cbPal[c(2,3)] ) +
-  scale_fill_manual( values = cbPal[c(2,3)] ) +
+  scale_color_manual( values = cbPal[c(1,2,3)] ) +
+  scale_fill_manual( values = cbPal[c(1,2,3)] ) +
   facet_wrap( ~ anid, nrow =  14 ) + # arrange to a 14 x 9 grid
   labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
   theme_minimal( base_size = 5 ) +

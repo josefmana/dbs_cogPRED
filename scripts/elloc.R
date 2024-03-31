@@ -13,12 +13,12 @@ library(R.matlab) # read matlab files
 parcol <-
   
   function( d1, d2, colnms, side = c("right","left"), contnm = "contact" ) {
-    
+
     rbind.data.frame(
       d1 %>% `colnames<-`(colnms) %>% as.data.frame() %>% add_column( side = side[1] ) %>% rownames_to_column(contnm),
       d2 %>% `colnames<-`(colnms) %>% as.data.frame() %>% add_column( side = side[2] ) %>% rownames_to_column(contnm)
     )
-    
+
   }
 
 

@@ -15,6 +15,7 @@ ad = .99 # adapt_delta parameter
 library(here) # directory management
 library(tidyverse) # data wrangling
 library(brms) # model fitting
+library(cmdstanr) # model fitting
 library(tidybayes) # posterior manipulation
 
 # create folders to store results in
@@ -61,7 +62,7 @@ scl$Md <- list( time = -median( d0[d0$ass_type == "pre", ]$time_y , na.rm = T ) 
 df <-
   
   d0 %>%
-  # scale all DRS-2, BDI-II, LEDD and time already
+  # scale all DRS-2 and time already
   mutate(
     time = time_y + scl$Md$time,
     drs = ( drs_tot - scl$M$drs ) / scl$SD$drs,
@@ -175,49 +176,58 @@ m0 <-
 
 ## POSTERIOR PREDICTIONS ----
 
-# simulate values for each patient each six months from 2 years before to 12 years after surgery
-n_seq = 24
-
-# re-format id in d to a factor
-d0$id <- factor( d0$id, levels = unique(d0$id) )
-
-# prepare data sets for prediction for each subject in the data set
-d_seq <-
+if ( !file.exists( here("_data","ppred.rds") ) ) {
   
-  # prepare all the columns
-  expand.grid( seq( from = -2, to = 12, length.out = n_seq ), levels(d0$id) ) %>%
-  `colnames<-` ( c("time_y","id") ) %>%
-  mutate( time = time_y + scl$Md$time ) %>%
-  mutate( !!!setNames(rep( NA, length( c(doms,tests) ) ), c(doms,tests) ) ) %>% # add empty columns for predictors
+  # simulate values for each patient each six months from 2 years before to 12 years after surgery
+  n_seq = 24
   
-  # add subjects' median (w.r.t. imputations) cognitive profile
-  mutate(
-    across(
-      all_of( c(doms,tests) ),
-      ~ sapply(
-        1:length(.x),
-        function(i)
-          sapply( 1:imp, function(j) d1[[j]][ d1[[j]]$id == id[i] & d1[[j]]$time < ( 0 + scl$Md$time ) , cur_column() ] ) %>%
-          median()
+  # re-format id in d to a factor
+  d0$id <- factor( d0$id, levels = unique(d0$id) )
+  
+  # prepare data sets for prediction for each subject in the data set
+  d_seq <-
+    
+    # prepare all the columns
+    expand.grid( seq( from = -2, to = 12, length.out = n_seq ), levels(d0$id) ) %>%
+    `colnames<-` ( c("time_y","id") ) %>%
+    mutate( time = time_y + scl$Md$time ) %>%
+    mutate( !!!setNames(rep( NA, length( c(doms,tests) ) ), c(doms,tests) ) ) %>% # add empty columns for predictors
+    
+    # add subjects' median (w.r.t. imputations) cognitive profile
+    mutate(
+      across(
+        all_of( c(doms,tests) ),
+        ~ sapply(
+          1:length(.x),
+          function(i)
+            sapply( 1:imp, function(j) d1[[j]][ d1[[j]]$id == id[i] & d1[[j]]$time < ( 0 + scl$Md$time ) , cur_column() ] ) %>%
+            median()
+        )
       )
     )
-  )
-
-# calculate posterior predictions
-ppred <- list()
-
-# loop through ids and add predictions
-for ( j in unique(d_seq$id) ) {
   
-  ppred[[names(m0)[1]]][[j]] <-
+  # calculate posterior predictions
+  ppred <- list()
+  
+  # loop through ids and add predictions
+  for ( j in unique(d_seq$id) ) {
     
-    d_seq[ d_seq$id == j, ] %>%
-    add_predicted_draws( m0[[1]], seed = s ) %>%
-    mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
-    median_hdci( .width = .95 ) %>% # need HDCI instead of HDI to deal with multimodality
-    mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) )
-
+    ppred[[names(m0)[1]]][[j]] <-
+      
+      d_seq[ d_seq$id == j, ] %>%
+      add_predicted_draws( m0[[1]], seed = s ) %>%
+      mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
+      median_hdci( .width = .95 ) %>% # need HDCI instead of HDI to deal with multimodality
+      mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) )
+    
+  }
+  
+} else {
+  
+  ppred <- readRDS( here("_data","ppred.rds") )
+  
 }
+
 
 # PREDICTIVE MODELS ----
 
@@ -368,7 +378,6 @@ if( !file.exists( here("_data","ppred.csv") ) ) {
 }
 
 
-
 # ROBUSTNESS CHECK MODELS ----
 
 # clean the environment
@@ -377,6 +386,7 @@ gc()
 
 # set-up the linear models for drs
 f.drs <-
+  
   list(
     m3_doms_cov = ( paste0( "drs | cens(cens_drs) ~ 1 + ", paste( paste0( "time * ", c("age","mi(bdi)","mi(led)") ), collapse = " + " ), " + ", paste("time", doms, sep = " * ", collapse = " + "), " + (1 + time | id)" ) %>% as.formula() %>% bf() ) + student(),
     m4_tests_cov = ( paste0( "drs | cens(cens_drs) ~ 1 + ", paste( paste0( "time * ", c("age","mi(bdi)","mi(led)") ), collapse = " + " ), " + ", paste("time", tests, sep = " * ", collapse = " + "), " + (1 + time | id)" ) %>% as.formula() %>% bf() ) + student()
@@ -388,6 +398,7 @@ f.led <- bf( led | mi() ~ t2(time) + (1 | id) ) + gaussian()
 
 # set-up priors (using the same priors for both models)
 p <-
+  
   c(
     # DRS-2
     prior( normal(0.3, .1), class = Intercept, resp = drs),
@@ -436,3 +447,214 @@ sapply(
       function(j)
         max( m[[i]]$rhats %>% select( contains(j) ), na.rm = T ) )
 )
+
+
+# STIMULATION/STN INTERSECTIONS ----
+
+# clean the environment
+rm( list = ls()[ !( ls() %in% c("scl","ch","it","wu","ad","s") ) ] )
+gc()
+
+# read data & variable names
+v <- read.csv( here("_data","var_nms.csv"), sep = ";" )[1:35, ] # variables to be inspected
+d0 <- read.csv( here("_data","20240330_data_vat_plus.csv"), sep = "," ) # full data-set
+d1 <- d0 %>% filter( ass_type == "pre" ) # baseline data
+
+# pre-process the data
+df <-
+  
+  d0 %>%
+  mutate(
+    time = time_y + scl$Md$time,
+    drs = ( drs_tot - scl$M$drs ) / scl$SD$drs,
+    cens_drs = ifelse( drs == max(drs, na.rm = T) , "right" , "none" ),
+    elloc = as.factor(elloc),
+    post = as.numeric(post)
+  ) %>%
+  select( id, time, drs, cens_drs, elloc, post, starts_with("STN") )
+
+
+## PRE-SURGERY PROFILE ----
+
+# printing rounded number
+rprint <- function( x, dec=2 ) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+
+# variables to be log-transformed
+logv <- c( paste0("tmt_", c("a","b") ), paste0("pst_", c("d","w","c") ) )
+
+# fit models and summarise
+tab <-
+  
+  sapply(
+    
+    v$variable[-4], # do not use sex in this model for continuous responses
+    function(i)
+      
+      with(
+        
+        d1, {
+          
+          if ( i %in% logv ) y <- log( get(i) ) else y <- get(i) # log transform if applicable
+          
+          # extract outcomes
+          y0 <- c( na.omit( y[elloc == 0] ) )
+          y1 <- c( na.omit( y[elloc == 1] ) )
+          
+          # extract scaling values
+          M <- mean( y, na.rm = T )
+          SD <- sd( y, na.rm = T )
+          
+          # data for stan model
+          dlist <- list( y0 = ( (y0-M)/SD ), y1 = ( (y1-M)/SD ), N0 = length(y0), N1 = length(y1) )
+          
+          # fit the model
+          mod <- cmdstan_model( here("mods","m5_ttest.stan") )
+          fit <- mod$sample( data = dlist, seed = s, chains = 4 ) # fit it
+          
+          # posteriors draws
+          post <- fit$draws( format = "data.frame" )
+          post <- apply( post[ ,2:5], 2, function(x) x * SD + M )
+          if( i %in% logv ) post <- exp(post)
+          
+          # posterior differences
+          diff <- cbind( mu = post[ ,"mu_1"] - post[ ,"mu_0"], sigma = post[ ,"sigma_1"] - post[ ,"sigma_0"] )
+          
+          # summaries  of posterior differences
+          sum <- apply( diff, 2, function(x) paste0( rprint( median(x) ), " [", rprint( hdi(x)[1] ),", ", rprint( hdi(x)[2]), "]" ) )
+          prob <- apply( diff, 2, function(x) sum( x > 0 ) / length(x) )
+          
+          # sample description
+          n <- with( dlist, paste( N0, N1, sep = "/" ) )
+          desc <- sapply( 0:1, function(j) paste0( rprint( mean( get(i)[elloc == j], na.rm = T ) ), " ± ", rprint( sd( get(i)[elloc == j], na.rm = T ) ) ) )
+          
+          # print results
+          return(
+            c( n = n,
+               `0` = desc[1], `1` = desc[2],
+               mu_sum = sum[["mu"]], mu_prob = prob[["mu"]],
+               sigma_sum = sum[["sigma"]], sigma_prob = prob[["sigma"]]
+               )
+          )
+          
+        }
+      )
+
+  ) %>%
+  
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column("var") %>%
+  
+  # add row for sex
+  add_row(
+    var = "sex",
+    n = paste( nrow( d1[ d1$elloc == 0, ] ), nrow( d1[ d1$elloc == 1, ] ) ) ,
+    `0` = paste0( nrow( d1[ d1$elloc == 0 & d1$sex == "male", ] ), " (", rprint( 100 * nrow( d1[ d1$elloc == 0 & d1$sex == "male", ] ) / nrow(d1), 1 ) , "%)" ),
+    `1` = paste0( nrow( d1[ d1$elloc == 1 & d1$sex == "male", ] ), " (", rprint( 100 * nrow( d1[ d1$elloc == 1 & d1$sex == "male", ] ) / nrow(d1), 1 ) , "%)" ),
+    mu_sum = NA,
+    mu_prob = NA,
+    sigma_sum = NA,
+    sigma_prob = NA,
+    .after = 3
+  ) %>%
+  
+  # finishing touches
+  mutate( var = sapply( var, function(i) v[ v$variable == i, "name" ] ) ) %>%
+  mutate( across( all_of( ends_with("prob") ), ~ as.numeric(.x) ) )
+
+# save it
+write.table( tab, here("tabs","elloc_comaprsions.csv"), sep = ";", row.names = F, quote = F )
+
+
+## DESCRIPTIVE MODEL ----
+
+f6 <- bf( drs | cens(cens_drs) ~ 1 + time * elloc + (1 + time | id) ) # linear model
+p6 <- NULL # prior
+contrasts(df$elloc) <- -contr.sum(2)/2
+
+# model fitting
+m6 <- brm( formula = f6, family = student(), prior = p6,
+           data = df, sample_prior = T, seed = s, chains = ch,
+           iter = it, warmup = wu, control = list( adapt_delta = ad ),
+           file = here("mods","m6_desc_check.rds"), save_model = here("mods","m6_desc_check.stan")
+           )
+
+
+## VAT/STN INTERSECTIONS MODEL ----
+
+# extract structure mapping
+struct <-
+  
+  expand.grid(
+    atlas = paste0( "Atlas", c("Volume","Intersection") ),
+    side = c("left","right"),
+    struct = paste0( "STN", c("","_motor","_associative","_limbic") )
+  ) %>%
+
+  mutate( out = paste( struct, side, atlas, sep = "_" ) ) %>%
+  pivot_wider( names_from = "atlas", values_from = "out" )
+
+# compute proportions of VAT/STN intersections
+for ( i in 1:nrow(struct) ) {
+  
+  df[ , with( struct, paste0(struct[i],"_",side[i],"_proportion") ) ] <-
+
+    df[ , with( struct, paste0(AtlasIntersection[i]) ) ] /
+    df[ , with( struct, paste0(AtlasVolume[i]) ) ]
+  
+}
+
+# add scaling for VAT/STN intersection proportions
+for ( i in names(df)[grepl( "proportion", names(df) )] ) {
+  
+  scl$M[[i]] <- mean( df[ df$post == 0, i ], na.rm = T )
+  scl$SD[[i]] <- sd( df[ df$post == 0, i ], na.rm = T )
+  
+}
+
+# scale the predictors
+df <-
+
+  df %>%
+  filter( elloc == 1 ) %>%
+  select( id, time, drs, cens_drs, post, ends_with("proportion") ) %>%
+  mutate( across( all_of( ends_with("proportion") ), ~ ( .x - scl$M[[cur_column()]] ) / scl$SD[[cur_column()]] ) )
+
+
+# plot 'Bayesian p-values' to summarise differences ----
+#
+#tab %>%
+#  
+#  # extract variables needed
+#  select( var, ends_with("prob") ) %>%
+#  mutate(
+#    var =
+#      case_when(
+#        var == "MDS-UPDRS III (ON medication)" ~ "MDS-UPDRS III ON",
+#        var == "MDS-UPDRS III (OFF medication)" ~ "MDS-UPDRS III OFF",
+#        var == "Disease duration at surgery (years)" ~ "Dis. dur. at surgery",
+#        .default = var
+#      )
+#  ) %>%
+#  
+#  # pre-process the table
+#  mutate( var = sapply( var, function(i) strsplit( i, " (", fixed = T )[[1]][1] ) ) %>%
+#  mutate( var = factor( var, levels = reorder(var,mu_prob), ordered = T ) ) %>%
+#  filter( var != "Sex" ) %>%
+#  pivot_longer( cols = -var, names_to = "Parameter", values_to = "prob" ) %>%
+#  mutate(
+#    pdir = ifelse( prob < .5, 1-prob, prob ),
+#    `Directionality: ` = factor( ifelse( prob < .5, "included < excluded", "excluded < included" ) ),
+#    p = 2 * (1 - pdir)
+#  ) %>%
+#  
+#  # plot it
+#  ggplot() +
+#  aes( x = p, y = reorder( var, p, decreasing = T ), fill = `Directionality: ` ) +
+#  geom_bar( stat = "identity" ) +
+#  scale_fill_manual( values = c("navy","skyblue") ) +
+#  geom_vline( xintercept = .05, linetype = "dashed", linewidth = 1.2, colour = "red" ) +
+#  facet_wrap( ~ Parameter, ncol = 2, labeller = as_labeller( c( mu_prob = "mu", sigma_prob = "sigma" ), label_parsed ) ) +
+#  labs( y = NULL, x = "Bayesian p-value" ) +
+#  theme_minimal( base_size = 14 ) +
+#  theme( legend.position = "bottom" )

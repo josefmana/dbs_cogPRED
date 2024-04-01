@@ -452,8 +452,14 @@ sapply(
 # STIMULATION/STN INTERSECTIONS ----
 
 # clean the environment
-rm( list = ls()[ !( ls() %in% c("scl","ch","it","wu","ad","s") ) ] )
+rm( list = ls()[ !( ls() %in% c("scl","s") ) ] )
 gc()
+
+# new rstan options
+ch = 4 # number of chains
+it = 2000 # iterations per chain
+wu = 1000 # warm-up iterations
+ad = .90 # adapt_delta parameter
 
 # read data & variable names
 v <- read.csv( here("_data","var_nms.csv"), sep = ";" )[1:35, ] # variables to be inspected
@@ -509,7 +515,7 @@ tab <-
           
           # fit the model
           mod <- cmdstan_model( here("mods","m5_ttest.stan") )
-          fit <- mod$sample( data = dlist, seed = s, chains = 4 ) # fit it
+          fit <- mod$sample( data = dlist, seed = s, chains = ch, iter_warmup = wu , iter_sampling = it, adapt_delta = ad ) # fit it
           
           # posteriors draws
           post <- fit$draws( format = "data.frame" )
@@ -584,7 +590,7 @@ m6 <- brm( formula = f6, family = student(), prior = p6,
 
 # extract structure mapping
 struct <-
-  
+
   expand.grid(
     atlas = paste0( "Atlas", c("Volume","Intersection") ),
     side = c("left","right"),
@@ -592,17 +598,11 @@ struct <-
   ) %>%
 
   mutate( out = paste( struct, side, atlas, sep = "_" ) ) %>%
-  pivot_wider( names_from = "atlas", values_from = "out" )
+  pivot_wider( names_from = "atlas", values_from = "out" ) %>%
+  mutate( proportion = paste( struct, side, "proportion", sep = "_" ) )
 
 # compute proportions of VAT/STN intersections
-for ( i in 1:nrow(struct) ) {
-  
-  df[ , with( struct, paste0(struct[i],"_",side[i],"_proportion") ) ] <-
-
-    df[ , with( struct, paste0(AtlasIntersection[i]) ) ] /
-    df[ , with( struct, paste0(AtlasVolume[i]) ) ]
-  
-}
+for ( i in 1:nrow(struct) ) df[ , struct$proportion[i] ] <- df[ , struct$AtlasIntersection[i] ] / df[ , struct$AtlasVolume[i] ]
 
 # add scaling for VAT/STN intersection proportions
 for ( i in names(df)[grepl( "proportion", names(df) )] ) {
@@ -619,6 +619,49 @@ df <-
   filter( elloc == 1 ) %>%
   select( id, time, drs, cens_drs, post, ends_with("proportion") ) %>%
   mutate( across( all_of( ends_with("proportion") ), ~ ( .x - scl$M[[cur_column()]] ) / scl$SD[[cur_column()]] ) )
+
+# linear models
+f <-
+  
+  list(
+    m7_intersect_full = paste0( "drs | cens(cens_drs) ~ 1 + ", paste( paste0( "time * ", struct$proportion[-c(1:2)] ), collapse = "+" ), " + (1 + time | id)" ) %>% as.formula() %>% bf(),
+    m8_intersect_part = paste0( "drs | cens(cens_drs) ~ 1 + time + ", paste( paste0( "time : ", struct$proportion[-c(1:2)] ), collapse = "+" ), " + (1 + time | id)" ) %>% as.formula() %>% bf()
+  )
+
+# prior
+p <-
+
+  c(
+    # fixed effects
+    prior( normal(0, .5), class = Intercept ),
+    prior( normal(0, .5), class = b ),
+    # random effects
+    prior( exponential(2), class = sd, coef = Intercept, group = id ),
+    prior( exponential(2), class = sd, coef = time, group = id ),
+    prior( lkj(2), class = cor ),
+    # other distributional parameters
+    prior( exponential(1), class = sigma ),
+    prior( gamma(2, 0.1), class = nu )
+  )
+
+# model fitting
+m <-
+  
+  lapply(
+    
+    setNames( names(f), names(f) ),
+    function(i)
+      
+      brm( formula = f[[i]], family = student(), prior = p,
+           data = df, sample_prior = T, save_pars = save_pars( all = T ),
+           seed = s, chains = ch, iter = it, warmup = wu, control = list( adapt_delta = ad ),
+           file = here( "mods",paste0(i,".rds") ), save_model = here( "mods", paste0(i,".stan") )
+           )
+    
+  )
+
+# add LOO
+for ( i in names(m) ) m[[i]] <- add_criterion( m[[i]], criterion = "loo", moment_match = T, reloo = T )
 
 
 # plot 'Bayesian p-values' to summarise differences ----

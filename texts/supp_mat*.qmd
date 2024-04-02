@@ -1,0 +1,760 @@
+---
+title: 'Supplementary material for "Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease"'
+shorttitle: "Cognition in PD after STN DBS"
+author:
+  - name: Josef Mana
+    corresponding: true
+    email: "josef.mana@protonmail.com"
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Ondrej Bezdicek
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Filip Ruzicka
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Anna Fecikova
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Olga Klempirova
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Tomas Nikolai
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Tereza Uhrova
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Evzen Ruzicka
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Dusan Urgosik
+    affiliations:
+      - id: "NHH"
+        name: "Na Homolce Hospital, Prague, Czech Republic"
+        department: "Department of stereotactic and radiation neurosurgery"
+  - name: Robert Jech
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
+format:
+ apaquarto-docx:
+   documentmode: man
+   a4paper: true
+   docx-engine: lualatex
+   floatsintext: false
+   keep-tex: false
+bibliography: references.bib
+warning: false
+echo: false
+---
+
+{{< include _extensions/wjschne/apaquarto/_apa_title.qmd >}}
+
+```{r}
+#| label: import
+
+library(here) # reading & saving files
+library(tidyverse) # data wrangling
+library(gt) # tables formatting
+library(ggplot2) # general plotting
+library(patchwork) # organising plots
+library(brms) # read stan results
+library(tidybayes) # posterior manipulations
+
+# clear environment
+rm( list = ls() )
+
+# set ggplot theme
+theme_set( theme_minimal(base_size = 12) )
+
+# prepare colors to use in graphs (a colorblind-friendly palette)
+cbPal <- c( "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7" )
+
+
+# IN-HOUSE FUNCTIONS ----
+
+# printing rounded number
+rprint <- function( x, dec=2 ) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+
+# print percentages of columns in a data.frame
+percprint <-
+  
+  function( input, thres, more, less, denom ) {
+    
+    input %>%
+    as.data.frame() %>%
+    mutate( across( everything() , ~ case_when( .x > thres ~ more, .x < thres ~ less ) ) ) %>%
+    colSums() * 100 / denom
+    
+  }
+
+```
+
+In this supplementary material we present additional information to manuscript *“Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease”* including further presentation of the results that was not included in the main text due to space constraints. All procedures described in this supplementary material are accompanied by R code used to implement the steps described herein and Stan code for Bayesian generalized linear mixed models (GLMMs) fitted during this project. The R code and Stan models as well as raw files containing all images and tables are available at [https://github.com/josefmana/dbs_longCOG](https://github.com/josefmana/dbs_longCOG). Since the data used for model fitting in our study contain medical records of included patients, they are not publicly available for privacy reasons. Moreover, because the GLMMs reported in this article are exceedingly large for purposes of online storage (> 2 GB each), only the R and Stan codes are included.
+
+# Pre-surgery cross-sectional exploratory factor analysis
+
+## Data pre-processing
+
+For exploratory factor analyses (EFAs) we first log transformed all response time-based tasks (i.e., Trail Making Test and Stroop test), then standardized (i.e., mean-centered and scaled by their in-sample standard deviation) all variables before applying multiple imputations for missing values. EFA was then fitted on each imputed data set via ordinary least squares to find the minimal residual (minres) solution. This procedure was repeated for three up to eight factor solutions.
+
+## Supplementary presentation of results
+
+```{r}
+#| label: fact-anal
+
+# read EFA-related results
+for( i in names( readRDS( here("mods","factanal.rds") ) ) ) assign( i , readRDS( here("mods","factanal.rds") )[[i]] )
+
+# prepare a table for performance indexes of each solution for each imputed data set
+fat <-
+  
+  # create an empty 6 (factor solutions) x 5 (performance indexes) x 100 (imputations) array
+  array(
+    
+    data = NA, dim = c( length( efa[[1]] ), 5, imp ),
+    
+    # add dimension names
+    dimnames =
+      list(
+        paste0( 1:length(efa[[1]])+2, "-factor" ), # number of factors
+        c("TLI", "RMSEA", "RMSEA_90_CI_low", "RMSEA_90_CI_upp", "var_account"), # performance indexes
+        1:imp # number of imputed data set
+      )
+
+  )
+
+# loop through the array and gather all performance indexes
+for ( i in 1:imp ) {
+  for ( j in 1:length(efa[[i]]) ) {
+    
+    fat[ j , , i ] <-
+      
+      c(
+        efa[[i]][[j]]$TLI, # Tucker-Lewis Index, TLI > 0.9 is considered good
+        efa[[i]][[j]]$RMSEA[1], # Root-Mean Square Error of Approximation, RMSEA < 0.08 is considered good
+        efa[[i]][[j]]$RMSEA[2], # 90% CI RMSEA, lower boundary
+        efa[[i]][[j]]$RMSEA[3], # 90% CI RMSEA, upper boundary (ideally should be less than 0.08)
+        max( efa[[i]][[j]]$Vaccounted["Cumulative Var",] ) # total variance "accounted for" by all included factors (i.e., the highest one from "Cumulative Var")
+      )
+
+  }
+}
+
+```
+
+Supplementary EFA results are presented in @tbl-perf and @fig-perf (see below). @tbl-perf presents numerical summary of fit indexes of each three to eight factor solutions across one hundred imputations. Note that Tucker-Lewis Index (TLI) was above the threshold implying good fit (TLI > 0.9) in only three out of four six-factor models, but it was above this threshold in all but three out of one hundred seven-factor models. Similar information is visually presented in @fig-perf which depicts density plots of TLI and upper 90% confidence interval boundary of root-mean-square-error approximation (RMSEA) of all models across imputations. This clear improvement in fit of seven- compared to six-factor model, only modest improvement of eight- compared to seven-factor model, and overall theoretical plausibility of factors identified by the seven-factor model led us to retain seven factors for further analyses.
+
+```{r}
+#| label: tbl-perf
+#| tbl-cap: Summary of fit indexes of the exploratory factor analysis across one hundred imputed datasets
+
+# prepare a table with performance indexes
+t1 <-
+  
+  data.frame( Model = paste0( 3:8, "-factor"), TLI = NA, RMSEA = NA, RMSEA_90_CI_upp = NA, var_account = NA ) %>%
+  
+  # add indexes
+  mutate(
+    
+    # present mean (SD) for each index
+    across(
+      !contains("Model"),
+      ~ sapply(
+        Model, # loop through model names
+        function(i)
+          paste0( rprint( mean(fat[ i, cur_column(), ]) )," (",rprint( sd(fat[ i, cur_column(), ]) ),")" )
+      )
+    ),
+    
+    # extract percentages of 'good' RMSEA and TLI
+    `upper bound RMSEA < 0.08 (%)` = percprint( t( fat[ , "RMSEA_90_CI_upp" , ] ), .08, 0, 1, imp ),
+    `TLI > 0.90 (%)` = percprint( t( fat[ , "TLI" , ] ), .9, 1, 0, imp )
+    
+  ) %>%
+  
+  
+  gt() %>%
+  cols_align( align = "center", columns = -1 ) %>%
+  cols_label(
+    "RMSEA_90_CI_upp" = "RMSEA 90% CI (upper bound)",
+    "var_account" = "Total variance accounted for"
+  ) %>%
+  
+  tab_source_note( source_note = "Values represent mean (SD) or percentages if indicated in brackets." ) %>%
+  tab_source_note( source_note = "TLI Tucker-Lewis Index. RMSEA root-mean-square-error approximation. CI confidence interval" ) %>%
+  tab_options( quarto.disable_processing = T )
+
+# save & print it
+gtsave( data = t1, filename = here("tabs","factanal_performance.docx") )
+t1
+
+```
+
+```{r}
+#| label: fig1
+
+# prepare plots of model performance indexes
+f1 <-
+  
+  lapply(
+    
+    setNames( c("TLI","RMSEA_90_CI_upp"), c("TLI","RMSEA_90_CI_upp") ),
+    function(i)
+      
+      fat[ , i , ] %>%
+      
+      # re-format the table for plotting
+      t() %>%
+      as.data.frame() %>%
+      pivot_longer( everything(), names_to = "Model" , values_to = i ) %>%
+      rename( "index" = i ) %>%
+      
+      # plotting proper
+      ggplot( aes( x = index , fill = Model) ) +
+      geom_density( alpha = .4 , color = NA ) +
+      scale_fill_manual( values = cbPal[3:8] ) + # use colorblind-friendly palette
+      geom_vline( linetype = "dashed", size = 1.2, xintercept = case_when( i == "TLI" ~ .9, i == "RMSEA_90_CI_upp" ~ .08 ) ) + # add a vertical line depicting good performance heuristics
+    labs( y = "Density", x = case_when( i == "TLI" ~ "TLI", i == "RMSEA_90_CI_upp" ~ "RMSEA (upper 90% CI)" ) ) +
+    scale_x_continuous(
+      limits = case_when( i == "TLI" ~ c(0.6,1.05), i == "RMSEA_90_CI_upp" ~ c(0.03, 0.12) ),
+      breaks = case_when( i == "TLI" ~ seq(.6,1,.1), i == "RMSEA_90_CI_upp" ~ seq(.04,.12,.02) ),
+      labels = case_when(
+        i == "TLI" ~ sprintf( "%.1f", round( seq(.6, 1, .1), 1) ),
+        i == "RMSEA_90_CI_upp" ~ sprintf( "%.2f", round( seq(.04,.12,.02), 2) )
+      )
+    )
+
+  )
+
+# align and save the plots
+ggsave(
+  plot =
+    ( f1$TLI / f1$RMSEA_90_CI_upp ) +
+    plot_layout( guides = "collect" ) +
+    plot_annotation( tag_levels = "A" ) &
+    theme( plot.tag = element_text(face = "bold") ),
+  filename = here("figs","factanal_performance.jpg"),
+  dpi = 300,
+  width = 9.9,
+  height = 5.88
+)
+
+```
+
+![Factor analyses fit indexes. Density plots of (A) Tucker-Lewis Index (TLI) and (B) upper boundary of 90% confidence interval (CI) of the root-mean-square-error approximation for three- to eight-factor solutions of factor analysis of pre-surgery cognitive profile. Density plots are taken over one hundred imputed datasets. Vertical lines represent boundaries of good fit according to TLI (i.e., TLI > 0.9) and RMSEA (i.e., RMSEA < 0.08).](../figs/factanal_performance.jpg){#fig-perf}
+
+# Longitudinal generalized linear mixed models
+
+## Data pre-processing
+
+```{r}
+#| label: md-time
+
+# extract median time before surgery of included patients
+mdt <-
+  
+  read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," ) %>%
+  filter( included == 1 & ass_type == "pre" ) %>%
+  select(time_y) %>%
+  abs() %>%
+  unlist() %>%
+  median() %>%
+  rprint(2)
+
+```
+
+To simplify the process of choosing appropriate prior distributions and minimize multicollinearity, all variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) before the analyses. The only variable that was not pre-processed this way was time after surgery. This variable was entered into all models in its raw scale (i.e., years after surgery) shifted forward by a median time of pre-surgery assessment (i.e., `r mdt` years). Consequently, model intercepts represent estimates of patients’ cognitive performance in Mattis Dementia Rating Scale (DRS-2) at pre-surgery assessment (`r mdt` years before surgery) and time slopes represent DRS-2 annual post-surgery cognitive decline. Before they were entered into the models, all pre-surgery cognitive factors and test scores were coded such that higher values indicated poorer performance. Parameters associated with these variables (see @fig-robtest, @fig-robfact, @tbl-posttest, @tbl-postfact as well as Figure 4 in the main text) thus represent an effect of a (relative) pre-surgery deficit in a corresponding latent cognitive factor or manifest cognitive test score on prediction of pre-surgery DRS-2 (the $\beta$ parameters) and post-surgery annual decline in DRS-2 (the $\delta$ parameters). Negative parameter values imply that a pre-surgery cognitive deficit unfavorably affects the outcome and vice versa for positive parameter values.
+
+```{r}
+#| label: posteriors
+#| cache: true
+
+rm( list = ls()[ !ls() %in% c("rprint","imp","cbPal") ] ) # clear environment
+v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8") # read variable mappings
+
+# read the data
+for( i in names(readRDS( here("_data","longitudinal_df.rds" ) ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds" ) )[[i]] )
+
+
+# POSTERIOR DRAWS ----
+
+# variance of patient-level parameters (i.e., the 'random effects')
+# extracting for linear time only model and the main in-text predictive models
+reff <-
+
+  lapply(
+    
+    c("m0_linear","m1_lasso_doms","m2_lasso_tests"),
+    function(i)
+      readRDS( here( "mods", paste0(i,".rds") ) ) %>%
+      as_draws_df() %>%
+      select( starts_with("sd_id"), cor_id__Intercept__time ) %>%
+      mutate( across( all_of( starts_with("sd_") ), ~ . * scl$SD$drs ) ) %>%
+      pivot_longer( everything(), names_to = "Parameter", values_to = "Posterior" ) %>%
+      mutate( model = i )
+    
+  ) %>%
+  
+  do.call( rbind.data.frame, . ) %>% # pull the posteriors to a single file
+
+  # format it
+  mutate(
+        
+        Parameter =
+            case_when(
+                grepl("cor",Parameter) ~ "corr",
+                Parameter == "sd_id__time" ~ "slope",
+                Parameter == "sd_id__Intercept" ~ "intercept"
+            ) %>% factor(
+                levels = c("intercept","slope","corr"),
+                ordered = T
+            ),
+        
+        `Model: ` =
+            case_when(
+                grepl("m0",model) ~ "time only",
+                grepl("m1",model) ~ "factor scores",
+                grepl("m2",model) ~ "test scores"
+            ) %>% factor(
+                levels = c("time only","factor scores","test scores"),
+                ordered = T
+            )
+        
+    )
+
+# posterior draws of fixed effects of all prediction models
+post <-
+  
+  lapply(
+    
+    setNames(
+      c("m1_lasso_doms","m2_lasso_tests","m3_doms_cov","m4_tests_cov"),
+      c("factor scores","test scores","factor scores (with covariates)","test scores (with covariates)")
+    ),
+    
+    function(i)
+      
+      readRDS( here( "mods", paste0(i,".rds") ) ) %>%
+      as_draws_df() %>%
+      `colnames<-` ( gsub("_drs","",names(.) ) ) %>% # rename parameters in covariate models to appropriate format
+      select( starts_with( c("b_","bsp_") ) & !starts_with( c("b_bdi","b_led","bsp_bdi") ) ) %>% # keep only fixed-effects
+      
+      # back-transform posteriors to raw DRS-2 (or DRS-2 per year) scale
+      mutate(
+        b_Intercept = ( b_Intercept * scl$SD$drs ) + scl$M$drs,
+        across( !b_Intercept, function(x) { x * scl$SD$drs } )
+      ) %>%
+      
+      # calculate summaries
+      apply(
+        . , 2 , function(x) {
+          c(
+            b = median(x), # posterior median
+            PPI = hdi(x, .width = .95), # 95% PPI
+            pdir = sum(x<0)/length(x) # Pr(b<0)
+          )
+        }
+      ) %>%
+      t() %>%
+      as.data.frame() %>%
+      rownames_to_column("Parameter") %>%
+      
+      # flag parameter group
+      mutate(
+        Group =
+          case_when(
+            Parameter == "b_Intercept" ~ "alpha", # global intercept
+            grepl( "time|bdi:time|led:time", Parameter ) ~ "delta", # time varying effects
+            .default = "beta" # pre-surgery associations
+          )
+      )
+
+  ) %>%
+  
+  # pull both "cognitive functions" and "cognitive tests" models together
+  do.call( rbind.data.frame, . ) %>%
+  rownames_to_column("Predicted by:") %>%
+  mutate( `Predicted by:` = sub( "\\..*" , "", `Predicted by:` ) )
+
+
+# IN-TEXTS ----
+
+itext <-
+  
+  reff %>%
+  group_by( Parameter, `Model: ` ) %>%
+  summarise(
+    Md = rprint( median(Posterior), 2 ),
+    PPI = paste0( "[", rprint( hdi(Posterior)[1], 2 ), ", ", rprint( hdi(Posterior)[2], 2 ), "]" )
+  )
+
+
+# TABLES ----
+
+t2 <-
+  
+  lapply(
+    
+    setNames( c("factor","test"), c("factor","test") ),
+    function(i)
+      
+      post[ post$`Predicted by:` == paste0(i," scores"), ] %>%
+    
+      # prepare variables
+      mutate(
+        Parameter = sapply( Parameter, function(j) v[ j, "name" ] ), # get publication-ready names
+        `95% PPI` = paste0( "[", rprint(PPI1,2), ", ", rprint(PPI2,2),"]" ), # prepare 95% PPI bracket
+        b = rprint( b, 2 ), # round median posterior
+        pdir = rprint(pdir,3), # round Pr(b<0)
+      ) %>%
+      
+      # finish the table
+      select( Parameter, b, `95% PPI`, pdir, Group ) %>%
+      arrange(Group) %>%
+      
+      # gt (pre-)formatting
+      gt( groupname_col = "Group" ) %>%
+      cols_align( columns = -1, align = "center" ) %>%
+      cols_label( b ~ "{{*b*}}", pdir ~ "Pr({{*b*}}<0)" ) %>%
+      text_transform(
+        locations = cells_row_groups(),
+        fn = function(x) case_when(
+            x == "alpha" ~ "Global intercept (α)",
+            x == "beta" ~ "Baseline correlates (β) ",
+            x == "delta" ~ "Time-dependent effects (𝛿)"
+        )
+
+    )
+    
+  )
+
+
+# FIGURES ----
+
+## patient-level variability ----
+
+# plot it
+f2 <-
+  
+  reff %>%
+  ggplot( aes(x = Posterior, y = Parameter, fill = `Model: ` ) ) +
+  geom_density_ridges( rel_min_height = 0.01, linewidth = .75 ) +
+  scale_y_discrete( labels = NULL ) +
+  labs( y = NULL ) +
+  scale_fill_manual( values = alpha( cbPal[c(1,2,3)], .5 ) ) +
+  theme_minimal( base_size = 10 ) +
+  theme( legend.position = "bottom", strip.text = element_text(size = 9) ) +
+  facet_wrap(
+    ~ Parameter,
+    ncol = 1,
+    scales = "free",
+    labeller =
+      as_labeller(
+        c( intercept = "SD(alpha[id])",
+           slope = "SD(delta[id])",
+           corr = "rho(alpha[id],delta[id])"
+        ),
+        label_parsed
+      )
+  )
+
+# save it
+ggsave( plot = f2, file = here("figs","reff_variability.jpg"), dpi = 300, width = 6, height = 8 )
+
+
+## robustness check ----
+f3 <-
+  
+  lapply(
+    
+    setNames( c("factor","test"), c("factor","test") ),
+    function(i)
+      
+      lapply(
+        
+        setNames( c("alpha","beta","delta"), c("alpha","beta","delta") ),
+        function(j)
+          
+          post %>%
+          filter( grepl(i,`Predicted by:`) & Group == j ) %>%
+          
+          # prepare the labels
+          mutate(
+            
+            title =
+              case_when(
+                j == "alpha" ~ "Global intercept",
+                j == "beta" ~ "Baseline correlates",
+                j == "delta" ~ "Time-dependent effects"
+              ),
+            
+            Parameter =
+              case_when(
+                j == "delta" ~ sub( "time:", "", Parameter ) %>% sapply( ., function(x) v[x, ] ),
+                j != "delta" ~ Parameter %>% sapply( ., function(x) v[x, ] )
+              )
+            
+          ) %>%
+          
+          # plotting proper
+          ggplot( aes( x = reorder(Parameter, b, decreasing = T), y = b, ymin = PPI1, ymax = PPI2 ) ) +
+          geom_linerange( aes( color = `Predicted by:`), size = 1, position = position_dodge( width = case_when( i == "factor" ~ .4, i == "test" ~ .6 ) ) ) +
+          geom_point( aes( color = `Predicted by:`), size = 4, position = position_dodge( case_when( i == "factor" ~ .4, i == "test" ~ .6 ) ) ) +
+          geom_hline( yintercept = 0, size = 1.1, linetype = "dashed", color = case_when( i == "factor" ~ "black", i == "test" ~ "red" ) ) +
+          
+          # scale the axes and colors
+          scale_x_discrete( labels = ifelse( j == "alpha", parse( text = "alpha"), function(x) parse( text = paste0( j, "[", x, "]" ) ) ) ) +
+          scale_y_continuous( limits = case_when( j == "alpha" ~ c( 139,142 ) ) ) +
+          scale_color_manual( values =  case_when( i == "factor" ~ cbPal[c(7,2)], i == "test" ~ cbPal[c(6,3)] ) ) +
+          
+          # label and flip axes, position legend and add title
+          labs( x = NULL, y = ifelse( j == "delta", expression(Delta*"DRS-2 (points per year)"), "DRS-2" ) ) +
+          theme_minimal( base_size = 10 ) +
+          theme( axis.text = element_text( size = 10 ), legend.position = "bottom" ) +
+          facet_wrap( . ~ title) +
+          coord_flip()
+        
+      )
+    
+  )
+
+# list plot layouts for each figure
+lo <- cbind( factor = c(1,7), test = c(1,23) )
+
+# save them
+for ( i in names(f3) ) {
+  
+  ggsave(
+    
+    # arrange the subplots
+    plot =
+      with(
+        f3[[i]],
+        ( (alpha / beta + plot_layout( heights = lo[ ,i] ) ) | delta ) +
+          plot_layout( guides = "collect" ) &
+          theme( legend.position = "bottom")
+      ),
+    
+    # specify output file
+    file = here( "figs", paste0(i,"_postsum.jpg") ),
+    dpi = 300,
+    width = case_when( i == "test" ~ 10, i == "factor" ~ 7),
+    height = case_when( i == "test" ~ 10, i == "factor" ~ 7)
+  
+  )
+
+}
+
+```
+
+## Posterior predictive check
+
+To validate the in-sample fit of our predictive models, we computed models’ “predictions” for each included patient and compared these predictions to observed values (see @fig-ppc). Note that since one of the advantages of multilevel modelling is partial pooling, i.e., shrinking parameter estimates towards each other and thus down-weighting the effect of influential outliers to reduce overfitting, the model is neither expected nor required to replicate observed values exactly. Our models show reasonable fit to most patients with clear shrinkage in case of outliers (for instance patient S045 in @fig-ppc). Furthermore, while the “test scores” and the “factor scores” model provide similar posterior predictions for our patients, the “test scores” model was evidently more influenced by outlying values to a small degree (for instance patients S023, S107 or S124).
+
+![Posterior predictive checks. Posterior predictions of included patients’ performance according to the predictive generalized linear mixed models (GLMMs) reported in the main text. Lines represent expected (median) performance, shades represent 95% posterior probability intervals (PPIs) of the performance according to the GLMMs, dots represent observed values.](../figs/posterior_predictions.jpg){#fig-ppc}
+
+```{r}
+#| label: post-pred
+
+# read posterior predictions
+ppred <-
+  
+  read.csv( here("_data","ppred.csv"), sep = "," ) %>%
+  mutate( `Predicted by:` = factor( Predicted.by., levels = c("time only","factor scores","test scores"), ordered = T ) ) %>%
+  mutate( anid = as.numeric( as.factor(id) ) %>% sprintf("%03d",.) %>% paste0( "S",.) ) # anonymise patients
+
+# extract mapping to anonymize patients
+anon <- ppred[ with( ppred, time_y  == -2 & `Predicted by:` == "factor scores" ), c("id","anid") ]
+
+# plot predictions and observed data for each subject separately
+f4 <-
+  
+  d0 %>%
+  filter( complete.cases(drs_tot) ) %>%
+  mutate( anid = sapply( 1:nrow(.), function(i) anon[ anon$id == id[i], "anid" ] ), drs = drs_tot ) %>%
+  
+  # plotting proper
+  ggplot( aes(x = time_y, y = drs) ) +
+  
+  # add prediction lines and 95% compatibility intervals
+  geom_line( data = ppred, size = .5, aes(x = time_y, y = drs, group = `Predicted by:`, color = `Predicted by:` ) ) +
+  geom_ribbon( data = ppred, alpha = .2, aes(x = time_y, y = drs, ymin = drs.lower, ymax = drs.upper, group = `Predicted by:`, fill = `Predicted by:` ) ) +
+  
+  # add observed points
+  geom_point( color = "black", size = .4 ) +
+  
+  # finish the plot with the last cosmetic changes
+  scale_color_manual( values = cbPal[c(1,2,3)] ) +
+  scale_fill_manual( values = cbPal[c(1,2,3)] ) +
+  facet_wrap( ~ anid, nrow =  14 ) + # arrange to a 14 x 9 grid
+  labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
+  theme_minimal( base_size = 5 ) +
+  theme( legend.position = "bottom" )
+
+# save it
+ggsave( plot = f4, filename = here("figs","posterior_predictions.jpg"), dpi = 300, width = 6.8, height = 7.8 )
+
+```
+
+## Supplementary presentation of results
+
+In @tbl-posttest we present numerical summary of group-level posterior parameters of the “test scores” model while in @tbl-postfact we present numerical summary of group-level posterior parameters of the “factor scores” model which supplement the information presented in Figure 3 in the main text. Since only the interaction terms (i.e., the $\delta$ parameters) comprised empirical estimands for our query (*RQ2*), the remaining parameters were omitted from the main text.
+
+```{r}
+#| label: tbl-posttest
+#| tbl-cap: Summary of group-level effects’ posteriors from the “test scores” generalized linear mixed model reported in the main text
+
+# add footnotes
+t2$test <-
+  
+  t2$test %>%
+  tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory." ) %>%
+  tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
+
+# save & print it
+gtsave( data = t2$test, filename = here("tabs","posteriors_test.docx") )
+t2$test
+
+```
+
+```{r}
+#| label: tbl-postfact
+#| tbl-cap: Summary of group-level effects’ posteriors from the “factor scores” generalized linear mixed model reported in the main text
+
+# add footnotes
+t2$factor <-
+  
+  t2$factor %>%
+    tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory.") %>%
+    tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory." )
+
+# save & print it
+gtsave( data = t2$factor, filename = here("tabs","posteriors_fact.docx") )
+t2$factor
+
+```
+
+## Robustness checks
+
+To confirm that our results are robust to effects of aging, dopaminergic medication, and depressive symptoms, we carried out a robustness check by fitting parallel “test scores” and “factor scores” models with additional group-level predictors age, levodopa equivalent daily dose (LEDD) and Beck Depression Inventory (BDI-II). Stan code for each of these models with the exact specification is available at https://github.com/josefmana/dbs_longCOG and is equivalent to the models reported in the main text. For this reason, we do not present their mathematical definitions here in sake of brevity.
+
+Side-to-side comparison of models’ group-level parameters’ posterior summaries is presented in @fig-robtest for the “test scores” model and in @fig-robfact for the “factor scores” model. All models arrived at similar posteriors implying our results are robust to effects of aging, dopaminergic medication, and depressive symptoms. Importantly, the empirical estimands relating to *RQ2* (i.e., the time-dependent effects represented by the $\delta$ parameters) are similar across models leading to identical substantive conclusions.
+
+![Posteriors medians and 95% posterior probability intervals (PPIs) of group-level effects from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery cognitive test scores without (“test scores”) and with adjustment for covariates (“test scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory. See main text for acronyms.](../figs/test_postsum.jpg){#fig-robtest}
+
+![Robustness check (the “factor scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level effects from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery latent cognitive factor scores without (“factor scores”) and with adjustment for covariates (“factor scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory. See main text for acronyms.](../figs/factor_postsum.jpg){#fig-robfact}
+
+## Estimation of false positive rates
+
+To test our assumption that the classical two-step procedure of identifying significant pre-surgery predictors of post-surgery cognitive decline leads to inflated false positive rates that can be alleviated by either dimension reduction of the matrix of predictors (e.g., via factor analysis) or applying the Bayesian Lasso, we conducted a series of simulations on the data structure equivalent to our data set with respect to the number of patients, the number of observations per patient, time from surgery of each observation and the number of potential predictors. Simulated data sets used to produce our results as well as generating functions are available at [https://github.com/josefmana/dbs_longCOG.git](https://github.com/josefmana/dbs_longCOG.git). The reader should navigate to the “dbs_longCOG_optbias.R” file to validate our findings and check their robustness to change in parameters which were omitted from current study for parsimony and computational time reasons.
+
+### Data-generating process
+
+```{r}
+#| label: sims
+
+library(reshape2) # for melting correlation matrix for plotting
+
+rm( list = ls()[ !ls() %in% c("rprint","cbPal") ] ) # clear environment
+
+
+# CORRELATION STRUCTURE ----
+
+# putative covariation (correlation in this case) structure of predictors in our study
+# based on grouping of tests to common clusters with ~50 % shared variability (i.e., r = .7, R2 = .49) 
+cov23 <-
+  
+  read.csv( here("_data","sim_covstruct.csv"), sep = ",", header = F ) %>%
+  `colnames<-`( 1:ncol(.) ) %>%
+  as.matrix()
+
+# plot the correlation matrix
+f5 <-
+  
+  melt(cov23) %>%
+  rename( "Pearson's r" = "value" ) %>%
+  ggplot( aes(x = Var1, y = rev(Var2), fill = `Pearson's r` ) ) +
+  geom_tile( color = "grey" ) +
+  scale_fill_gradient2( low = "white", high = cbPal[7], limit = c(0,1), midpoint = .33 ) +
+  labs( x = "Row variable", y = "Column variable" ) +
+  scale_x_continuous( breaks = 1:23, labels = 1:23 ) +
+  scale_y_continuous( breaks = 1:23, labels = 23:1 ) +
+  guides( fill = guide_colourbar( barwidth = 1, barheight = 18 ) ) +
+  theme_classic( base_size = 10 ) +
+  coord_fixed()
+
+# save the plot
+ggsave(
+  plot = f5,
+  filename = here("figs","sims_corrstruct.jpg"),
+  dpi = 300,
+  width = 8.2,
+  height = 4.7
+)
+
+
+# SIMULATION RESULTS ----
+
+falsepos <-
+  
+  read.csv( here("mods","sims_fp.csv"), sep = "," ) %>% # read the results
+  rename( "Method:" = "Method.")
+
+# plot it
+f6 <-
+  
+  falsepos %>%
+  ggplot( aes(x = fp, y = Freq+1, fill = `Method:` ) ) +
+  geom_bar( stat = "identity", position = position_dodge( width = .66), width = .66 ) + # bars
+  geom_text( aes(label = Freq), vjust = -.6, size = 2.5, position = position_dodge(width = .66 ) ) + # counts
+  scale_y_continuous( limits = c(0,105), breaks = seq(1,101,25), labels = seq(0,100,25), name = "Count" ) +
+  scale_x_discrete( name = "False positives per one hundred simulations" ) +
+  scale_fill_manual( values = cbPal[c(2,1)] ) + # colors
+  theme( legend.position = "bottom" ) +
+  facet_grid( Covariance ~ Decline, labeller =  label_parsed )
+
+# save it
+ggsave(
+  plot = f6,
+  filename = here("figs","sims_falsepos.jpg"),
+  dpi = 300,
+  width = 7,
+  height = 7
+)
+
+```
+
+The outcome (representing idealized cognitive screening score) followed Gaussian distribution with unit variation and mean shifted from zero by (i) patient-specific intercept (pre-surgery shift) and slope (post-surgery decline shift) and (ii) an average annual post-surgery decline (i.e., population-level slope denoted *$b_1$* henceforth). The *$b_1$* parameter was set to either no (*$b_1$* = 0), mild (*$b_1$* = -0.3) or moderate (*$b_1$* = -0.5) average annual post-surgery decline (see columns of @fig-sims). Moreover, total of seven or twenty-three potential pre-surgery predictors were generated for each patient. In all cases, all potential pre-surgery predictors were set to have no effect on the outcome so that all effects identified by either the two-step procedure or the Bayesian Lasso were false positives.
+
+For each patient we generated a set of predictors based on either the test scores structure or the latent factor scores structure of our data set. Because there were seven independent latent factors extracted from our data by EFA with varimax rotation, the first set of potential pre-surgery predictors consisted of seven independent Gaussian variables with mean zero and unit variation (see the first row of @fig-sims). Regarding potential pre-surgery predictors based of the test scores structure of our data set, we opted to generate two distinct sets of such potential predictors, one consisted of twenty-three independent variables (see the second row of @fig-sims) while the other consisted twenty-three covaried variables (see the third row of @fig-sims). In both cases, the potential pre-surgery predictors were generated from Gaussian distribution with zero mean and unit variance. Twenty-three independent predictors were generated to test the “best case scenario” whereby data satisfy the assumption of independence of predictors implicit in both the two-step procedure and the Bayesian Lasso. Twenty-three covaried predictors were generated to test the more realistic scenario whereby there is a non-zero covariance structure among potential pre-surgery predictors derived from single test scores (which unlike the varimax rotated factor analysis results do not invoke statistical independence). In these simulations we opted to generate the potential predictors via a multivariate Gaussian distribution with zero marginal means, unit marginal variances and a minimal covariance structure whereby predictors representing test scores derived from the same task (e.g., TMT-A and TMT-B) share about 50% of variance while potential predictors representing test scores derived from distinct tasks (e.g., TMT-A and RAVLT-IR) do not share any variance (see @fig-corr for the exact covariance structure used for our simulations).
+
+![Covariance matrix of the covaried test scores predictor structure. The figure represents correlations used for generation of covaried predictors in the covaried test scores data-generating process. The clusters represent high correlations among State-Trait Anxiety Inventory, Tail Making Test, Digit Span, Spatial Span, Stroop task, verbal fluency, Rey Auditory Verbal Learning Test and Family Pictures test respectively. The single non-correlated cells represent the Tower of London task and Similarities task.](../figs/sims_corrstruct.jpg){#fig-corr}
+
+### Statistical models
+
+For each combination of population-level slope *$b_1$* (none, mild and moderate decline) and potential pre-surgery predictor structure (seven independent, twenty-three independent and twenty-three covaried predictors), total of one hundred two-step procedure and one hundred Bayesian Lasso models were fitted on the same one hundred simulated data sets with null effect of each potential predictor. For the two-step procedure, first an independent linear mixed model (LMM) with correlated patient-level intercepts and slopes was fitted for each predictor (including the effect of time, predictor and their interaction) and if the p-value of the interaction term between predictor and time showed *p* < .2 (the results were not sensitive to this threshold as the reader can validate by running the code themselves while changing the threshold) the predictor was then entered into a multiple LMM with all such predictors included at the same time; all predictors for which their interaction term with time showed *p* < .05 in this second multiple regression LMM were declared significant and constituted a false positive error. For the Bayesian Lasso, a single LMM with correlated patient-level intercepts and slopes including all potential predictors, time and their interactions was fitted and all predictors with probability of direction > 2.5 % (which is equivalent to two-sided *p* < .05) were declared significant and constituted a false positive error.
+
+### Results
+
+The results of simulations are presented in @fig-sims. It is clear that both factors theorized to alleviate the false positive error rates (i.e., the Bayesian Lasso and dimension reduction of the potential predictors structure) can do so in our data structure according to these simulations. Moreover, applying the two-step procedure to our data set seems to incur a high risk of inflated false positive error rates even in the best case scenario.
+
+![Simulation results. The figure presents number of false positives per one hundred simulations dependent on (i) the method used (colour), (ii) the assumed average annual post-surgery decline (columns) and (iii) the potential pre-surgery predictor structure (rows).](../figs/sims_falsepos.jpg){#fig-sims}

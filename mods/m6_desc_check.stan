@@ -75,14 +75,14 @@ transformed parameters {
   r_1 = scale_r_cor(z_1, sd_1, L_1);
   r_1_1 = r_1[, 1];
   r_1_2 = r_1[, 2];
-  lprior += normal_lpdf(b | 0, 0.5);
-  lprior += normal_lpdf(Intercept | 0, 0.5);
-  lprior += exponential_lpdf(sigma | 1);
+  lprior += student_t_lpdf(Intercept | 3, 0.3, 2.5);
+  lprior += student_t_lpdf(sigma | 3, 0, 2.5)
+    - 1 * student_t_lccdf(0 | 3, 0, 2.5);
   lprior += gamma_lpdf(nu | 2, 0.1)
     - 1 * gamma_lccdf(1 | 2, 0.1);
-  lprior += exponential_lpdf(sd_1[1] | 2);
-  lprior += exponential_lpdf(sd_1[2] | 2);
-  lprior += lkj_corr_cholesky_lpdf(L_1 | 2);
+  lprior += student_t_lpdf(sd_1 | 3, 0, 2.5)
+    - 2 * student_t_lccdf(0 | 3, 0, 2.5);
+  lprior += lkj_corr_cholesky_lpdf(L_1 | 1);
 }
 model {
   // likelihood including constants
@@ -115,13 +115,11 @@ generated quantities {
   corr_matrix[M_1] Cor_1 = multiply_lower_tri_self_transpose(L_1);
   vector<lower=-1,upper=1>[NC_1] cor_1;
   // additionally sample draws from priors
-  real prior_b = normal_rng(0,0.5);
-  real prior_Intercept = normal_rng(0,0.5);
-  real prior_sigma = exponential_rng(1);
+  real prior_Intercept = student_t_rng(3,0.3,2.5);
+  real prior_sigma = student_t_rng(3,0,2.5);
   real prior_nu = gamma_rng(2,0.1);
-  real prior_sd_1__1 = exponential_rng(2);
-  real prior_sd_1__2 = exponential_rng(2);
-  real prior_cor_1 = lkj_corr_rng(M_1,2)[1, 2];
+  real prior_sd_1 = student_t_rng(3,0,2.5);
+  real prior_cor_1 = lkj_corr_rng(M_1,1)[1, 2];
   // extract upper diagonal of correlation matrix
   for (k in 1:M_1) {
     for (j in 1:(k - 1)) {
@@ -130,15 +128,12 @@ generated quantities {
   }
   // use rejection sampling for truncated priors
   while (prior_sigma < 0) {
-    prior_sigma = exponential_rng(1);
+    prior_sigma = student_t_rng(3,0,2.5);
   }
   while (prior_nu < 1) {
     prior_nu = gamma_rng(2,0.1);
   }
-  while (prior_sd_1__1 < 0) {
-    prior_sd_1__1 = exponential_rng(2);
-  }
-  while (prior_sd_1__2 < 0) {
-    prior_sd_1__2 = exponential_rng(2);
+  while (prior_sd_1 < 0) {
+    prior_sd_1 = student_t_rng(3,0,2.5);
   }
 }

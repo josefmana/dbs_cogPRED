@@ -620,16 +620,15 @@ df <-
   select( id, time, drs, cens_drs, post, ends_with("proportion") ) %>%
   mutate( across( all_of( ends_with("proportion") ), ~ ( .x - scl$M[[cur_column()]] ) / scl$SD[[cur_column()]] ) )
 
-# linear models
-f <-
+# linear model
+f7 <-
   
-  list(
-    m7_intersect_full = paste0( "drs | cens(cens_drs) ~ 1 + ", paste( paste0( "time * ", struct$proportion[-c(1:2)] ), collapse = "+" ), " + (1 + time | id)" ) %>% as.formula() %>% bf(),
-    m8_intersect_part = paste0( "drs | cens(cens_drs) ~ 1 + time + ", paste( paste0( "time : ", struct$proportion[-c(1:2)] ), collapse = "+" ), " + (1 + time | id)" ) %>% as.formula() %>% bf()
-  )
+  paste0( "drs | cens(cens_drs) ~ 1 + ", paste( paste0( "time * ", struct$proportion[-c(1:2)] ), collapse = "+" ), " + (1 + time | id)" ) %>%
+  as.formula() %>%
+  bf()
 
 # prior
-p <-
+p7 <-
 
   c(
     # fixed effects
@@ -645,23 +644,13 @@ p <-
   )
 
 # model fitting
-m <-
+m7 <-
   
-  lapply(
-    
-    setNames( names(f), names(f) ),
-    function(i)
-      
-      brm( formula = f[[i]], family = student(), prior = p,
-           data = df, sample_prior = T, save_pars = save_pars( all = T ),
-           seed = s, chains = ch, iter = it, warmup = wu, control = list( adapt_delta = ad ),
-           file = here( "mods",paste0(i,".rds") ), save_model = here( "mods", paste0(i,".stan") )
-           )
-    
+  brm(
+    formula = f7, family = student(), prior = p7,
+    data = df, sample_prior = T, seed = s, chains = ch, iter = it, warmup = wu, control = list( adapt_delta = ad ),
+    file = here( "mods","m7_stn_intersect.rds"), save_model = here( "mods", "m7_stn_intersect.stan")
   )
-
-# add LOO
-for ( i in names(m) ) m[[i]] <- add_criterion( m[[i]], criterion = "loo", moment_match = T, reloo = T )
 
 
 # plot 'Bayesian p-values' to summarise differences ----

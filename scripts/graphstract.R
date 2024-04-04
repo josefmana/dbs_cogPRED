@@ -153,8 +153,8 @@ d %>%
   geom_line( data = subset( d_seq, type == "epred_fix" ), linewidth = 1, aes( x = time_y, y = .epred, colour = predictor ) ) +
   
   # tidy-up axes and colours
-  scale_y_continuous(name = "DRS-2", limits = c(80,153), breaks = seq(80,140,20), labels = seq(80,140,20) ) +
-  scale_x_continuous(name = "Time from surgery (years)", limits = c(-2,12), breaks = seq(-2,12,2), labels = seq(-2,12,2) ) +
+  scale_y_continuous( name = "DRS-2", limits = c(80,153), breaks = seq(80,140,20), labels = seq(80,140,20) ) +
+  scale_x_continuous( name = "Time from surgery (years)", limits = c(-2,12), breaks = seq(-2,12,2), labels = seq(-2,12,2) ) +
   scale_colour_manual( values = clr ) +
   scale_fill_manual( values = clr ) +
   

@@ -14,6 +14,18 @@ author:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
+  - name: Andrej Lasica
+    corresponding: false
+    email: "Andrej.Lasica@vfn.cz"
+    role:
+      - Investigation
+      - Data curation
+      - Formal analysis
+      - Writing - review & editing
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
   - name: Filip Ruzicka
     affiliations:
       - id: "1FM"
@@ -55,7 +67,7 @@ author:
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
 format:
- apaquarto-docx:
+ apaquarto-pdf:
    documentmode: man
    a4paper: true
    docx-engine: lualatex
@@ -74,16 +86,13 @@ echo: false
 library(here) # reading & saving files
 library(tidyverse) # data wrangling
 library(gt) # tables formatting
-library(ggplot2) # general plotting
+library(ggridges) # density plots
 library(patchwork) # organising plots
 library(brms) # read stan results
 library(tidybayes) # posterior manipulations
 
-# clear environment
-rm( list = ls() )
-
-# set ggplot theme
-theme_set( theme_minimal(base_size = 12) )
+rm( list = ls() ) # clear environment
+theme_set( theme_minimal(base_size = 12) ) # set ggplot theme
 
 # prepare colors to use in graphs (a colorblind-friendly palette)
 cbPal <- c( "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7" )
@@ -93,6 +102,9 @@ cbPal <- c( "#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#
 
 # printing rounded number
 rprint <- function( x, dec=2 ) sprintf( paste0("%.",dec,"f"), round( x , dec) )
+
+# upper bound
+ubound <- function( x, dec=2 ) ifelse( round(x,dec) > x, rprint(x,dec), rprint( x+1/(10^dec), dec ) )
 
 # print percentages of columns in a data.frame
 percprint <-
@@ -108,7 +120,7 @@ percprint <-
 
 ```
 
-In this supplementary material we present additional information to manuscript *“Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease”* including further presentation of the results that was not included in the main text due to space constraints. All procedures described in this supplementary material are accompanied by R code used to implement the steps described herein and Stan code for Bayesian generalized linear mixed models (GLMMs) fitted during this project. The R code and Stan models as well as raw files containing all images and tables are available at [https://github.com/josefmana/dbs_longCOG](https://github.com/josefmana/dbs_longCOG). Since the data used for model fitting in our study contain medical records of included patients, they are not publicly available for privacy reasons. Moreover, because the GLMMs reported in this article are exceedingly large for purposes of online storage (> 2 GB each), only the R and Stan codes are included.
+In this supplementary material we present additional information to manuscript *“Preoperative Cognitive Profile Predictive of Cognitive Decline after Subthalamic Deep Brain Stimulation in Parkinson’s Disease”* including further presentation of results that was not included in the main text due to space constraints. All procedures described in this supplementary material are accompanied by R code used to implement the steps described herein and Stan code for Bayesian generalized linear mixed models (GLMMs) fitted during this project. The R code and Stan models as well as raw files containing all images and tables are available at **[https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED)**. Since the data used for model fitting in our study contain medical records of included patients, they are not publicly available for privacy reasons. Moreover, because the GLMMs reported in this article are exceedingly large for purposes of online storage (> 2 GB each), only the R and Stan codes are included.
 
 # Pre-surgery cross-sectional exploratory factor analysis
 
@@ -628,7 +640,7 @@ t2$test <-
   
   t2$test %>%
   tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory." ) %>%
-  tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
+  tab_source_note( source_note = "b: parameter value point estimate (posterior median); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
 
 # save & print it
 gtsave( data = t2$test, filename = here("tabs","posteriors_test.docx") )
@@ -645,7 +657,7 @@ t2$factor <-
   
   t2$factor %>%
     tab_footnote( footnote = "All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on longitudinal cognitive trajectory.") %>%
-    tab_source_note( source_note = "b: parameter value point estimate (posterior media); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory." )
+    tab_source_note( source_note = "b: parameter value point estimate (posterior median); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory." )
 
 # save & print it
 gtsave( data = t2$factor, filename = here("tabs","posteriors_fact.docx") )
@@ -758,3 +770,248 @@ For each combination of population-level slope *$b_1$* (none, mild and moderate 
 The results of simulations are presented in @fig-sims. It is clear that both factors theorized to alleviate the false positive error rates (i.e., the Bayesian Lasso and dimension reduction of the potential predictors structure) can do so in our data structure according to these simulations. Moreover, applying the two-step procedure to our data set seems to incur a high risk of inflated false positive error rates even in the best case scenario.
 
 ![Simulation results. The figure presents number of false positives per one hundred simulations dependent on (i) the method used (colour), (ii) the assumed average annual post-surgery decline (columns) and (iii) the potential pre-surgery predictor structure (rows).](../figs/sims_falsepos.jpg){#fig-sims}
+
+## Exploring electrode localization
+
+**To explore association between electrode localization and post-surgery cognitive decline we retrospectively gathered magnetic resonance imaging (MRI) data of patients included in our data set and estimated volume of activated issue (VAT) by stimulation parameters at time of MRI assessment and its intersection with subthalamic nucleus (STN) and its motor, associative and limbic sections. Only patients with all (i) pre-surgery MRI for STN localization, (ii) post-surgery MRI for electrode localisation, and (iii) stimulation parameters at time of MRI assessment for VAT computation were included. Pre-processing was conducted in Lead-DBS software ([lead-dbs.org](https://www.lead-dbs.org)) and is more closely describned in the main text. The outcome of this pre-processing was a set of estimates of the overlap between VAT and STN (and its components) for each included patient.**
+
+### Data set
+
+```{r}
+#| label: elloc
+
+library(english)
+library(rsvg) # reading electrodes picture
+
+rm( list = ls()[ !ls() %in% c("rprint","ubound","cbPal") ] ) # clear environment
+
+# read the data
+for( i in names(readRDS( here("_data","vatplus_df.rds" ) ) ) ) assign( i, readRDS( here("_data","vatplus_df.rds" ) )[[i]] )
+
+# extract inclusion/exclusion stats
+incl <-
+  
+  d0 %>%
+  filter( post == 0 ) %>%
+  select(elloc_miss) %>%
+  table( useNA = "always" )
+
+```
+
+**From total of `r sum(incl)` patients `r incl[length(names(incl))]` were included into analysis, `r incl["no mri"]` were excluded due to missing MRI at both pre- and post-surgery assessments, `r incl["post only"]` patients were excluded due to missing post-surgery MRI and `r english(incl["miss stim"])` patient was excluded due to missing stimulation parameters at time of MRI. While according to our estimates, there was higher mean overlap of VATs and motor STN compared to other STN components, for some patient we estimated high proportion overlap between their VAT and associative STN as well (see @tbl-intdesc). Moreover, our estimates imply that there was only small or no overlap between VAT and at least one STN in appreciable number of patients (see also @fig-leads). Since all patients in our data set showed at least some clinical improvement after STN DBS according attending physicians, we tend to attribute these cases to noisy estimates rather than true misalignment between the lead and STN.**
+
+```{r}
+#| label: tbl-intdesc
+#| tbl-cap: Overlap between volume of activated tissue and subthalamic nucleus components
+
+# function to calculate descriptive statistics
+descstat <-
+  
+  function( stat = "mean", d = d1, nrow, intersection, volume, dec = 2 ) {
+    
+    sapply(
+      1:nrow,
+      function(i)
+        do.call( stat, list( 100 * d[ , intersection[i] ] / d[ , volume[i] ] , na.rm = T ) ) %>%
+        rprint( dec = dec )
+    ) %>%
+      
+      unlist( use.names = F )
+    
+  }
+
+d1 <- d0 %>% filter( is.na(elloc_miss) & post == 0 ) # keep one value per included patient
+
+# prepare the table
+t4 <-
+  
+  struct %>%
+    
+  # calculate stats
+  mutate(
+    N = sapply( 1:nrow(.), function(i) sum( !is.na( d1[ , AtlasIntersection[i]] / d1[ , AtlasVolume[i]] ) ) ),
+    Md = descstat( stat = "median", d = d1, nrow = nrow(.), intersection = AtlasIntersection, volume = AtlasVolume, dec = 2 ),
+    `Min-Max` =
+      paste0(
+        descstat( stat = "min", d = d1, nrow = nrow(.), intersection = AtlasIntersection, volume = AtlasVolume, dec = 2 ), "-",
+        descstat( stat = "max", d = d1, nrow = nrow(.), intersection = AtlasIntersection, volume = AtlasVolume, dec = 2 )
+      ),
+    M = descstat( stat = "mean", d = d1, nrow = nrow(.), intersection = AtlasIntersection, volume = AtlasVolume, dec = 2 ),
+    SD = descstat( stat = "sd", d = d1, nrow = nrow(.), intersection = AtlasIntersection, volume = AtlasVolume, dec = 2 ),
+    Hemisphere = case_when( side == "left" ~ "Left", side == "right" ~ "Right" ),
+    .before = 1
+  ) %>%
+  
+  # final touches
+  select( Hemisphere, struct, N, Md, `Min-Max`, M, SD ) %>%
+  mutate(
+    struct =
+      case_when(
+        struct == "STN" ~ "Subthalamic nucleus (STN)",
+        struct == "STN_motor" ~ "Motor STN",
+        struct == "STN_associative" ~ "Associative STN",
+        struct == "STN_limbic" ~ "Limbic STN"
+      )
+  ) %>%
+  
+  # format it
+  gt( groupname_col = "struct" ) %>%
+  cols_align( align = "center", columns = -1 ) %>%
+  tab_source_note(
+    source_note = "N: number of observations; Md: median; M: mean; SD: standard deviation; Numbers in all columns but N represent percentage points of overlap
+    between estimated volume of activated tissue and patient's subthalamic nucleus."
+  )
+
+# save & print it
+gtsave( data = t4, filename = here("tabs","vat_overlaps.docx") )
+t4
+
+```
+
+![Position of electrodes as estimated by Lead-DBS.](../figs/leadbs_snapshot.png){#fig-leads}
+
+### Statistical models
+
+**Since we were able to use only subset of patients for analysis of association between electrode localisation and post-surgery cognitive decline, we first directly compared included versus excluded patients' clinical and neuropsychological baseline characteristic. For this end we applied "Bayesian t-test" for difference in means with unequal standard deviations of the following form:**
+
+$$DV_i \sim~ N(\mu_0,\sigma_0), for~excluded~patients$$ $$DV_j \sim~ N(\mu_1,\sigma_1), for~included~patients$$ $$mu_x \sim~ N(0,1), for x \in \{0,1\}$$ $$sigma_x \sim~ E(1), for x \in \{0,1\}$$
+
+**where *i* = 1…*$n_0$* with *$n_0$* excluded patients, *j* = 1…*$n_1$* with *$n_1$* included patients, *DV* is a dependent variable (i.e., clinical or neuropsychological characteristic in question) *N()* is the Normal probability density function and *E()* is the Exponential probability density function. All dependent variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) and response times log-transformed and then standardized before entering the analysis. The between-group differences were evaluated by calculating a difference scores $\mu_1-\mu_0$ for means and $\sigma_1-\sigma_0$ for standard deviations whose posterior mean ad 95% PPI were then reported.**
+
+**In the next step we directly compared post-surgery cognitive decline of included versus excluded patients. To do this, we adjusted the descriptive model from the main text to include slopes varying by inclusion/exclusion status:**
+
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \beta_{inclusion}inclusion_i + \delta_{inclusion}time_iinclusion_i + \bar{\alpha}_{id[i]} + \bar{\delta}_{id[i]}time_i$$
+**with default brms priors for all parameters (see Stan file at [https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED) for more information). We used $\delta_{inclusion}$ as a measure of cognitive decline discrepancy between the two subsamples.**
+
+**Finally, to evaluate predictive value of VATs overlap with STN components, we adjusted the predictive models from the main text:**
+
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \bar{\alpha}_{id[i]} + \bar{\delta}_{id[i]}time_i$$
+
+**such that each $predictor_{[j]i}$ represents one of six combinations of VAT intersection with STN component (motor, associative and limbic) separately for each hemisphere. Furthermore, to reduce the amount of regularization we used *N(0,0.5)* priors for population level parameters $\alpha$, $\delta_{time}$, $\beta_{predictor[j]}$ and $\delta_{predictor[j]}$ instead of Bayesian Lasso. All variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) befored entering the analysis. We used the set of $\delta_{inclusion}$ values as a measure representing the expected prognostic value of affected proportion of STN subsections via DBS.**
+
+### Results
+
+```{r}
+#| label: bayes-ttest
+
+# extract order of variables
+ord <-
+  
+  tab %>%
+  mutate( p = 2 * (1 - ifelse( mu_prob < .5, 1-mu_prob, mu_prob ) ) ) %>%
+  mutate(
+    var =
+      case_when(
+        var == "MDS-UPDRS III (ON medication)" ~ "MDS-UPDRS III ON",
+        var == "MDS-UPDRS III (OFF medication)" ~ "MDS-UPDRS III OFF",
+        var == "Disease duration at surgery (years)" ~ "Dis. dur. at surgery",
+        .default = var
+      )
+  ) %>%
+  mutate( var = sapply( var, function(i) strsplit( i, " (", fixed = T )[[1]][1] ) ) %>%
+  arrange(p) %>%
+  select(var)
+
+# prepare figure of "Bayesian p-values"
+f8 <-
+  
+  tab %>%
+  
+  # extract variables needed
+  select( var, ends_with("prob") ) %>%
+  mutate(
+    var =
+      case_when(
+        var == "MDS-UPDRS III (ON medication)" ~ "MDS-UPDRS III ON",
+        var == "MDS-UPDRS III (OFF medication)" ~ "MDS-UPDRS III OFF",
+        var == "Disease duration at surgery (years)" ~ "Dis. dur. at surgery",
+        .default = var
+      )
+  ) %>%
+  
+  # pre-process the table
+  mutate( var = sapply( var, function(i) strsplit( i, " (", fixed = T )[[1]][1] ) ) %>%
+  filter( var != "Sex" ) %>%
+  pivot_longer( cols = -var, names_to = "Parameter", values_to = "prob" ) %>%
+  mutate( var = factor( var, levels = ord$var, ordered = T ) ) %>%
+  mutate(
+    pdir = ifelse( prob < .5, 1-prob, prob ),
+    `Directionality: ` = factor( ifelse( prob < .5, "excluded > included", "included > excluded" ) ),
+    p = 2 * (1 - pdir)
+  ) %>%
+  
+  # plot it
+  ggplot() +
+  aes( x = p, y = var, fill = `Directionality: ` ) +
+  geom_bar( stat = "identity" ) +
+  scale_fill_manual( values = c("skyblue","navy") ) +
+  geom_vline( xintercept = .05, linetype = "dashed", linewidth = 1.2, colour = "red" ) +
+  facet_wrap( ~ Parameter, ncol = 2, labeller = as_labeller( c( mu_prob = "mu", sigma_prob = "sigma" ), label_parsed ) ) +
+  labs( y = NULL, x = "Bayesian p-value" ) +
+  theme_minimal( base_size = 12 ) +
+  theme( legend.position = "bottom", strip.text = element_text(size = 13) )
+
+# save the plot
+ggsave(
+  plot = f8,
+  filename = here("figs","bayes_ttest.jpg"),
+  dpi = 300,
+  width = 7.7,
+  height = 9.5
+)
+
+```
+
+**Pre-surgery differences between included and excluded patients are presented in @tbl-ttest and @fig-ttest. Overall, the patients included in VAT overlap with STN analysis were marginally younger with less pre-surgery anxiety, less depressive symptoms and better performance in some measures of attention and executive function (namely Tower of London task, Category Fluency Test and Trail Making Test part A). On the other hand, performance on other executive and attention tasks (such as Prague Stroop Test dots naming condition or Trail Making Test part B) as well as disease duration, pre-surgery motor symptoms and levodopa equivalent daily dose appeared similar across groups.**
+
+```{r}
+#| label: tbl-ttest
+#| tbl-cap: Mean differences between included and excluded patients in pre-surgery clinical and neuropsychological variables
+
+t5 <- 
+  
+  # prepare it
+  tab %>%
+  mutate( across( ends_with("prob"), ~ rprint(.x,3) ) ) %>%
+  mutate( across( everything(), ~ ifelse( is.na(.x),"-",.x ) ) ) %>%
+  mutate( across( everything(), ~ ifelse( .x == "NA","-",.x ) ) ) %>%
+  
+  # format it
+  gt( rowname_col = "var" ) %>%
+  cols_align( columns = -1, "center" ) %>%
+  
+  # columns
+  tab_spanner( label = "Descriptive statistics", columns = 2:4, gather = F ) %>%
+  tab_spanner( label = "μ", columns = starts_with("mu"), gather = F ) %>%
+  tab_spanner( label = "σ", columns = starts_with("sigma"), gather = F ) %>%
+  tab_spanner( label = "Bayesian t-test", columns = contains("_") ) %>%
+  cols_label(
+    n ~ "N",
+    `0` ~ "Excluded",
+    `1` ~ "Included",
+    ends_with("sum") ~ "{{*d*}}",
+    ends_with("prob") ~ "Pr({{*d*}}<0)"
+  ) %>%
+  
+  # footnotes
+  tab_footnote(
+    footnote = "Values indicate mean ± standard deviation or frequency (percentage)",
+    locations = cells_column_labels( columns = c("0","1") )
+  ) %>%
+  tab_source_note(
+    source_note = "N: number of observations from excluded/included patients; μ: inference for mean difference between groups; σ: estimate of difference between standard deviations between groups; d: difference value point estimate (posterior median) [95% posterior probability interval] Pr(d < 0): probability that a difference is negative, i.e., probability that included patients had higher mean/stnadard deviation than excluded patients; MDS-UPDRS III: Movement Disorder Society Unified Parkinson’s Disease Rating Scale, motor part; LEDD: levodopa equivalent daily dose; Levodopa test: a percentage change of the MDS-UPDRS III score from medication OFF to medication ON state during the levodopa test; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall."
+  )
+
+# save & print it
+gtsave( data = t5, filename = here("tabs","bayes_ttest.docx") )
+t5
+
+```
+
+![Between-group comparisons of included vs excluded patients. Bayesian p-values were calculated as half of the probability that the difference parameter (described by its posterior distribution) is strictly positive or negative. Lower values imply higher probability of difference between groups. Conventional < .05 value is marked by the red dotted line. The left column relates to mean differences while the right column relates to differences in standard deviations.](../figs/bayes_ttest.jpg){#fig-ttest}
+```{r}
+#| label: locincl-desc
+
+m0 <- readRDS( here("mods","m6_desc_check.rds") ) # read the model
+
+```

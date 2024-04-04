@@ -27,6 +27,7 @@ sapply( c("mods","figs","tabs"), function(i) if( !dir.exists(i) ) dir.create(i) 
 
 # original data set
 d0 <-
+  
   read.csv( here("_data","20220508_dbs_longCOG_data.csv") , sep = "," ) %>%
   filter( included == 1 ) %>% # only STN-DBS treated patients with pre- and post-surgery data
   filter( complete.cases(drs_tot) ) # get rid of three dummy rows due to more than one stimulation parameter (no DRS-2)
@@ -537,8 +538,8 @@ tab <-
           return(
             c( n = n,
                `0` = desc[1], `1` = desc[2],
-               mu_sum = sum[["mu"]], mu_prob = prob[["mu"]],
-               sigma_sum = sum[["sigma"]], sigma_prob = prob[["sigma"]]
+               mu_sum = sum[["mu"]], mu_prob = 1-prob[["mu"]],
+               sigma_sum = sum[["sigma"]], sigma_prob = 1-prob[["sigma"]]
                )
           )
           
@@ -567,9 +568,6 @@ tab <-
   # finishing touches
   mutate( var = sapply( var, function(i) v[ v$variable == i, "name" ] ) ) %>%
   mutate( across( all_of( ends_with("prob") ), ~ as.numeric(.x) ) )
-
-# save it
-write.table( tab, here("tabs","elloc_comaprsions.csv"), sep = ";", row.names = F, quote = F )
 
 
 ## DESCRIPTIVE MODEL ----
@@ -620,6 +618,9 @@ df <-
   select( id, time, drs, cens_drs, post, ends_with("proportion") ) %>%
   mutate( across( all_of( ends_with("proportion") ), ~ ( .x - scl$M[[cur_column()]] ) / scl$SD[[cur_column()]] ) )
 
+# save data used
+saveRDS( list( d0 = d0, df = df, scl = scl, struct = struct, tab = tab ), file = here("_data","vatplus_df.rds") )
+
 # linear model
 f7 <-
   
@@ -652,41 +653,3 @@ m7 <-
     file = here( "mods","m7_stn_intersect.rds"), save_model = here( "mods", "m7_stn_intersect.stan")
   )
 
-
-# plot 'Bayesian p-values' to summarise differences ----
-#
-#tab %>%
-#  
-#  # extract variables needed
-#  select( var, ends_with("prob") ) %>%
-#  mutate(
-#    var =
-#      case_when(
-#        var == "MDS-UPDRS III (ON medication)" ~ "MDS-UPDRS III ON",
-#        var == "MDS-UPDRS III (OFF medication)" ~ "MDS-UPDRS III OFF",
-#        var == "Disease duration at surgery (years)" ~ "Dis. dur. at surgery",
-#        .default = var
-#      )
-#  ) %>%
-#  
-#  # pre-process the table
-#  mutate( var = sapply( var, function(i) strsplit( i, " (", fixed = T )[[1]][1] ) ) %>%
-#  mutate( var = factor( var, levels = reorder(var,mu_prob), ordered = T ) ) %>%
-#  filter( var != "Sex" ) %>%
-#  pivot_longer( cols = -var, names_to = "Parameter", values_to = "prob" ) %>%
-#  mutate(
-#    pdir = ifelse( prob < .5, 1-prob, prob ),
-#    `Directionality: ` = factor( ifelse( prob < .5, "included < excluded", "excluded < included" ) ),
-#    p = 2 * (1 - pdir)
-#  ) %>%
-#  
-#  # plot it
-#  ggplot() +
-#  aes( x = p, y = reorder( var, p, decreasing = T ), fill = `Directionality: ` ) +
-#  geom_bar( stat = "identity" ) +
-#  scale_fill_manual( values = c("navy","skyblue") ) +
-#  geom_vline( xintercept = .05, linetype = "dashed", linewidth = 1.2, colour = "red" ) +
-#  facet_wrap( ~ Parameter, ncol = 2, labeller = as_labeller( c( mu_prob = "mu", sigma_prob = "sigma" ), label_parsed ) ) +
-#  labs( y = NULL, x = "Bayesian p-value" ) +
-#  theme_minimal( base_size = 14 ) +
-#  theme( legend.position = "bottom" )

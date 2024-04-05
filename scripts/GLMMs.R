@@ -453,14 +453,10 @@ sapply(
 # STIMULATION/STN INTERSECTIONS ----
 
 # clean the environment
-rm( list = ls()[ !( ls() %in% c("scl","s") ) ] )
+rm( list = ls()[ !( ls() %in% c("scl","s","ch","it","wu") ) ] )
 gc()
 
-# new rstan options
-ch = 4 # number of chains
-it = 2000 # iterations per chain
-wu = 1000 # warm-up iterations
-ad = .90 # adapt_delta parameter
+ad = .90 # new rstan options
 
 # read data & variable names
 v <- read.csv( here("_data","var_nms.csv"), sep = ";" )[1:35, ] # variables to be inspected

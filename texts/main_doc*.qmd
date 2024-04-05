@@ -1088,7 +1088,7 @@ Nothing to report.
 The study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic. All Participants provided informed consent. 
 
 # Data availability
-The data that support the findings of this study are available on request from the corresponding author. The data are not publicly available due to privacy or ethical restrictions. The computer code used in our analysis as well as supplementary presentation of our results can be accessed at https://github.com/josefmana/dbs_longCOG.
+**The data that support the findings of this study are not currently publicly available due institutional regulations protecting patient clinical data but are available from the corresponding author on request (may require data use agreements to be developed).** ~~The data that support the findings of this study are available on request from the corresponding author. The data are not publicly available due to privacy or ethical restrictions.~~ The computer code used in our analysis as well as supplementary presentation of our results can be accessed at https://github.com/josefmana/dbs_longCOG.
 
 {{< pagebreak >}}
 

@@ -17,11 +17,6 @@ author:
   - name: Andrej Lasica
     corresponding: false
     email: "Andrej.Lasica@vfn.cz"
-    role:
-      - Investigation
-      - Data curation
-      - Formal analysis
-      - Writing - review & editing
     affiliations:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
@@ -300,7 +295,7 @@ To simplify the process of choosing appropriate prior distributions and minimize
 #| label: posteriors
 #| cache: true
 
-rm( list = ls()[ !ls() %in% c("rprint","imp","cbPal") ] ) # clear environment
+rm( list = ls()[ !ls() %in% c("rprint","ubound","imp","cbPal") ] ) # clear environment
 v <- read.csv( here("_data","var_nms.csv") , sep = ";" , row.names = 1 , encoding = "UTF-8") # read variable mappings
 
 # read the data
@@ -686,7 +681,7 @@ To test our assumption that the classical two-step procedure of identifying sign
 
 library(reshape2) # for melting correlation matrix for plotting
 
-rm( list = ls()[ !ls() %in% c("rprint","cbPal") ] ) # clear environment
+rm( list = ls()[ !ls() %in% c("rprint","ubound","cbPal","v") ] ) # clear environment
 
 
 # CORRELATION STRUCTURE ----
@@ -783,7 +778,7 @@ The results of simulations are presented in @fig-sims. It is clear that both fac
 library(english)
 library(rsvg) # reading electrodes picture
 
-rm( list = ls()[ !ls() %in% c("rprint","ubound","cbPal") ] ) # clear environment
+rm( list = ls()[ !ls() %in% c("rprint","ubound","cbPal","v") ] ) # clear environment
 
 # read the data
 for( i in names(readRDS( here("_data","vatplus_df.rds" ) ) ) ) assign( i, readRDS( here("_data","vatplus_df.rds" ) )[[i]] )
@@ -887,7 +882,7 @@ $$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N
 
 $$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \bar{\alpha}_{id[i]} + \bar{\delta}_{id[i]}time_i$$
 
-**such that each $predictor_{[j]i}$ represents one of six combinations of VAT intersection with STN component (motor, associative and limbic) separately for each hemisphere. Furthermore, to reduce the amount of regularization we used *N(0,0.5)* priors for population level parameters $\alpha$, $\delta_{time}$, $\beta_{predictor[j]}$ and $\delta_{predictor[j]}$ instead of Bayesian Lasso. All variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) befored entering the analysis. We used the set of $\delta_{inclusion}$ values as a measure representing the expected prognostic value of affected proportion of STN subsections via DBS.**
+**such that each $predictor_{[j]i}$ represents one of six combinations of VAT intersection with STN component (motor, associative and limbic) separately for each hemisphere. Furthermore, to reduce the amount of regularization we used *N(0,0.5)* priors for population level parameters $\alpha$, $\delta_{time}$, $\beta_{predictor[j]}$ and $\delta_{predictor[j]}$ instead of Bayesian Lasso. All variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) befored entering the analysis. We used the set of $\delta_{inclusion}$ values as a measure representing the expected prognostic value of affected proportion of STN subsections via DBS. All models described in this section were fitted using four chain each with 2500 samples out of which 500 samples were discarded as a warm-up.**
 
 ### Results
 
@@ -936,7 +931,7 @@ f8 <-
   mutate( var = factor( var, levels = ord$var, ordered = T ) ) %>%
   mutate(
     pdir = ifelse( prob < .5, 1-prob, prob ),
-    `Directionality: ` = factor( ifelse( prob < .5, "excluded > included", "included > excluded" ) ),
+    `Directionality: ` = factor( ifelse( prob > .5, "excluded > included", "included > excluded" ) ),
     p = 2 * (1 - pdir)
   ) %>%
   
@@ -1009,9 +1004,143 @@ t5
 ```
 
 ![Between-group comparisons of included vs excluded patients. Bayesian p-values were calculated as half of the probability that the difference parameter (described by its posterior distribution) is strictly positive or negative. Lower values imply higher probability of difference between groups. Conventional < .05 value is marked by the red dotted line. The left column relates to mean differences while the right column relates to differences in standard deviations.](../figs/bayes_ttest.jpg){#fig-ttest}
+
 ```{r}
 #| label: locincl-desc
 
-m0 <- readRDS( here("mods","m6_desc_check.rds") ) # read the model
+m6 <- readRDS( here("mods","m6_desc_check.rds") ) # read the model
+
+# exctract diagnostics
+rhat_max <- ubound( max( rhat(m6) ), dec = 3 )
+park_max <- ubound( max( loo(m6)$diagnostic$pareto_k ) )
+park_big <- sum( loo(m6)$diagnostic$pareto_k > .7 )
+
+# prepare a table with basic comparisons
+# will do it via two (equivalent in this case) ways
+
+# 1) from predictions via posterior_epred
+#b <-
+#  
+#  m6 %>%
+#  posterior_epred( newdata = expand.grid( time = c(0,1), elloc = c(0,1), id = "sub000" ), allow_new_levels = T, re_formula = #NA ) %>%
+#  as.data.frame() %>%
+#  rename( "pre_0" = "V1", "post_0" = "V2", "pre_1" = "V3", "post_1" = "V4" ) %>%
+#  mutate(
+#    slope_0 = post_0 - pre_0,
+#    slope_1 = post_1 - pre_1,
+#    intercept_dif = pre_1 - pre_0,
+#    slope_dif = slope_1 - slope_0
+#  ) %>%
+#  select( !starts_with("post") ) %>%
+#  mutate(
+#    across( starts_with("pre"), ~ .x * scl$SD$drs + scl$M$drs ),
+#    across( !starts_with("pre"), ~ .x * scl$SD$drs )
+#  ) %>%
+#  apply( 2, median_hdi ) %>%
+#  do.call( rbind.data.frame, . ) %>%
+#  mutate(
+#    md = rprint(y,2),
+#    md_abs = rprint( abs(y),2 )
+#    ppi = paste0( "[", rprint(ymin,2), ", ", rprint(ymax,2), "]" )
+#  )
+
+# 2) directly via transformation of posterior parameter draws
+b <-
+  
+  m6 %>%
+  as_draws_df() %>%
+  select( all_of( starts_with("b_") ) ) %>%
+  mutate(
+    pre_0 = b_Intercept - 0.5 * b_elloc1,
+    pre_1 = b_Intercept + 0.5 * b_elloc1,
+    slope_0 = b_time - 0.5 * `b_time:elloc1`,
+    slope_1 = b_time + 0.5 * `b_time:elloc1`,
+    intercept_dif = pre_1 - pre_0,
+    slope_dif = slope_1 - slope_0
+  ) %>%
+  select( !starts_with("b_") ) %>%
+  mutate(
+    across( starts_with("pre"), ~ .x * scl$SD$drs + scl$M$drs ),
+    across( starts_with("slope"), ~ .x * scl$SD$drs )
+  ) %>%
+  apply( 2, median_hdi ) %>%
+  do.call( rbind.data.frame, . ) %>%
+  mutate(
+    md = rprint(y,2),
+    md_abs = rprint( abs(y),2 ),
+    ppi = paste0( "[", rprint(ymin,2), ", ", rprint(ymax,2), "]" )
+  )
+
+
+```
+
+**The descriptive model comparing post-surgery cognitive decline in excluded versus included patients converged had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). All observations had Pareto-k below `r park_max`. According to the model included patients experienced an average post-surgery decline of `r b["slope_1", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_1", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_1','md']` points (95% PPI `r b["pre_1","ppi"]`) whereas excluded patients experienced an average post-surgery decline of `r b["slope_0", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_0", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_0','md']` points (95% PPI `r b["pre_0","ppi"]`). Although the post-surgery cognitive decline was slower in included patients by `r b['slope_dif','md_abs']`, the difference was not statistically clear based on 95% PPI `r b['slope_dif','ppi']`.**
+
+```{r}
+#| label: vat-overlaps
+
+rm( list = ls()[ !ls() %in% c("rprint","ubound","cbPal","d0","d1","df","scl","struct","v") ] ) # clear environment
+
+m7 <- readRDS( here("mods","m7_stn_intersect.rds") )
+
+# exctract diagnostics
+rhat_max <- ubound( max( rhat(m7) ), dec = 3 )
+park_max <- ubound( max( loo(m7)$diagnostic$pareto_k ) )
+park_big <- sum( loo(m7)$diagnostic$pareto_k > .7 )
+
+# extract draws
+drws <-
+  
+  m7 %>%
+  spread_draws( `b_.*`, regex = T ) %>% # extract all "fixed-effect" parameters
+  select( contains("b_") ) %>% # get rid of the info about chains
+      
+  # re-scale to DRS-2 raw scale
+  mutate(
+    b_Intercept = ( b_Intercept * scl$SD$drs ) + scl$M$drs,
+    b_time = b_time * scl$SD$drs,
+    across( contains("STN"), ~ .x * scl$SD$drs * ( 0.1 / scl$SD[[ sub("b_","", sub("b_time:","", cur_column() ) ) ]] ) ) # expected DRS-2 change for 10% jump in VAT/STN overlap (the same for 40->50 % and 50->60 %)
+  ) %>%
+      
+  relocate( b_time, .after = "b_STN_limbic_right_proportion" )
+
+# prepare the figure
+f9 <-
+  
+  # prepare the draws
+  drws %>%
+  select( contains("time") ) %>%
+  pivot_longer( cols = everything() ) %>%
+  mutate( name = sub( "time:", "", name ) %>% sapply( ., function(x) v[x, ] ) ) %>%
+  
+  # plotting proper
+  ggplot() +
+  aes( x = value, y = reorder(name, value, decreasing = T), fill = stat(x) ) +
+  geom_density_ridges_gradient( scale = 1.5, rel_min_height = 0.001 ) +
+  scale_fill_viridis_c( option = "turbo", direction = -1 ) +
+  geom_vline( xintercept = 0, linewidth = .75, linetype = "solid", color = "black" ) +
+  labs( x = expression(Delta*"DRS-2 (points per year)"), y = NULL ) +
+  scale_x_continuous( limits = c(-2,2) ) +
+  scale_y_discrete( labels = function(x) parse( text = paste0( "delta[", x, "]" ) ) ) + # add predictor parameter names
+  theme_minimal( base_size = 11 ) +
+  theme( legend.position = "none" )
+
+# save it
+ggsave( plot = f9, filename = here("figs","vat_postdist.jpg"), dpi = 300, width = 6.3, height = 7.7 )
+
+
+```
+
+```{r}
+#| label: tbl-vatpost
+
+# extract and summarize posteriors of the "fixed-effects"
+post <-
+  
+  drws %>%
+  apply( . , 2 , function(x) { c(b = median(x), PPI = hdi(x,.width =.95), pd = sum(x<0)/length(x) ) } ) %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column( var = "Parameter" )
 
 ```

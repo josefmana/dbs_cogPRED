@@ -271,6 +271,13 @@ m1 <-
     
   )
 
+# add Lasso descriptive linear model for head-to-head comparison of patient-level variance
+m0$m0_lasso <- brm( formula = f0$m0_linear, family = student(), prior = p1,
+                    data = df, sample_prior = T, seed = s, chains = ch,
+                    iter = it, warmup = wu, control = list( adapt_delta = ad ),
+                    file = here( "mods","m0_lasso.rds"), save_model = here("mods","m1_lasso_linear.stan")
+                    )
+
 # clean the environment
 rm( list = ls()[ !( ls() %in% c("d0","d1","d_seq","imp","m1","scl","doms","tests","ch","it","wu","ad","s","ppred") ) ] )
 gc()

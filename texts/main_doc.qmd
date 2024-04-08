@@ -132,7 +132,7 @@ author:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
-abstract: "Cognitive decline represents a severe non-motor symptom of Parkinson’s disease (PD) that can significantly reduce benefits of subthalamic deep brain stimulation (STN DBS). Here, we aimed to **describe expected post-surgery cognitive decline and** identify pre-surgery cognitive profile associated with faster post-surgery cognitive decline in STN DBS treated PD patients. A retrospective observational study of 126 PD patients treated by STN DBS combined with oral dopaminergic therapy followed for 3.54 years on average (SD = 2.32) with repeated assessments of cognition was conducted. Pre-surgery cognitive profile was obtained via a comprehensive neuropsychological examination. Data were analyzed using exploratory factor analysis for pre-surgery cognitive profile extraction and Bayesian generalized linear mixed models for description of the longitudinal cognitive outcome. Overall, we observed a mild annual cognitive decline of 0.90 points from a total of 144 points in the Mattis Dementia Rating Scale (95% posterior probability interval (PPI) [-1.19, -0.62]). Pre-surgery executive deficit predicted the rate of post-surgery cognitive decline (b = -0.39, 95% PPI [-0.63, -0.15]). The predictive utility of pre-surgery executive deficit resulted from summing small effects of several single test scores. **Exploratory analysis of electrode localisation did not yield any statistically clear results. Overall, our data imply that mild average annual post-surgery cognitive decline in PD patients treated with STN DBS with high inter-individual variability. However, patients with worse long-term cognitive prognosis can be identified via pre-surgery examination of executive functions.**"
+abstract: "Cognitive decline represents a severe non-motor symptom of Parkinson’s disease (PD) that can significantly reduce benefits of subthalamic deep brain stimulation (STN DBS). Here, we aimed to **describe expected post-surgery cognitive decline and** identify pre-surgery cognitive profile associated with faster post-surgery cognitive decline in STN DBS treated PD patients. A retrospective observational study of 126 PD patients treated by STN DBS combined with oral dopaminergic therapy followed for 3.54 years on average (SD = 2.32) with repeated assessments of cognition was conducted. Pre-surgery cognitive profile was obtained via a comprehensive neuropsychological examination. Data were analyzed using exploratory factor analysis for pre-surgery cognitive profile extraction and Bayesian generalized linear mixed models for description of the longitudinal cognitive outcome. Overall, we observed a mild annual cognitive decline of 0.90 points from a total of 144 points in the Mattis Dementia Rating Scale (95% posterior probability interval (PPI) [-1.19, -0.62]). Pre-surgery executive deficit predicted the rate of post-surgery cognitive decline (b = -0.39, 95% PPI [-0.63, -0.15]). The predictive utility of pre-surgery executive deficit resulted from summing small effects of several single test scores. **Exploratory analysis of electrode localisation did not yield any statistically clear results. Overall, our data imply that mild average annual post-surgery cognitive decline in PD patients treated with STN DBS with high inter-individual variability. However, patients with worse long-term cognitive prognosis can be reliably identified via pre-surgery examination of executive functions.**"
 keywords:
   - Parkinson’s disease
   - deep brain stimulation
@@ -175,7 +175,7 @@ Overall, in this study we aimed to **describe annual post-surgery cognitive decl
 
 ## Participants
 
-The data of all patients diagnosed with idiopathic PD following United Kingdom Parkinson’s Disease Society Brain Bank Criteria [@hughes1992] that underwent cognitive evaluation for STN DBS treatment at General University Hospital in Prague between years 2000 and 2020 were retrospectively gathered from clinical records and considered for inclusion in the study. **Patients were selected for DBS treatment via selection criteria mirroring the CAPSIT-protocol [@defer1999], consequently p**atients with atypical parkinsonian syndromes, dementia, depression at the time of pre-surgery assessment (according to an independent psychiatric evaluation), recurrent psychotic conditions or a gait disorder despite optimal dopaminergic therapy during pre-surgery assessment were not implanted and were thus not included in the study. Furthermore, only patients who underwent pre-surgery and at least one post-surgery assessment were included. All included patients were treated via continuous bilateral STN DBS in conjunction with dopaminergic therapy. Bilateral STN DBS implantation was performed as previously described [@jech2012; @jech2006; @urgosik2011]. All patients provided signed informed consent and the study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic.
+The data of all patients diagnosed with idiopathic PD following United Kingdom Parkinson’s Disease Society Brain Bank Criteria [@hughes1992] that underwent cognitive evaluation for STN DBS treatment at General University Hospital in Prague between years 2000 and 2020 were retrospectively gathered from clinical records and considered for inclusion in the study. **Patients were selected for DBS treatment via criteria mirroring the CAPSIT protocol [@defer1999], consequently p**atients with atypical parkinsonian syndromes, dementia, depression at the time of pre-surgery assessment (according to an independent psychiatric evaluation), recurrent psychotic conditions or a gait disorder despite optimal dopaminergic therapy during pre-surgery assessment were not implanted and were thus not included in the study. Furthermore, only patients who underwent pre-surgery and at least one post-surgery assessment were included. All included patients were treated via continuous bilateral STN DBS in conjunction with dopaminergic therapy. Bilateral STN DBS implantation was performed as previously described [@jech2012; @jech2006; @urgosik2011]. All patients provided signed informed consent and the study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic.
 
 ## Assessments
 
@@ -195,7 +195,7 @@ Patients’ motor state was assessed with part three of the Movement Disorders S
 
 ## Theoretical and empirical estimands
 
-**Following the framework of @lundberg2021, in this section we link our research questions to explicit targets of inference (i.e., the theoretical estimands) and to observable data (i.e., the empirical estimads). Within this framework, the theoretical estimand consists from two components, a unit-specific quantity and the target population. Regarding our** ***RQ1*** **, the patient-specific quantity of interest was the difference between expected post-surgery cognitive performance compared to expected cognitive performance one year before. We aimed to describe this quantity at two levels: (i) the current sample and (ii) the population of patients selected for DBS treatment via the CAPSIT-protocol criteria. The patient-specific quantity for** ***RQ2*** **was the difference between expected annual post-surgery cognitive decline per unit change in pre-surgery performance in a single latent cognitive factor/test score with other factor/test scores are being held constant. This quantity was described for sample only. Empirical estimands consisted of the same quantities as theoretical estimand conditional on patient being selected to the study (based on geographical and exclusion criteria described above).**
+**Following the framework of @lundberg2021, in this section we link our research questions to explicit targets of inference (i.e., theoretical estimands) and to observable data (i.e., empirical estimads). Within this framework, the theoretical estimand consists of two components, a unit-specific quantity and the target population. Regarding our** ***RQ1*****, the patient-specific quantity of interest is the difference between expected post-surgery cognitive performance and expected cognitive performance** ***k*** **years before where** ***k*** **can be any positive real number. We aimed to describe this quantity on two levels: (i) the current sample and (ii) a population of patients selected for DBS treatment via the CAPSIT-protocol criteria. To allow for generalization beyond our sample as per the second version of this theoretical estimand, we assume exchangeability between patients selected via CAPSIT criteria to the extend that can be quantified by patient-level variance estimated from our sample [see @yarkoni2020]. The patient-specific quantity for** ***RQ2*** **is the difference between expected post-surgery cognitive decline of a patient with fixed level of pre-surgery performance across all cognitive variables and expected post-surgery cognitive decline of patients with performance that is one unit smaller in a single cognitive variable but equal to this patient's performance otherwise. This quantity was described for the sample only. Empirical estimands were the same quantities, conditional on patient being selected for the study (based on geographical and exclusion criteria described above). Importantly, all three estimands are descriptive, not causal.**
 
 ## Statistical analyses
 
@@ -209,35 +209,39 @@ We based the number of extracted factors on a combination of the root-mean-squar
 
 ### Describing and predicting post-surgery cognitive decline
 
-Longitudinal data were analyzed using Bayesian generalized linear mixed models (GLMMs). GLMMs overcome th**e** issue **of confounding measurement error with true change described above ** by estimating both group-level (i.e., “fixed effect”) as well as patient-level (i.e., “random effect”) parameters. Furthermore, modelling patient-level effects results in partial pooling of parameter estimates (shifting parameter estimates towards each other), which reduces the influence of outliers and facilitates reliable group-level inference [@gelman2012; @tuerlinckx2006].
+Longitudinal data were analyzed using Bayesian generalized linear mixed models (GLMMs). GLMMs overcome th**e** issue **of confounding measurement error with true change plaguing change scores** by estimating both group-level (i.e., “fixed effect”) as well as patient-level (i.e., “random effect”) parameters. Furthermore, modelling patient-level effects results in partial pooling of parameter estimates (shifting parameter estimates towards each other), which reduces the influence of outliers and facilitates reliable group-level inference [@gelman2012; @tuerlinckx2006].
 
-To describe the rate of post-surgery cognitive decline, we estimated a GLMM with longitudinal DRS-2 performance as an outcome predicted by the time after surgery on the group-level and correlated patient-specific intercepts and slopes on the patient-level. Since the group-level slope of this model represents the expected rate of cognitive decline after STN DBS, it constituted the **statistical estimate of the first version of the** empirical estimand for *RQ1* **(i.e., the expected annual cognitive decline in the sample). To arrive at the statistical estimate of the second version of the empirical estimand for** ***RQ1*** **(i.e., the expected annual cognitive decline in a population of patients selected for surgery using CAPSIT-protocol criteria) we used the model to predict expected post-surgery cognitive decline at one year intervals using both group- and patient-level parameters**. To evaluate suitability of the linear model we compared it to an equivalent non-linear model that estimated post-surgery cognitive trajectory via tensor product smooths [@wood2012]. Both models were fitted using non-informative improper flat priors to ensure that their parameters are informed primarily by the data.
+To describe the rate of post-surgery cognitive decline, we estimated a GLMM with longitudinal DRS-2 performance as an outcome predicted by the time after surgery on the group-level and correlated patient-specific intercepts and slopes on the patient-level. Since the group-level slope of this model represents the expected rate of cognitive decline after STN DBS, it constituted the **statistical estimate of the first version of our empirical** estimand for *RQ1* **(i.e., the expected annual cognitive decline in the sample). To arrive at the statistical estimate of the second version of our empirical estimand for** ***RQ1*** **(i.e., the expected annual cognitive decline in a population of patients selected for surgery using CAPSIT-protocol criteria) we used the model to predict expected post-surgery cognitive decline at one year post-surgery intervals compared to a pre-surgery assessment ca 0.3 years before surgery using both group- and patient-level parameters. We** evaluate**d** suitability of the linear model **by** compar**ing** it to an **otherwise** equivalent non-linear model that estimated post-surgery cognitive trajectory via tensor product smooths [@wood2012]. Both models were fitted using non-informative improper flat priors **for group-level parameters** to ensure that their parameters are informed primarily by the data.
 
-Two GLMMs were estimated to evaluate predictive utility of pre-surgery cognitive profile. The longitudinal DRS-2 performance was predicted on a group-level by post-surgery time slopes varying by either patients’ pre-surgery cognitive tests’ scores (the “test scores” model) or patients’ pre-surgery latent cognitive factors’ scores extracted from the EFA reported above (the “factor scores” model). Both models further included correlated patient-level intercepts and slopes. To check robustness of our findings we compared the results to estimates of GLMMs that also included group-level effects of age, LEDD and BDI-II (and their interaction with the time after surgery) to adjust for potentially confounding effects of aging, dopaminergic medication, and depressive symptoms.
+T**o evaluate predictive utility of pre-surgery cognitive profile, **w**e estimated further two** GLMMs. **L**ongitudinal DRS-2 performance was predicted on a group-level by post-surgery time slopes varying by either patients’ pre-surgery cognitive tests’ scores (the “test scores” model) or patients’ pre-surgery latent cognitive factors’ scores extracted from the EFA reported above (the “factor scores” model). Both models further included correlated patient-level intercepts and slopes. To check robustness of our findings we compared the results to estimates of GLMMs that also included group-level effects of age, LEDD and BDI-II (and their interaction with time after surgery).
 
 Since previous long-term studies demonstrated that a subset of PD patients treated with STN DBS can develop dementia which may lead to heavy tails in the data distribution of cognitive test scores, we modelled the data distribution with Student-t instead of Gaussian likelihood. Furthermore, because the outcome DRS-2 has a maximum of 144 points which is achieved by a large proportion of healthy people [@bezdicek2015], we used the right-censored version of Student-t to account for the ceiling effect. Models’ likelihoods had following specification:
 
-$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \bar{\alpha}_{id[i]} + \bar{\delta}_{id[i]}time_i$$
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \tau_{\bar{\alpha}}{z}_{\bar{\alpha},id[i]} + \tau_{\bar{\delta}}{z}_{\bar{\delta},id[i]}time_i$$
 
-*i* = 1…*n*, where *n* is the total number of assessments across all patients, *m* is the total number of pre-surgery predictors, $DRS_{max}$ is the maximal attainable score in DRS-2 (i.e., a raw score of 144), *T()* is the Student-t cumulative distribution function, *t()* is the Student-t probability density function, $time_i$ is the time from surgery at assessment *i*, $predictor_{[j]i}$ is the pre-surgery cognitive score in the predictor (i.e., either a test or latent factor) *j* of the patient evaluated at assessment *i*, and the remaining terms denote model parameters. E**mpirical e**stimands relating to *RQ2* comprised of the two sets of $\delta_{predictor[j]}$ representing the expected prognostic value of single pre-surgery cognitive tests and latent cognitive factors.
+*i* = 1…*n*, where *n* is the total number of assessments across all patients, *m* is the total number of pre-surgery predictors, $DRS_{max}$ is the maximal attainable score in DRS-2 (i.e., a raw score of 144), *T()* is the Student-t cumulative distribution function, *t()* is the Student-t probability density function, $time_i$ is the time from surgery at assessment *i*, $predictor_{[j]i}$ is the pre-surgery cognitive score in the predictor (i.e., either a test or latent factor) *j* of the patient evaluated at assessment *i*, **$\tau$ parameters represent patient-level variance, $z_{id}$ represent standardized patient-level effects**, and remaining terms denote model parameters. E**mpirical e**stimands relating to *RQ2* comprised of the two sets of $\delta_{predictor[j]}$ representing the expected prognostic value of single pre-surgery cognitive tests and latent cognitive factors.
 
 We specified equivalent prior distributions for model parameters of both the “test scores” and the “factor scores” models. We used the Bayesian Lasso priors for all group-level parameters barring the intercept. This prior is the Bayesian equivalent of the Lasso method for performing variable selection and allows for fitting models with a large number of potentially collinear predictors All remaining parameters were given weakly informative priors to ensure that models’ estimates fall within the range of measurable values of the outcome.
 
-### Exploratory analysis of electrode localisation association with cognitive decline
+### Exploring association of stimulated STN site with cognitive decline
 
-**T**
+**Although our primary goals relate to the purely descriptive task of predicting post-surgery cognitive decline, further studies might want to ask causal questions about possible interventions to change the rate of this decline. A straightforward way to possibly affect cognitive performance after STN DBS surgery is to change active stimulation contacts such that volume of affected tissue (VAT) overlaps with motor component of STN while avoiding associative and limbic STN components because high frequency stimulation employed to improve motor symptoms can result in adverse cognitive side effects [@david2020]. Even though our retrospective sample did not contain enough  high-quality data that would be needed to reliably evaluate association between STN sites affected by DBS and post-surgery cognitive decline, we provide an exploratory analysis that can provide pointers for future investigations.**
+
+**For this analysis, we used a subsample of patients for whom we were able to retrospectively obtain (i) pre-surgery magnetic resonance image (MRI) for STN localization, (ii) post-surgery MRI for electrode localization, and (iii) stimulation parameters at the time of MRI assessment for VAT computation. Lead-DBS software [@horn2015; @horn2019] was utilized to determine the position of DBS leads and active contacts. The overlap of the VAT and the entire STN as well as its motor, associative, and limbic components separately was calculated, providing four overlap volumes for each side. For each patient with VAT available, only one set of overlaps was estimated which corresponded to the time of MRI acquisition, not the time of cognitive assessment as these were not always aligned. We then explored the association between VAT overlaps with STN components and post-surgery cognitive decline using a model analogous to the predictive GLMMs described above. For more detailed information about MRI acquisition parameters and modelling choices regarding this analysis see the Supplementary material.**
 
 ### Model description and statistical testing
 
-Effects were described by medians and 95% highest density posterior probability intervals (PPIs) of corresponding model parameters. A 95% PPI can be interpreted such that a given parameter lies within this interval with 95% probability. Models were compared via the expected log pointwise predictive density (ELPD) computed via the leave-one-out cross-validation (LOO-CV) as approximated by the Pareto-smoothed importance sampling (PSIS) [@vehtari2015]. The ELPD difference ($ELPD_{dif}$) and its 95% frequentist confidence interval (CI) were used to decide whether predictive performance of compared models statistically significantly differs (i.e., the 95% CI excludes zero). To identify influential observations, we calculated a Pareto-k diagnostic and looked for observations with Pareto-k \> 0.7 which can be considered problematic [@bürkner2020; @vehtari2015].
+Effects were described by medians and 95% highest density posterior probability intervals (PPIs) of corresponding model parameters **or predictions as appropriate**. A 95% PPI can be interpreted **as the narrowest interval** such that a given parameter **or prediction lies within this interval with 95% probability.** **In one case, when presenting results for the second version of our empirical estimand for** ***RQ1*****, we report medians and 90% equal-tailed posterior probability intervals (ETIs) instead. A 90% ETI can be interpreted such that a given parameter or prediction lies with 5% probability above its upper bound and with 5% probability below its lower bound.**
+
+Models were compared via the expected log pointwise predictive density (ELPD) computed via the leave-one-out cross-validation (LOO-CV) as approximated by the Pareto-smoothed importance sampling (PSIS) [@vehtari2015]. The ELPD difference ($ELPD_{dif}$) and its 95% frequentist confidence interval (CI) were used to decide whether predictive performance of compared models statistically significantly differs (i.e., the 95% CI excludes zero). To identify influential observations, we calculated a Pareto-k diagnostic and looked for observations with Pareto-k \> 0.7 which can be considered problematic [@bürkner2020; @vehtari2015].
 
 ### Evaluating false positive error rates
 
-To validate the assumption that our analysis provides lower false positive rates than the commonly used two-step procedure we conducted series of simulations with a data set structure equivalent to that observed in our data. Patients’ outcome was generated as a normally distributed random variable with unit standard deviation and mean depending on average annual rate of cognitive decline and patient-specific random deviations. Moreover, for each patient we generated a set of potential predictors including either seven independent variables, twenty-three independent variables or twenty-three covaried variables representing our analysis of the predictive utility of seven latent cognitive factors and twenty-three observed cognitive test scores respectively. Covariance structure in the case of covaried predictors was based on the structure of the battery described above with predictors that represented test measures belonging to the same superordinate task having Pearson’s correlation of 0.7 (thus sharing approximately half of the variance) and zero otherwise (see Figure S5 in Supplementary materials). The simulations were set-up such that there was no effect of any predictor on the outcome. Subsequently, we generated one hundred data sets which were then fitted via the two-step procedure and Bayesian Lasso. For each procedure, the number of statistically significant interactions between time and any of the predictors were recorded to estimate the amount of false positive errors these procedures produce under the null hypothesis.
+To validate the assumption that our analysis provides lower false positive rates than the commonly used **univariable screening** procedure we conducted **a** series of simulations with data set structure equivalent to that observed in our data. Patients’ outcome was generated as a normally distributed random variable with unit standard deviation and mean depending on average annual rate of cognitive decline and patient-specific random deviations. Moreover, for each patient we generated a set of potential predictors including either seven independent variables, twenty-three independent variables or twenty-three covaried variables representing our analysis of the predictive utility of seven latent cognitive factors and twenty-three observed cognitive test scores respectively. Covariance structure in the case of covaried predictors was based on the structure of the battery described above with predictors that represented test measures belonging to the same superordinate task having Pearson’s correlation of 0.7 (thus sharing approximately half of the variance) and zero otherwise (see Figure S5 in Supplementary materials). The simulations were set-up such that there was no effect of any predictor on the outcome. Subsequently, we generated one hundred data sets which were then fitted via the **univariable screening** procedure and **the** Bayesian Lasso. For each procedure, number of statistically significant interactions between time and any of the predictors were recorded to estimate the amount of false positive errors.
 
 ### Transparency and openness
 
-All GLMMs were fitted using via Stan’s (version 2.21.0) build-in Hamiltonian Monte Carlo sampler accessed via R version 4.2.0 using package “brms” [@bürkner2017; @rsoft; @stan]. Four parallel chains were run each for 2,500 iterations for each GLMM. The first 500 iterations served as a warm-up and were discarded. Convergence was checked numerically by inspection of the R̂s and visually by inspection of trace plots. We used R packages “tidyverse” and “dplyr” for data operations, “tidybayes” for operation with model posteriors, and “DiagrammeR, “ggplot2” and “patchwork” for plotting [@DiagrammeR; @ggplot2; @patchwork]. This study’s design and its analysis were not pre-registered. The data are not publicly available due to privacy or ethical restrictions. The computer code used in our data analysis as well as synthetic data and rep**roducible** code for simulations to estimate false positive error rates can be accessed at **[https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED)**.
+All GLMMs were fitted using via Stan’s (version 2.21.0) build-in Hamiltonian Monte Carlo sampler accessed via R version **`r with( version, paste(major,minor,sep=".") )`** using package “brms” [@bürkner2017; @rsoft; @stan]. Four parallel chains were run each for 2,500 iterations for each GLMM. The first 500 iterations served as a warm-up and were discarded. Convergence was checked numerically by inspection of the R̂s and visually by inspection of trace plots. We used R packages “tidyverse” and “dplyr” for data operations, “tidybayes” for operation with model posteriors, and “DiagrammeR, “ggplot2” and “patchwork” for plotting [@DiagrammeR; @ggplot2; @patchwork]. This study’s design and its analysis were not pre-registered. The data are not publicly available due to privacy or ethical restrictions. The computer code used in our data analysis as well as synthetic data and rep**roducible** code for simulations to estimate false positive error rates can be accessed at **[https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED)**.
 
 # Results
 
@@ -515,8 +519,6 @@ gtsave( data = t1, filename = here("tabs","clinical_characteristics.docx") )
 t1
 ```
 
-{{< pagebreak >}}
-
 ```{r}
 #| label: tbl-cog
 #| tbl-cap: Pre-surgery neuropsychological measures of included patients
@@ -582,8 +584,6 @@ ggsave(
 ```
 
 ![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments.](../figs/assessments_desc.jpg){#fig-dist}
-
-{{< pagebreak >}}
 
 ```{r}
 #| label: fact-anal
@@ -684,8 +684,6 @@ gtsave( data = t3, filename = here("tabs","factanal_loadings.docx") )
 t3
 ```
 
-{{< pagebreak >}}
-
 ## Describing post-surgery cognitive decline
 
 ```{r}
@@ -757,12 +755,12 @@ contr <-
   
   lapply(
     
-    c("Fixed effects","Fixed + Random effects"),
+    c("Group-level parameters","Group- & Patient-level parameters"),
     function(i)
       
       data.frame( id = "sub000", time_y = c( -0.3, seq(1,5,1) ) ) %>%
       mutate( time = time_y + scl$Md$time ) %>%
-      add_epred_draws( object = m$Linear, newdata = . , allow_new_levels = T, if (i == "Fixed effects") { re_formula = NA }, seed = 87542 ) %>%
+      add_epred_draws( object = m$Linear, newdata = . , allow_new_levels = T, if (i == "Group-level parameters") { re_formula = NA }, seed = 87542 ) %>%
       mutate( .epred = scl$M$drs + scl$SD$drs * .epred ) %>%
       ungroup() %>%
       select( id, time_y, .draw, .epred ) %>%
@@ -770,7 +768,7 @@ contr <-
       mutate( across( all_of( paste0("Y", seq(1,5,1) ) ), ~ .x - `Y-0.3`, .names = "{col}-minus-Pre" ) ) %>%
       pivot_longer( cols = -c("id",".draw"), names_to = "Contrast" ) %>%
       group_by(Contrast) %>%
-      summarise( md = median(value), ppi_low = hdi(value)[1], ppi_hig = hdi(value)[2] ) %>%
+      summarise( md = median(value), eti_low = qi(value,.width=.9)[1], eti_hig = qi(value,.width=.9)[2] ) %>%
       mutate( `Generated by: ` = i, .before = 1 )
     
   ) %>%
@@ -783,7 +781,7 @@ contr <-
 t4 <-
   
   contr %>%
-  mutate( out = paste0( rprint(md,2), " [", rprint(ppi_low,2), ", ", rprint(ppi_hig,2), "]" ) ) %>%
+  mutate( out = paste0( rprint(md,2), " [", rprint(eti_low,2), ", ", rprint(eti_hig,2), "]" ) ) %>%
   select( `Generated by: `, Contrast, out ) %>%
   pivot_wider( names_from = `Generated by: `, values_from = out )
 
@@ -793,8 +791,8 @@ f5 <-
   contr %>%
   filter( Contrast != "Pre-surgery" ) %>%
   ggplot() +
-  aes( x = Contrast, y = md, ymin = ppi_low, ymax = ppi_hig, colour = `Generated by: ` ) +
-  geom_pointrange( linewidth = 5, position = position_dodge(width = .25), alpha = .4 ) +
+  aes( x = Contrast, y = md, ymin = eti_low, ymax = eti_hig, colour = `Generated by: ` ) +
+  geom_errorbar( linewidth = 1, width = .25, position = position_dodge(width = .25) ) +
   geom_point( size = 5, position = position_dodge(width = .25) ) +
   geom_hline( yintercept = 0, linewidth = 1, linetype = "dashed", colour = "navyblue" ) +
   labs( x = NULL, y = parse( text = "Delta~`DRS-2`" ) ) +
@@ -807,7 +805,7 @@ ggsave( plot = f5, filename = here("figs","expectation_contrasts.jpg"), dpi = 30
 
 ```
 
-Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers.The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b['slope','ppi']`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`).
+Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers. The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b['slope','ppi']`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`). **Furtheremore, @tbl-contr**
 
 ```{r}
 #| label: fig3
@@ -867,11 +865,11 @@ t4 <-
   cols_label( Contrast ~ "" ) %>%
   
   tab_footnote(
-    locations = cells_column_labels("Fixed effects"),
+    locations = cells_column_labels("Group-level parameters"),
     footnote = "Contrasts predicted by mu[i] ~ alpha + delta_time[i] * time[i]"
   ) %>%
   tab_footnote(
-    locations = cells_column_labels(`Fixed + Random effects`),
+    locations = cells_column_labels(`Group- & Patient-level parameters`),
     footnote = "Contrasts predicted by mu[i] ~ alpha + delta_time[i] * time[i] + alpha_id[i] + delta_id[i] * time[i]"
   ) %>%
   tab_footnote(
@@ -879,18 +877,18 @@ t4 <-
     footnote = "The row represents expactation of patients' performance at pre-surgery assessment, i.e., 0.3 years before surgery based on our data"
   ) %>%
   tab_footnote(
-    locations = cells_body(columns = `Fixed + Random effects`, rows = 1 ),
+    locations = cells_body(columns = `Group- & Patient-level parameters`, rows = 1 ),
     footnote = "Note that since presented are estimates of the (latent) true score mu, the results represent expectation of patient's performance before censoring because of the ceiling effect in Dementia Rating Scale"
   ) %>%
   opt_footnote_marks(marks = "letters") %>%
   
   tab_source_note(
-    source_note = "Values represent median [95% posterior predictive interval] of each row's estimate; Y[i]: assessment i years post-surgery."
+    source_note = "Values represent posterior prediction median [90% equal tailed interval (ETI)]; Y[i]: assessment i years post-surgery. We used 90% ETI instead of the 95% highest density posterior predictive intervals (PPIs) used elsewhere in the article because 90% ETI can be interprated such that there is 5% probability of observing value smaller than its lower bound and 5% probability of observing value bigger than its higher bound which may not hold for PPIs."
   )
 
 # save & print it
 gtsave( data = t4, filename = here("tabs","expectation_contrasts.docx") )
-#t4
+t4
 
 ```
 

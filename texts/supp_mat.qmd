@@ -748,8 +748,8 @@ ggsave(
   plot = f6,
   filename = here("figs","sims_falsepos.jpg"),
   dpi = 300,
-  width = 7,
-  height = 7
+  width = 7.7,
+  height = 7.7
 )
 
 ```
@@ -772,7 +772,7 @@ The results of simulations are presented in @fig-sims. It is clear that both fac
 
 ## Exploring electrode localization
 
-**To explore association between electrode localization and post-surgery cognitive decline we retrospectively gathered magnetic resonance imaging (MRI) data of patients included in our data set and estimated volume of activated issue (VAT) by stimulation parameters at time of MRI assessment and its intersection with subthalamic nucleus (STN) and its motor, associative and limbic sections. Only patients with all (i) pre-surgery MRI for STN localization, (ii) post-surgery MRI for electrode localisation, and (iii) stimulation parameters at time of MRI assessment for VAT computation were included. Pre-processing was conducted in Lead-DBS software ([lead-dbs.org](https://www.lead-dbs.org)) and is more closely describned in the main text. The outcome of this pre-processing was a set of estimates of the overlap between VAT and STN (and its components) for each included patient.**
+**To explore association between electrode localization and post-surgery cognitive decline we retrospectively gathered magnetic resonance imaging (MRI) data of patients from our data set and estimated volume of affected tissue (VAT) based on stimulation parameters at the time of MRI assessment and its intersection with subthalamic nucleus (STN) as well as its motor, associative and limbic sections. Only patients with all (i) pre-surgery MRI for STN localization, (ii) post-surgery MRI for electrode localization, and (iii) stimulation parameters at time of MRI assessment for VAT computation were included. Pre-surgery images included T1-weighted (T1w) a T2-weighted (T2w) structural scans acquired on 3 Tesla Siemens Symphony System (Siemens, Erlangen, Germany) with   Pre-processing was conducted in Lead-DBS software ([lead-dbs.org](https://www.lead-dbs.org)). The outcome of this pre-processing was a set of estimates of the overlap between VAT and STN (and its components) for each included patient.**
 
 ### Data set
 
@@ -876,12 +876,12 @@ $$DV_i \sim~ N(\mu_0,\sigma_0), for~excluded~patients$$ $$DV_j \sim~ N(\mu_1,\si
 
 **In the next step we directly compared post-surgery cognitive decline of included versus excluded patients. To do this, we adjusted the descriptive model from the main text to include slopes varying by inclusion/exclusion status:**
 
-$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \beta_{inclusion}inclusion_i + \delta_{inclusion}time_iinclusion_i + \bar{\alpha}_{id[i]} + \bar{\delta}_{id[i]}time_i$$
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \beta_{inclusion}inclusion_i + \delta_{inclusion}time_iinclusion_i + \tau_{\bar{\alpha}}{z}_{\bar{\alpha},id[i]} + \tau_{\bar{\delta}}{z}_{\bar{\delta},id[i]}time_i$$
 **with default brms priors for all parameters (see Stan file at [https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED) for more information). We used $\delta_{inclusion}$ as a measure of cognitive decline discrepancy between the two subsamples.**
 
 **Finally, to evaluate predictive value of VATs overlap with STN components, we adjusted the predictive models from the main text:**
 
-$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \bar{\alpha}_{id[i]} + \bar{\delta}_{id[i]}time_i$$
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \tau_{\bar{\alpha}}{z}_{\bar{\alpha},id[i]} + \tau_{\bar{\delta}}{z}_{\bar{\delta},id[i]}time_i$$
 
 **such that each $predictor_{[j]i}$ represents one of six combinations of VAT intersection with STN component (motor, associative and limbic) separately for each hemisphere. Furthermore, to reduce the amount of regularization we used *N(0,0.5)* priors for population level parameters $\alpha$, $\delta_{time}$, $\beta_{predictor[j]}$ and $\delta_{predictor[j]}$ instead of Bayesian Lasso. All variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) befored entering the analysis. We used the set of $\delta_{inclusion}$ values as a measure representing the expected prognostic value of affected proportion of STN subsections via DBS. All models described in this section were fitted using four chain each with 2500 samples out of which 500 samples were discarded as a warm-up.**
 

@@ -203,7 +203,7 @@ Patients’ motor state was assessed with part three of the Movement Disorders S
 
 Latent cognitive factors were extracted from the data via an exploratory factor analysis (EFA) with varimax rotation using ordinary least squares to find the minimum residual solution [@harman1966]. We opted for the orthogonal varimax rotation because: (i) extracting orthogonal factors can be statistically advantageous in later steps of our analysis due to reducing multicollinearity, and (ii) in the framework of PD-MCI, it is considered desirable to describe patients’ cognitive profile by factors or tests that are independent of each other [@litvan2012].
 
-All pre-surgery cognitive tests listed above were entered into EFA as input variables (see Supplementary Materials for the exact processing pipeline). Missing observations were multiply imputed using a parametric bootstrap via the “missMDA” R package to create one hundred imputed data sets We then computed EFA with three up to eight factors via the “psych” R package [@rsoft; @missMDA; @psych] using each imputed data set. Within each imputed data set, factor scores for each patient were calculated using the regression method [@thomson1951].
+All pre-surgery cognitive tests listed above were entered into EFA as input variables (see **the** Supplementary Material for the exact processing pipeline). Missing observations were multiply imputed using a parametric bootstrap via the “missMDA” R package to create one hundred imputed data sets We then computed EFA with three up to eight factors via the “psych” R package [@rsoft; @missMDA; @psych] using each imputed data set. Within each imputed data set, factor scores for each patient were calculated using the regression method [@thomson1951].
 
 We based the number of extracted factors on a combination of the root-mean-square error approximation (RMSEA), Tucker-Lewis Index (TLI), and consistency of each factor model across imputations. TLI is a measure of a goodness-of-fit such that higher values of TLI imply better fit and values exceeding 0.90 are considered to indicate a good model fit. On the other hand, RMSEA is a measure of badness-of-fit such that lower values imply better fit with values less than 0.08 indicating an adequate model fit [@browne1992]. A model was considered consistent if the model identified similar factors across imputed data sets.
 
@@ -215,29 +215,29 @@ To describe the rate of post-surgery cognitive decline, we estimated a GLMM with
 
 T**o evaluate predictive utility of pre-surgery cognitive profile, **w**e estimated further two** GLMMs. **L**ongitudinal DRS-2 performance was predicted on a group-level by post-surgery time slopes varying by either patients’ pre-surgery cognitive tests’ scores (the “test scores” model) or patients’ pre-surgery latent cognitive factors’ scores extracted from the EFA reported above (the “factor scores” model). Both models further included correlated patient-level intercepts and slopes. To check robustness of our findings we compared the results to estimates of GLMMs that also included group-level effects of age, LEDD and BDI-II (and their interaction with time after surgery).
 
-Since previous long-term studies demonstrated that a subset of PD patients treated with STN DBS can develop dementia which may lead to heavy tails in the data distribution of cognitive test scores, we modelled the data distribution with Student-t instead of Gaussian likelihood. Furthermore, because the outcome DRS-2 has a maximum of 144 points which is achieved by a large proportion of healthy people [@bezdicek2015], we used the right-censored version of Student-t to account for the ceiling effect. Models’ likelihoods had following specification:
+Since previous long-term studies demonstrated that a subset of PD patients treated with STN DBS can develop dementia which may lead to heavy tails in the data distribution of cognitive test scores, we **used a ** Student-t instead of Gaussian **measurement erorr model**. Furthermore, because the outcome DRS-2 has a maximum of 144 points which is achieved by a large proportion of healthy people [@bezdicek2015], we used the right-censored version of Student-t to account for the ceiling effect. Models’ likelihoods had following specification:
 
 $$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \tau_{\bar{\alpha}}{z}_{\bar{\alpha},id[i]} + \tau_{\bar{\delta}}{z}_{\bar{\delta},id[i]}time_i$$
 
-*i* = 1…*n*, where *n* is the total number of assessments across all patients, *m* is the total number of pre-surgery predictors, $DRS_{max}$ is the maximal attainable score in DRS-2 (i.e., a raw score of 144), *T()* is the Student-t cumulative distribution function, *t()* is the Student-t probability density function, $time_i$ is the time from surgery at assessment *i*, $predictor_{[j]i}$ is the pre-surgery cognitive score in the predictor (i.e., either a test or latent factor) *j* of the patient evaluated at assessment *i*, **$\tau$ parameters represent patient-level variance, $z_{id}$ represent standardized patient-level effects**, and remaining terms denote model parameters. E**mpirical e**stimands relating to *RQ2* comprised of the two sets of $\delta_{predictor[j]}$ representing the expected prognostic value of single pre-surgery cognitive tests and latent cognitive factors.
+*i* = 1…*n*, where *n* is the total number of assessments across all patients, *m* is the total number of pre-surgery predictors, $DRS_{max}$ is the maximal attainable score in DRS-2 (i.e., a raw score of 144), *T()* is the Student-t cumulative distribution function, *t()* is the Student-t probability density function, $time_i$ is the time from surgery at assessment *i*, $predictor_{[j]i}$ is the pre-surgery cognitive score in the predictor (i.e., either a test or latent factor) *j* of the patient evaluated at assessment *i*, **$\tau$ parameters represent patient-level variance, $z_{id}$ represent standardized patient-level effects, $\mu_i$ represents true score estimate of patient's** ***id[i]*** **cognitive performance on assessment at $time_i$**, and remaining terms denote model parameters. E**mpirical e**stimands relating to *RQ2* comprised of the two sets of $\delta_{predictor[j]}$ representing the expected prognostic value of single pre-surgery cognitive tests and latent cognitive factors.
 
 We specified equivalent prior distributions for model parameters of both the “test scores” and the “factor scores” models. We used the Bayesian Lasso priors for all group-level parameters barring the intercept. This prior is the Bayesian equivalent of the Lasso method for performing variable selection and allows for fitting models with a large number of potentially collinear predictors All remaining parameters were given weakly informative priors to ensure that models’ estimates fall within the range of measurable values of the outcome.
 
 ### Exploring association of stimulated STN site with cognitive decline
 
-**Although our primary goals relate to the purely descriptive task of predicting post-surgery cognitive decline, further studies might want to ask causal questions about possible interventions to change the rate of this decline. A straightforward way to possibly affect cognitive performance after STN DBS surgery is to change active stimulation contacts such that volume of affected tissue (VAT) overlaps with motor component of STN while avoiding associative and limbic STN components because high frequency stimulation employed to improve motor symptoms can result in adverse cognitive side effects [@david2020]. Even though our retrospective sample did not contain enough  high-quality data that would be needed to reliably evaluate association between STN sites affected by DBS and post-surgery cognitive decline, we provide an exploratory analysis that can provide pointers for future investigations.**
+**Although our primary goals relate to the purely descriptive task of predicting post-surgery cognitive decline, further studies might want to ask causal questions about possible interventions to change the rate of this decline. A straightforward way to possibly affect cognitive performance after STN DBS surgery is to change active stimulation contacts such that volume of affected tissue (VAT) overlaps with motor component of STN while avoiding associative and limbic STN components because high frequency stimulation that improves motor symptoms can result in adverse cognitive side effects [@david2020]. Even though our retrospective sample did not contain enough  high-quality data that would be needed to reliably evaluate association between STN sites affected by DBS and post-surgery cognitive decline, we provide an exploratory analysis that can provide pointers for future investigations.**
 
-**For this analysis, we used a subsample of patients for whom we were able to retrospectively obtain (i) pre-surgery magnetic resonance image (MRI) for STN localization, (ii) post-surgery MRI for electrode localization, and (iii) stimulation parameters at the time of MRI assessment for VAT computation. Lead-DBS software [@horn2015; @horn2019] was utilized to determine the position of DBS leads and active contacts. The overlap of the VAT and the entire STN as well as its motor, associative, and limbic components separately was calculated, providing four overlap volumes for each side. For each patient with VAT available, only one set of overlaps was estimated which corresponded to the time of MRI acquisition, not the time of cognitive assessment as these were not always aligned. We then explored the association between VAT overlaps with STN components and post-surgery cognitive decline using a model analogous to the predictive GLMMs described above. For more detailed information about MRI acquisition parameters and modelling choices regarding this analysis see the Supplementary material.**
+**For this analysis, we used a subsample of patients for whom we were able to retrospectively obtain (i) pre-surgery magnetic resonance image (MRI) for STN localization, (ii) post-surgery MRI for electrode localization, and (iii) stimulation parameters at the time of MRI assessment for VAT computation. Lead-DBS software [@horn2015; @horn2019] was utilized to determine the position of DBS leads and active contacts with DISTAL subcortical atlas for STN compartmentalization [@ewert2018]. The overlap of the VAT and the entire STN as well as its motor, associative, and limbic components separately was calculated, providing four overlap volumes for each side. For each patient with VAT available, only one set of overlaps was estimated which corresponded to the time of MRI acquisition, not the time of cognitive assessment as these were not always aligned. We then explored the association between VAT overlaps with STN components and post-surgery cognitive decline using a model analogous to the predictive GLMMs described above. For more detailed information about MRI acquisition parameters and modelling choices regarding this analysis see the Supplementary material.**
 
 ### Model description and statistical testing
 
-Effects were described by medians and 95% highest density posterior probability intervals (PPIs) of corresponding model parameters **or predictions as appropriate**. A 95% PPI can be interpreted **as the narrowest interval** such that a given parameter **or prediction lies within this interval with 95% probability.** **In one case, when presenting results for the second version of our empirical estimand for** ***RQ1*****, we report medians and 90% equal-tailed posterior probability intervals (ETIs) instead. A 90% ETI can be interpreted such that a given parameter or prediction lies with 5% probability above its upper bound and with 5% probability below its lower bound.**
+**Estimates** were described by **full posterior distributions,** medians and 95% highest density posterior probability intervals (PPIs) of corresponding model parameters **or predictions as appropriate**. A 95% PPI can be interpreted **as the narrowest interval** such that a given parameter **or prediction lies within this interval with 95% probability.** **In one case, when presenting results for the second version of our empirical estimand for** ***RQ1*****, we report medians and 90% equal-tailed posterior probability intervals (ETIs) instead. A 90% ETI can be interpreted such that a given parameter or prediction lies with 5% probability above its upper bound and with 5% probability below its lower bound.**
 
 Models were compared via the expected log pointwise predictive density (ELPD) computed via the leave-one-out cross-validation (LOO-CV) as approximated by the Pareto-smoothed importance sampling (PSIS) [@vehtari2015]. The ELPD difference ($ELPD_{dif}$) and its 95% frequentist confidence interval (CI) were used to decide whether predictive performance of compared models statistically significantly differs (i.e., the 95% CI excludes zero). To identify influential observations, we calculated a Pareto-k diagnostic and looked for observations with Pareto-k \> 0.7 which can be considered problematic [@bürkner2020; @vehtari2015].
 
 ### Evaluating false positive error rates
 
-To validate the assumption that our analysis provides lower false positive rates than the commonly used **univariable screening** procedure we conducted **a** series of simulations with data set structure equivalent to that observed in our data. Patients’ outcome was generated as a normally distributed random variable with unit standard deviation and mean depending on average annual rate of cognitive decline and patient-specific random deviations. Moreover, for each patient we generated a set of potential predictors including either seven independent variables, twenty-three independent variables or twenty-three covaried variables representing our analysis of the predictive utility of seven latent cognitive factors and twenty-three observed cognitive test scores respectively. Covariance structure in the case of covaried predictors was based on the structure of the battery described above with predictors that represented test measures belonging to the same superordinate task having Pearson’s correlation of 0.7 (thus sharing approximately half of the variance) and zero otherwise (see Figure S5 in Supplementary materials). The simulations were set-up such that there was no effect of any predictor on the outcome. Subsequently, we generated one hundred data sets which were then fitted via the **univariable screening** procedure and **the** Bayesian Lasso. For each procedure, number of statistically significant interactions between time and any of the predictors were recorded to estimate the amount of false positive errors.
+To validate the assumption that our analysis provides lower false positive rates than the commonly used **univariable screening** procedure we conducted **a** series of simulations with data set structure equivalent to that observed in our data. Patients’ outcome was generated as a normally distributed random variable with unit standard deviation and mean depending on average annual rate of cognitive decline and patient-specific random deviations. Moreover, for each patient we generated a set of potential predictors including either seven independent variables, twenty-three independent variables or twenty-three covaried variables representing our analysis of the predictive utility of seven latent cognitive factors and twenty-three observed cognitive test scores respectively. Covariance structure in the case of covaried predictors was based on the structure of the battery described above with predictors that represented test measures belonging to the same superordinate task having Pearson’s correlation of 0.7 (thus sharing approximately half of the variance) and zero otherwise (see Figure S5 in **the** Supplementary material). The simulations were set-up such that there was no effect of any predictor on the outcome. Subsequently, we generated one hundred data sets which were then fitted via the **univariable screening** procedure and **the** Bayesian Lasso. For each procedure, number of statistically significant interactions between time and any of the predictors were recorded to estimate the amount of false positive errors.
 
 ### Transparency and openness
 
@@ -254,11 +254,11 @@ library(gt) # tables formatting
 library(DiagrammeR) # flowchart
 library(DiagrammeRsvg) # saving flowchart
 library(rsvg) # saving flowchart
-library(ggplot2) # general plotting
 library(patchwork) # glueing plots together
 library(brms) # model processing
 library(tidybayes) # posterior manipulations
 library(ggridges) # plotting posteriors
+library(english) # number to text conversion
 
 # clear environment
 rm( list = ls() )
@@ -415,7 +415,6 @@ grViz(f1) %>% export_svg() %>% charToRaw() %>% rsvg_png( here("figs","inclusion_
 ```
 
 ![Patients inclusion/exclusion flowchart.](../figs/inclusion_flowchart.png){#fig-flow}
-
 ```{r}
 #| label: tabs-prep
 
@@ -494,8 +493,6 @@ write.table( t1, file = here("tabs","clinical_characteristics.csv"), sep = ",", 
 write.table( t2, file = here("tabs","baseline_neuropsychology.csv"), sep = ",", row.names = F, quote = F )
 
 ```
-
-{{< pagebreak >}}
 
 ```{r}
 #| label: tbl-base
@@ -619,8 +616,6 @@ vaccount <-
 ## Pre-surgery cognitive profile
 
 Detailed summaries of the fit statistics of all EFA models are presented in the Supplementary material (see Table S1 and Figure S1). Most importantly, raising the number of factors from six to seven resulted in a clear improvement. Out of the one hundred imputed data sets, the six-factor model showed good fit according to RMSEA in 96 cases and it showed good fit according to the TLI in 76 cases. On the other hand, the seven-factor model showed good fit according to RMSEA in 99 cases and good fit according to TLI in 97 cases. Moreover, the seven-factor model was more consistent across imputations. Finally, while the eight-factor resulted in the best fit statistics, factors identified by this model were often substantially loaded on by only a single cognitive test score (with a factor loading above 0.3) which impedes theoretical interpretation of such factors. Consequently, the seven-factor model was retained for subsequent analyses. On average, the seven factors accounted for a total of `r vaccount['mean']` of variance (SD = `r vaccount['sd']`) and corresponded to seven cognitive functions: 1) executive functions/attention (EF/Att.) was loaded on primarily by PST tasks, TMT tasks, verbal fluency tests and TOL, 2) episodic memory (EM) was loaded on primarily by indexes of RAVLT except for the recall of interference list (RAVLT-B), 3) verbal working memory (VWM) was loaded on primarily by Digit Span tasks, LNS and Similarities, 4) visuospatial memory (VM) was loaded on primarily by indexes of the Family Pictures test, 5) set shifting (SS) was loaded on primarily by TMT tasks and RAVLT-B, 6) anxiety (An.) was loaded on primarily by STAI, and 7) spatial working memory (SWM) was loaded on primarily by Spatial Span tasks (see @tbl-factanal).
-
-{{< pagebreak >}}
 
 ```{r}
 #| label: tbl-factanal
@@ -805,7 +800,7 @@ ggsave( plot = f5, filename = here("figs","expectation_contrasts.jpg"), dpi = 30
 
 ```
 
-Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers. The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b['slope','ppi']`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`). **Furtheremore, @tbl-contr**
+Both descriptive longitudinal GLMMs converged within a specified number of iterations ($\hat{R}s \leq `r rhatmax`$). All observations had Pareto-k below `r parkmax` implying that the results are not likely to be biased by influential outliers. The linear and non-linear models showed tight correspondence up to approximately five years post-surgery after which the non-linear model predicted a slightly faster rate of cognitive decline than the linear model (see @fig-traj). The difference in estimated predictive performance between these models did not reach statistical significance ($ELPD_{dif}$ = `r loocomp$print`). Based on the linear model, there was an average post-surgery decline of `r b['slope','median']` DRS-2 points/year (95% PPI `r b['slope','ppi']`) from an average pre-surgery DRS-2 performance of `r b['intercept','median']` out of 144 points (95% PPI `r b['intercept','ppi']`).
 
 ```{r}
 #| label: fig3
@@ -852,9 +847,11 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 
 ![Comparison of linear versus non-linear models of the longitudinal cognitive trajectory.](../figs/expected_trajectories.jpg){#fig-traj}
 
+**In @tbl-contr we present expected true score differences at five yearly post-surgery assessment times compared to pre-surgery assessment derived from group-level parameters only (reflecting the sample version of our** ***RQ1*** **estimand) and both group- and patient-level parameters (reflecting the population version of our** ***RQ1*** **estimand). Although median expected post-surgery cognitive decline was similar across versions, the significantly larger compatibility intervals of the population estimates indicate that a large proportion of observed variability in post-surgery cognitive decline is due to inter-individual heterogeneity (see also Figures S3 and S4 in the Supplementary material).**
+
 ```{r}
 #| label: tbl-contr
-#| tbl-cap: "Posterior prediction of DRS-2 changes after "
+#| tbl-cap: "Posterior predictions of cognitive changes after surgery"
 
 # prepare the table
 t4 <-
@@ -866,11 +863,11 @@ t4 <-
   
   tab_footnote(
     locations = cells_column_labels("Group-level parameters"),
-    footnote = "Contrasts predicted by mu[i] ~ alpha + delta_time[i] * time[i]"
+    footnote = md("Contrasts for the sample version of the *RQ1* estimand predicted by $\\mu_i$ ~ $\\alpha$ + $\\delta_{time}$*time~i~*")
   ) %>%
   tab_footnote(
     locations = cells_column_labels(`Group- & Patient-level parameters`),
-    footnote = "Contrasts predicted by mu[i] ~ alpha + delta_time[i] * time[i] + alpha_id[i] + delta_id[i] * time[i]"
+    footnote = md("Contrasts for the population version of the *RQ1* estimand predicted by $\\mu_i$ ~ $\\alpha$ + $\\delta_{time}$*time~i~* + $\\alpha_{id[i]}$ + $\\delta_{id[i]}$*time~i~*")
   ) %>%
   tab_footnote(
     locations = cells_body(columns = Contrast, rows = 1 ),
@@ -883,7 +880,7 @@ t4 <-
   opt_footnote_marks(marks = "letters") %>%
   
   tab_source_note(
-    source_note = "Values represent posterior prediction median [90% equal tailed interval (ETI)]; Y[i]: assessment i years post-surgery. We used 90% ETI instead of the 95% highest density posterior predictive intervals (PPIs) used elsewhere in the article because 90% ETI can be interprated such that there is 5% probability of observing value smaller than its lower bound and 5% probability of observing value bigger than its higher bound which may not hold for PPIs."
+    source_note = "Yi: assessment i years post-surgery; Values represent posterior prediction median [90% equal tailed interval (ETI)]; We used 90% ETI instead of the 95% highest density posterior predictive intervals (PPIs) used elsewhere in the article because 90% ETI can be interprated such that there is 5% probability of observing value smaller than its lower bound and 5% probability of observing value bigger than its upper bound which may not hold for PPIs."
   )
 
 # save & print it
@@ -976,11 +973,12 @@ drws <-
     
     names(drws),
     function(i)
-        drws[[i]] %>%
-        select( contains("time") ) %>%
-        pivot_longer( cols = everything() ) %>%
-        mutate( mod = case_when( i == "factor scores" ~ "Factor scores model", i == "test scores" ~ "Test scores model") )
-  
+      drws[[i]] %>%
+      select( contains("time") ) %>%
+      pivot_longer( cols = everything() ) %>%
+      mutate( mod = case_when( i == "factor scores" ~ "Factor scores model", i == "test scores" ~ "Test scores model") ) %>%
+      mutate( mod = factor( mod, levels = paste0( c("Test","Factor"), " scores model" ), ordered = T ) )
+
     ) %>%
     
     do.call( rbind.data.frame, . ) %>%
@@ -1029,22 +1027,43 @@ delta_ef <-
 
 ```
 
-Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery performance on DRS-2 while there was no cognitive test that clearly indicated pre-surgery impairment in DRS-2 performance (see Tables S2 and S3 in Supplementary materials). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postdist). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[['b']]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[['PPI']]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero). Notably, both models generated similar predictions for majority of included patients (see Figure S2 in Supplementary material). The only difference in terms of model predictions was that the “cognitive tests” model showed marginally better fit to outlying observations which coupled with the fact that it also showed marginally higher Pareto-k values (see Figure S6 in Supplementary material) indicates that the “cognitive tests” model exhibited less regularization than the “cognitive functions” model. Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S3 and S4 in Supplementary material).
+Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. **Including either pre-surgery cognitive tests or pre-surgery cognitive factors as predictors notably decreased patient-level inter-individual heterogeneity compared to the time only model even though all three models generated similar predictions for majority of included patients (see Figures S2 and S3 in the Supplementary material)** Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery performance on DRS-2 while there was no cognitive test that clearly indicated pre-surgery impairment in DRS-2 performance (see Tables S2 and S3 in **the** Supplementary material). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postdist). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[['b']]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[['PPI']]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero**, see Table S2**). Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S**5** and S**6** in **the** Supplementary material).
 
-![Interaction terms of the “test scores” (A) and the “factor scores” (B) models predicting post-surgery cognitive decline. Acronyms are explained in the text.](../figs/posterior_distributions.jpg){#fig-postdist}
+![Interaction terms of the “test scores” (left column) and the “factor scores” (right column) models predicting post-surgery cognitive decline. Acronyms are explained in the text.](../figs/posterior_distributions.jpg){#fig-postdist}
+
+## Electrode localization exploration
+
+```{r}
+#| label: elloc
+
+rm( list = ls()[ !ls() %in% "itstats" ] ) # clear environment
+
+# read the data
+for( i in names(readRDS( here("_data","vatplus_df.rds" ) ) ) ) assign( i, readRDS( here("_data","vatplus_df.rds" ) )[[i]] )
+
+# extract inclusion/exclusion stats
+incl <-
+  
+  d0 %>%
+  filter( post == 0 ) %>%
+  select(elloc_miss) %>%
+  table( useNA = "always" )
+
+```
+
+**Total of `r incl[length(names(incl))]` were included into analysis (see the Supplementary Material Figure S9 for electrode localization visualization, and Tables S4 and S5 for description of this subsample). Patients included in this analysis were marginally younger with less pre-surgery anxiety, less depressive symptoms and better performance in some measures of attention and executive functions (namely Tower of London task, Category Fluency Test and Trail Making Test part A) compared to patients excluded from this analysis (see Figure S10 in the Supplementary Material).**
+
+**Overall, there was no statistically clear evidence that proportions of STN components affected by DBS are associated with the degree of post-surgery cognitive decline (see Figure S11 and Table S6 in the Supplementary Material). However, some patterns can be observed in our results. Although associations of post-surgery cognitive decline with proportion of affected motor and limbic STN components were all centred around zero, there was clearly more uncertainty in estimates regarding limbic STN compared to motor STN. Moreover, there was specifically higher (negative) posterior collinearity of limbic STN components time-dependent parameters with other time-dependent parameters (see Figure S12 in the Supplementary Material). Finally, our results show weak trend towards potential association between value of proportion of affected right associative STN and post-surgery cognitive decline. According to our model and data, there was almost 80% probability that higher proportion of affected right associative STN is associated with a faster decline in post-surgery cognitive performance.**
 
 ## Evaluating false positive error rates
 
 ```{r}
 #| label: sims
 
-rm( list = ls()[ !ls() %in% "itstats" ] ) # clear environment
-
-# summarise of false positives conditional on null hypothesis
+# summarise false positives conditional on null hypothesis
 falsepos <-
   
-  # extract numbers of simulations with at least one false positive
-  read.csv( here("mods","sims_fp.csv"), sep = "," ) %>%
+  read.csv( here("mods","sims_fp.csv"), sep = "," ) %>% # extract numbers of simulations with at least one false positive
   filter( meth == "t0" & fp != 0 ) %>%
   pivot_wider( names_from = "fp", values_from = "Freq") %>%
   select( where( is.numeric ) ) %>%
@@ -1052,7 +1071,7 @@ falsepos <-
 
 ```
 
-Results of simulations used to estimate false positive rates of the two-step procedure and the Bayesian Lasso are summarised in Supplementary Materials Figure S6. Overall, the Bayesian Lasso showed almost no false positives across simulation settings whereas the false positive rates of the two-step procedure ranged from `r min(falsepos)` to `r max(falsepos)` of analyses including at least one false positive. In the case of our data structure, the false positive rates were attenuated when all twenty-three predictors covaried or when we reduced the number of predictors to seven independent variables.
+Results of simulations used to estimate false positive rates of the two-step procedure and the Bayesian Lasso are summarised in **the** Supplementary Material Figure S6. Overall, the Bayesian Lasso showed almost no false positives across simulation settings whereas the false positive rates of the two-step procedure ranged from `r min(falsepos)` to `r max(falsepos)` of analyses including at least one false positive. In the case of our data structure, the false positive rates were attenuated when all twenty-three predictors covaried or when we reduced the number of predictors to seven independent variables.
 
 # Discussion
 

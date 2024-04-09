@@ -88,7 +88,7 @@ library(brms) # read stan results
 library(tidybayes) # posterior manipulations
 library(reshape2) # melting correlation matrix
 library(english) # number to text conversion
-library(rsvg) # reading electrodes picture
+#library(rsvg) # reading electrodes picture
 
 rm( list = ls() ) # clear environment
 theme_set( theme_minimal(base_size = 12) ) # set ggplot theme
@@ -772,7 +772,9 @@ The results of simulations are presented in @fig-sims. It is clear that both fac
 
 ## Exploring electrode localization
 
-**To explore association between electrode localization and post-surgery cognitive decline we retrospectively gathered magnetic resonance imaging (MRI) data of patients from our data set and estimated volume of affected tissue (VAT) based on stimulation parameters at the time of MRI assessment and its intersection with subthalamic nucleus (STN) as well as its motor, associative and limbic sections. Only patients with all (i) pre-surgery MRI for STN localization, (ii) post-surgery MRI for electrode localization, and (iii) stimulation parameters at time of MRI assessment for VAT computation were included. Pre-surgery images included T1-weighted (T1w) a T2-weighted (T2w) structural scans acquired on 3 Tesla Siemens Symphony System (Siemens, Erlangen, Germany) with   Pre-processing was conducted in Lead-DBS software ([lead-dbs.org](https://www.lead-dbs.org)). The outcome of this pre-processing was a set of estimates of the overlap between VAT and STN (and its components) for each included patient.**
+**To explore association between electrode localization and post-surgery cognitive decline we retrospectively gathered magnetic resonance imaging (MRI) data of patients from our data set and estimated volume of affected tissue (VAT) based on stimulation parameters at the time of MRI assessment and its intersection with subthalamic nucleus (STN) as well as its motor, associative and limbic sections.**
+
+**Only patients with all (i) pre-surgery MRI for STN localization, (ii) post-surgery MRI for electrode localization, and (iii) stimulation parameters at time of MRI assessment for VAT computation were included. Pre-surgery images included T1-weighted (T1w) MPRAGE sequence acquired on 3 Tesla Siemens Symphony, Skyra or TrioTim System (Siemens, Erlangen, Germany) with Echo Time (TE) = 2.43-4.43 ms, Repetition Time (TR) = 1,870-2,300 ms, Flip Angle (FA) = 8-$15^\circ$, and Slice Thickness = 1-1.5 mm varying slightly across patients. Furthermore, pre-surgery T2-weighted (T2w) Spin echo scans were acquired on the same MRI machine as pre-surgery T1w with TE = 80-90 ms, TR = 2,000-2,440 ms, FA = $90^\circ$, and Slice Thickness = 2 mm. Post-surgery, T1w MPRAGE sequence was acquired on 1.5 Tesla Siemens Symphony, Skyra or Avanto System with TE = 2.43-3.93 ms, TR = 2,060-2,200 ms, FA) = 8-$15^\circ$, and Slice Thickness = 0.9-1.0 mm. Pre-processing was conducted in Lead-DBS software ([lead-dbs.org](https://www.lead-dbs.org)). The outcome of this pre-processing was a set of estimates of the overlap between VAT and STN (and its components) for each included patient.**
 
 ### Data set
 
@@ -958,7 +960,7 @@ ggsave(
 
 ```
 
-**Pre-surgery differences between included and excluded patients are presented in @tbl-ttest and @fig-ttest. Overall, the patients included in VAT overlap with STN analysis were marginally younger with less pre-surgery anxiety, less depressive symptoms and better performance in some measures of attention and executive function (namely Tower of London task, Category Fluency Test and Trail Making Test part A). On the other hand, performance on other executive and attention tasks (such as Prague Stroop Test dots naming condition or Trail Making Test part B) as well as disease duration, pre-surgery motor symptoms and levodopa equivalent daily dose appeared similar across groups.**
+**Pre-surgery differences between included and excluded patients are presented in @tbl-ttest and @fig-ttest. The descriptive model comparing post-surgery cognitive decline in excluded versus included patients converged had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). All observations had Pareto-k below `r park_max`. According to the model included patients experienced an average post-surgery decline of `r b["slope_1", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_1", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_1','md']` points (95% PPI `r b["pre_1","ppi"]`) whereas excluded patients experienced an average post-surgery decline of `r b["slope_0", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_0", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_0','md']` points (95% PPI `r b["pre_0","ppi"]`). Although the post-surgery cognitive decline was slower in included patients by `r b['slope_dif','md_abs']`, the difference was not statistically clear based on 95% PPI `r b['slope_dif','ppi']`.**
 
 ```{r}
 #| label: tbl-ttest
@@ -1075,8 +1077,6 @@ b <-
 
 ```
 
-**The descriptive model comparing post-surgery cognitive decline in excluded versus included patients converged had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). All observations had Pareto-k below `r park_max`. According to the model included patients experienced an average post-surgery decline of `r b["slope_1", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_1", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_1','md']` points (95% PPI `r b["pre_1","ppi"]`) whereas excluded patients experienced an average post-surgery decline of `r b["slope_0", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_0", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_0','md']` points (95% PPI `r b["pre_0","ppi"]`). Although the post-surgery cognitive decline was slower in included patients by `r b['slope_dif','md_abs']`, the difference was not statistically clear based on 95% PPI `r b['slope_dif','ppi']`.**
-
 ```{r}
 #| label: vat-overlaps
 
@@ -1132,7 +1132,7 @@ ggsave( plot = f9, filename = here("figs","vat_postdist.jpg"), dpi = 300, width 
 
 ```
 
-**Finally, the predictive model comparing post-surgery cognitive decline depending on proportion of STN components volume being affected by VAT had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). However, there were `r english(park_big)` potentially influential observations with Pareto-k above 0.7, the highest Pareto-k observed reached `r park_max`. Results summarising group-level effects are presented in @fig-vatpost and @tbl-vatpost. Overall, there was no statistically clear evidence of STN components overlap with VATs being associated with the degree of post-surgery cognitive decline. However, several patterns can be observed in our results. First, albeit associations of post-surgery cognitive decline with proportion of affected motor and limbic STN are centred around zero (judging by probability of the association direction being close to 0.5, see column Pr(|*b*|<0) in @tbl-vatpost), there is much more uncertainty in estimates of association between limbic STN and post-surgery cognitive decline than it is the case for motor STN. In the case of motor STN components, the posterior distributions lay almost exclusively within association of 0.5 annual yearly change of average DRS-2 decline for each 10 % difference in motor STN overlap with VAT. On the other hand, posterior distribution of association between post-surgery cognitive decline and limbic STN overlap with VAT is wide reaching values of high positive and negative association with non-negligible probability (examine e.g. the 95% PPIs in @tbl-vatpost). It should also be noted, that parameters of the association of post-surgery cognitive decline with limbic STN component overlap with VAT showed the largest (negative) collinearity (in terms of Pearson's correlation between posterior draws) with other time-dependent parameters, especially when comparing parameters of the same sided STN components (@fig-vatcolin). The second pattern in our results weakly implies potential predictive value of VAT overlap with right associative STN for post-surgery cognitive decline with probability of this overlap being detrimental for post-surgery cognitive performance being almost 80% according to our model and data (see @tbl-vatpost). Moreover, the parameter measuring association between right associative STN overlap and post-surgery cognitive decline showed the least amount of multicollinearity with other time-dependent parameters in our model (see @fig-vatcolin).**
+**Finally, the predictive model comparing post-surgery cognitive decline depending on proportion of STN components volume being affected by VAT had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). However, there were `r english(park_big)` potentially influential observations with Pareto-k above 0.7, the highest Pareto-k observed reached `r park_max`. Results summarising group-level effects are presented in @fig-vatpost, @fig-vatcolin, and @tbl-vatpost. **
 
 ```{r}
 #| label: tbl-vatpost

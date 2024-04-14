@@ -874,6 +874,8 @@ ggsave(
 
 ```
 
+**Pre-surgery differences between included and excluded patients are presented in @tbl-ttest and @fig-ttest. The descriptive model comparing post-surgery cognitive decline in excluded versus included patients had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). All observations had Pareto-k below `r park_max`. According to the model, included patients experienced an average post-surgery decline of `r b["slope_1", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_1", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_1','md']` points (95% PPI `r b["pre_1","ppi"]`) whereas excluded patients experienced an average post-surgery decline of `r b["slope_0", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_0", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_0','md']` points (95% PPI `r b["pre_0","ppi"]`). Although, on average the post-surgery cognitive decline was slower in included patients by `r b['slope_dif','md_abs']`, the difference was not statistically clear based on 95% PPI `r b['slope_dif','ppi']`.**
+
 ```{r}
 #| label: tbl-ttest
 #| tbl-cap: Mean differences between included and excluded patients in pre-surgery clinical and neuropsychological variables
@@ -989,8 +991,6 @@ b <-
 
 ```
 
-**Pre-surgery differences between included and excluded patients are presented in @tbl-ttest and @fig-ttest. The descriptive model comparing post-surgery cognitive decline in excluded versus included patients had satisfactory convergence statistics ($\hat{R}s \leq `r rhat_max`$). All observations had Pareto-k below `r park_max`. According to the model, included patients experienced an average post-surgery decline of `r b["slope_1", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_1", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_1','md']` points (95% PPI `r b["pre_1","ppi"]`) whereas excluded patients experienced an average post-surgery decline of `r b["slope_0", "md_abs"]` DRS-2 points/year (95% PPI `r b["slope_0", "ppi"]`) from an average pre-surgery DRS-2 performance of `r b['pre_0','md']` points (95% PPI `r b["pre_0","ppi"]`). Although, on average the post-surgery cognitive decline was slower in included patients by `r b['slope_dif','md_abs']`, the difference was not statistically clear based on 95% PPI `r b['slope_dif','ppi']`.**
-
 ```{r}
 #| label: vat-overlaps
 
@@ -1042,7 +1042,6 @@ f9 <-
 
 # save it
 ggsave( plot = f9, filename = here("figs","vat_postdist.jpg"), dpi = 300, width = 6.3, height = 7.7 )
-
 
 ```
 

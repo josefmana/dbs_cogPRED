@@ -175,6 +175,17 @@ m0 <-
   )
 
 
+## SAVE POSTERIORS ----
+
+# extract posteriors (only) with the linear descriptive models & extract scaling values need for reproduction
+post <- as_draws_df(m0$m0_linear) %>% select( !contains("IPN") & !starts_with("prior") & !starts_with(".") & !starts_with("l") )
+scale <- data.frame( central_tendecy = c( DRS = scl$M$drs, Time = scl$Md$time ), standard_deviation = c( DRS = scl$SD$drs, Time = 1 ) )
+
+# save them
+write.csv( post, here("mods","m0_linear_posteriors.csv"), sep = ",", row.names = F, quote = F )
+write.csv( scale, here("mods","m0_linear_scaling.csv"), sep = ",", row.names = F, quote = F )
+
+
 ## POSTERIOR PREDICTIONS ----
 
 if ( !file.exists( here("_data","ppred.rds") ) ) {

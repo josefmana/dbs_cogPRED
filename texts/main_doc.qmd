@@ -824,7 +824,6 @@ contr <-
       )
   )
 
-
 # table it for main text
 t4 <-
   

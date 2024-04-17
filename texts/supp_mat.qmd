@@ -62,7 +62,7 @@ author:
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
 format:
- apaquarto-docx:
+ apaquarto-pdf:
    documentmode: man
    a4paper: true
    docx-engine: lualatex
@@ -696,22 +696,22 @@ f5 <-
   ggplot( aes(x = time_y, y = drs) ) +
   
   # add prediction lines and 95% compatibility intervals
-  geom_line( data = ppred, size = .5, aes(x = time_y, y = drs, group = `Predicted by:`, color = `Predicted by:` ) ) +
+  geom_line( data = ppred, size = .6, aes(x = time_y, y = drs, group = `Predicted by:`, color = `Predicted by:` ) ) +
   geom_ribbon( data = ppred, alpha = .2, aes(x = time_y, y = drs, ymin = drs.lower, ymax = drs.upper, group = `Predicted by:`, fill = `Predicted by:` ) ) +
   
   # add observed points
-  geom_point( color = "black", size = .4 ) +
+  geom_point( color = "black", size = .6 ) +
   
   # finish the plot with the last cosmetic changes
   scale_color_manual( values = cbPal[c(1,2,3)] ) +
   scale_fill_manual( values = cbPal[c(1,2,3)] ) +
   facet_wrap( ~ anid, nrow =  14 ) + # arrange to a 14 x 9 grid
   labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
-  theme_minimal( base_size = 5 ) +
+  theme_minimal( base_size = 6 ) +
   theme( legend.position = "bottom" )
 
 # save it
-ggsave( plot = f5, filename = here("figs","posterior_predictions.jpg"), dpi = 300, width = 6.8, height = 7.8 )
+ggsave( plot = f5, filename = here("figs","posterior_predictions.jpg"), dpi = 300, width = 4.8, height = 7.8 )
 
 ```
 
@@ -879,12 +879,12 @@ $$DV_i \sim~ N(\mu_0,\sigma_0), for~excluded~patients$$ $$DV_j \sim~ N(\mu_1,\si
 
 **In the next step we directly compared post-surgery cognitive decline of included versus excluded patients. To do this, we adjusted the descriptive model from the main text to include slopes varying by inclusion/exclusion status:**
 
-$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \beta_{inclusion}inclusion_i + \delta_{inclusion}time_iinclusion_i + \tau_{\bar{\alpha}}{z}_{\bar{\alpha},id[i]} + \tau_{\bar{\delta}}{z}_{\bar{\delta},id[i]}time_i$$
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \beta_{inclusion}inclusion_i + \delta_{inclusion}time_iinclusion_i + z_{id[i]}\tau_{\alpha} + x_{id[i]}\tau_{\delta}time_i$$
 **with default brms priors for all parameters (see Stan file at [https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED) for more information). We then extracted a measure of cognitive decline discrepancy between the two subsamples by re-scaling $\delta_{inclusion}$ to the original DRS-2 points/year scale.**
 
 **Finally, to evaluate predictive value of VATs overlap with STN components, we adjusted the predictive models from the main text:**
 
-$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + \tau_{\bar{\alpha}}{z}_{\bar{\alpha},id[i]} + \tau_{\bar{\delta}}{z}_{\bar{\delta},id[i]}time_i$$
+$$P(DRS_i = DRS_{max}) = 1 - T(\vartheta,\mu_i,\sigma), for DRS_i \in N_{max}, N_{max} = \{i: drs_i = drs_{max}\}$$ $$DRS_i \sim~ t(\vartheta,\mu_i,\sigma), for DRS_i \in N_1, N_1 = \{i: drs_i < drs_{max}\}$$ $$\mu_i = \alpha + \delta_{time}time_i + \sum_{j=1}^{m} (\beta_{predictor[j]}predictor_{[j]i} + \delta_{predictor[j]}time_ipredictor_{[j]i}) + z_{id[i]}\tau_{\alpha} + x_{id[i]}\tau_{\delta}time_i$$
 
 **such that each $predictor_{[j]i}$ represents one of the six combinations of VAT intersection with STN component (motor, associative and limbic) separately for each hemisphere. Furthermore, to reduce the amount of regularization we used *N(0,0.5)* priors for population level parameters $\alpha$, $\delta_{time}$, $\beta_{predictor[j]}$ and $\delta_{predictor[j]}$ instead of Bayesian Lasso. All variables were standardized (i.e., mean-centered and scaled by their in-sample standard deviation) befored entering the analysis. We used the set of $\delta_{predictor[j]}$ values as a measure representing the expected prognostic value of DBS affected proportion of STN for post-surgery cognitive decline rate. All models described in this section were fitted using four chains each with 2,500 samples out of which 500 samples were discarded as a warm-up.**
 

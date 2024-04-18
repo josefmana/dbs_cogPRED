@@ -14,6 +14,12 @@ author:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
+  
+  - name: Filip Ruzicka
+    affiliations:
+      - id: "1FM"
+        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
+        department: "Department of Neurology and Centre of Clinical Neuroscience"
   - name: Andrej Lasica
     corresponding: false
     email: "Andrej.Lasica@vfn.cz"
@@ -21,12 +27,7 @@ author:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
-  - name: Filip Ruzicka
-    affiliations:
-      - id: "1FM"
-        name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
-        department: "Department of Neurology and Centre of Clinical Neuroscience"
-  - name: Anna Fecikova
+  - name: Anna Smidova
     affiliations:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"

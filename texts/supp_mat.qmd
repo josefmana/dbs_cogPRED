@@ -520,7 +520,7 @@ t2 <-
         fn = function(x) case_when(
             x == "alpha" ~ "Global intercept (α)",
             x == "beta" ~ "Baseline correlates (β) ",
-            x == "delta" ~ "Time-dependent effects (𝛿)"
+            x == "delta" ~ "Time-dependent parameters (𝛿)"
         )
 
     )
@@ -567,9 +567,9 @@ f3 <-
   aes( y = contrast, x = md_fixed ) +
     
   # add lines and points
-  geom_pointrange( data = contr, aes(xmin = eti_low_all, xmax = eti_hig_all), linewidth = 5, colour = cbPal[8], alpha = .4 ) +
-  geom_pointrange( data = contr, aes(xmin = eti_low_random, xmax = eti_hig_random), linewidth = 5, colour = cbPal[8], alpha = .6 ) +
-  geom_pointrange( data = contr, aes(xmin = eti_low_fixed, xmax = eti_hig_fixed), linewidth = 5, colour = cbPal[8], alpha = 1 ) +
+  geom_linerange( data = contr, aes(xmin = eti_low_all, xmax = eti_hig_all), linewidth = 5, colour = cbPal[8], alpha = .4 ) +
+  geom_linerange( data = contr, aes(xmin = eti_low_random, xmax = eti_hig_random), linewidth = 5, colour = cbPal[8], alpha = .6 ) +
+  geom_linerange( data = contr, aes(xmin = eti_low_fixed, xmax = eti_hig_fixed), linewidth = 5, colour = cbPal[8], alpha = 1 ) +
   geom_point( size = 5, colour = "black" ) +
     
   # finish it
@@ -605,7 +605,7 @@ f4 <-
               case_when(
                 j == "alpha" ~ "Global intercept",
                 j == "beta" ~ "Baseline correlates",
-                j == "delta" ~ "Time-dependent effects"
+                j == "delta" ~ "Time-dependent parameters"
               ),
             
             Parameter =
@@ -706,13 +706,13 @@ f5 <-
   # finish the plot with the last cosmetic changes
   scale_color_manual( values = cbPal[c(1,2,3)] ) +
   scale_fill_manual( values = cbPal[c(1,2,3)] ) +
-  facet_wrap( ~ anid, nrow =  14 ) + # arrange to a 14 x 9 grid
+  facet_wrap( ~ anid, nrow =  9 ) + # arrange to a 14 x 9 grid
   labs( x = "Time after surgery (Years)", y = "DRS-2 (0-144 points)") +
   theme_minimal( base_size = 6 ) +
   theme( legend.position = "bottom" )
 
 # save it
-ggsave( plot = f5, filename = here("figs","posterior_predictions.jpg"), dpi = 300, width = 4.8, height = 7.8 )
+ggsave( plot = f5, filename = here("figs","posterior_predictions.jpg"), dpi = 300, width = 7.8, height = 4.8 )
 
 ```
 
@@ -724,7 +724,7 @@ ggsave( plot = f5, filename = here("figs","posterior_predictions.jpg"), dpi = 30
 
 **In @fig-var we present side-by-side comparison of patient-level true score variability that remains after accounting for association between time after surgery and cognitive performance (of the descriptive time only model) compared to patient-level true score variability after accounting for association between cognitive performance and time after surgery combined with pre-surgery cognitive profile (of the predictive test scores and factor scores models). To ensure estimates are comparable across models, we refitted the time only model using regularizing (Lasso) priors identical to predictive models' priors instead of the non- and weakly-informative default** ***brms*** **priors of the time only model presented in the main text. Although it can be seen that regularizing priors shifted posterior distributions of patient-specific parameters towards zero (compare the time only (default) and time only (Lasso) estimates in @fig-var), adding pre-surgery cognitive profile as predictor shifted these distributions even further (compare the test and factor scores to the time only (Lasso) estimates in @fig-var).**
 
-![Posterior distributions of patient-level true score variability after accounting for group-level association with time (time only model) or time and pre-surgery cognitive profile (test and factor scores). The plot includes standard deviations of patient-level intercepts (top row), slopes (middle row) and intercept/slope correlations (bottom row).](../figs/reff_variability.jpg){#fig-var}
+![Posterior distributions of patient-level true score variability after accounting for group-level association with time (time only models) or time and pre-surgery cognitive profile (test and factor scores). The plot includes standard deviations of patient-level intercepts (top row), slopes (middle row) and intercept/slope correlations (bottom row).](../figs/reff_variability.jpg){#fig-var}
 
 In @tbl-posttest we present numerical summary of group-level posterior parameters of the “test scores” model while in @tbl-postfact we present numerical summary of group-level posterior parameters of the “factor scores” model which supplement the information presented in Figure 3 in the main text. Since only the interaction terms (i.e., the $\delta$ parameters) comprised empirical estimands for our query (*RQ2*), the remaining parameters were omitted from the main text.
 
@@ -766,7 +766,7 @@ t2$factor
 
 To confirm that our results are robust to effects of aging, dopaminergic medication, and depressive symptoms, we carried out a robustness check by fitting parallel “test scores” and “factor scores” models with additional group-level predictors age, levodopa equivalent daily dose (LEDD) and Beck Depression Inventory (BDI-II) **as well as their interaction with time after surgery**. Stan code for each of these models with the exact specification is available at **[https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED)** and is equivalent to the models reported in the main text.
 
-Side-to-side comparison of models’ group-level parameters’ posterior summaries is presented in @fig-robtest for the “test scores” model and in @fig-robfact for the “factor scores” model. All models arrived at similar posteriors implying our results are robust to effects of aging, dopaminergic medication, and depressive symptoms. Importantly, the empirical estimands relating to *RQ2* (i.e., the time-dependent effects represented by the $\delta$ parameters) are similar across models leading to identical substantive conclusions.
+Side-to-side comparison of models’ group-level parameters’ posterior summaries is presented in @fig-robtest for the “test scores” model and in @fig-robfact for the “factor scores” model. All models arrived at similar posteriors implying our results are robust to effects of aging, dopaminergic medication, and depressive symptoms. Importantly, the empirical estimands relating to *RQ2* (i.e., the time-dependent $\delta$ parameters) are similar across models leading to identical substantive conclusions.
 
 ![Robustness check (the “test scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level parameters from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery cognitive test scores without (“test scores”) and with adjustment for covariates (“test scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. See main text for acronyms.](../figs/test_postsum.jpg){#fig-robtest}
 
@@ -1173,7 +1173,7 @@ t6 <-
     fn = function(x) case_when(
       x == "alpha" ~ "Global intercept (α)",
       x == "beta" ~ "Baseline correlates (β) ",
-      x == "delta" ~ "Time-dependent effects (𝛿)"
+      x == "delta" ~ "Time-dependent parameters (𝛿)"
     )
   ) %>%
   

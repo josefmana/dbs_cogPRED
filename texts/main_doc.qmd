@@ -132,7 +132,7 @@ author:
       - id: "1FM"
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
-abstract: "Cognitive decline represents a severe non-motor symptom of Parkinson’s disease (PD) that can significantly reduce benefits of subthalamic deep brain stimulation (STN DBS). Here, we aimed to **describe expected post-surgery cognitive decline and** identify pre-surgery cognitive profile associated with faster post-surgery cognitive decline in STN DBS treated PD patients. A retrospective observational study of 126 PD patients treated by STN DBS combined with oral dopaminergic therapy followed for 3.54 years on average (SD = 2.32) with repeated assessments of cognition was conducted. Pre-surgery cognitive profile was obtained via a comprehensive neuropsychological examination. Data were analyzed using exploratory factor analysis for pre-surgery cognitive profile extraction and Bayesian generalized linear mixed models for description of the longitudinal cognitive outcome. Overall, we observed a mild annual cognitive decline of 0.90 points from a total of 144 points in the Mattis Dementia Rating Scale (95% posterior probability interval (PPI) [-1.19, -0.62]). Pre-surgery executive deficit predicted the rate of post-surgery cognitive decline (b = -0.39, 95% PPI [-0.63, -0.15]). The predictive utility of pre-surgery executive deficit resulted from summing small effects of several single test scores. **Exploratory analysis of electrode localisation did not yield any statistically clear results. Overall, our data and models imply mild average annual post-surgery cognitive decline in PD patients treated with STN DBS with high inter-individual variability. Nonetheless, patients with worse long-term cognitive prognosis can be reliably identified via pre-surgery examination of executive functions.**"
+abstract: "Cognitive decline represents a severe non-motor symptom of Parkinson’s disease (PD) that can significantly reduce benefits of subthalamic deep brain stimulation (STN DBS). Here, we aimed to **describe post-surgery cognitive decline and** identify pre-surgery cognitive profile associated with faster decline in STN DBS treated PD patients. A retrospective observational study of 126 PD patients treated by STN DBS combined with oral dopaminergic therapy followed for 3.54 years on average (SD = 2.32) with repeated assessments of cognition was conducted. Pre-surgery cognitive profile was obtained via a comprehensive neuropsychological examination **and d**ata analyzed using exploratory factor analysis and Bayesian generalized linear mixed models. **On the whole**, we observed a mild annual cognitive decline of 0.90 points from a total of 144 points in the Mattis Dementia Rating Scale (95% posterior probability interval [-1.19, -0.62]) **with high inter-individual variability. However, true score changes did not reach previously reported reliable change cut-offs**. Executive deficit **was the only pre-surgery cognitive variable to reliably** predict the rate of post-surgery cognitive decline. **On the other hand, exploratory analysis of electrode localisation did not yield any statistically clear results. Overall, our data and models imply mild gradual average annual post-surgery cognitive decline with high inter-individual variability in STN DBS treated PD patients. Nonetheless, patients with worse long-term cognitive prognosis can be reliably identified via pre-surgery examination of executive functions. To further increase utility of our results, we demonstrate how our models can help with disentangling true score changes from measurement error in future studies of post-surgery cognitive changes.**"
 keywords:
   - Parkinson’s disease
   - deep brain stimulation
@@ -140,10 +140,9 @@ keywords:
   - longitudinal
   - hierarchical modelling
 format:
- apaquarto-pdf:
+ apaquarto-docx:
    documentmode: man
    a4paper: true
-   pdf-engine: lualatex
    floatsintext: false
    keep-tex: false
 bibliography: references.bib
@@ -175,7 +174,7 @@ Overall, in this study we aimed to **describe annual post-surgery cognitive decl
 
 ## Participants
 
-The data of all patients diagnosed with idiopathic PD following United Kingdom Parkinson’s Disease Society Brain Bank Criteria [@hughes1992] that underwent cognitive evaluation for STN DBS treatment at General University Hospital in Prague between years 2000 and 2020 were retrospectively gathered from clinical records and considered for inclusion in the study. **Patients were selected for DBS treatment via criteria mirroring the CAPSIT protocol [@defer1999], consequently p**atients with atypical parkinsonian syndromes, dementia, depression at the time of pre-surgery assessment (according to an independent psychiatric evaluation), recurrent psychotic conditions or a gait disorder despite optimal dopaminergic therapy during pre-surgery assessment were not implanted and were thus not included in the study. Furthermore, only patients who underwent pre-surgery and at least one post-surgery assessment were included. All included patients were treated via continuous bilateral STN DBS in conjunction with dopaminergic therapy. Bilateral STN DBS implantation was performed as previously described [@jech2012; @jech2006; @urgosik2011]. All patients provided signed informed consent and the study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic.
+The data of all patients diagnosed with idiopathic PD following United Kingdom Parkinson’s Disease Society Brain Bank Criteria [@hughes1992] that underwent cognitive evaluation for STN DBS treatment at General University Hospital in Prague between years 2000 and 2020 were retrospectively gathered from clinical records and considered for inclusion in the study. **Patients were selected for DBS treatment via criteria mirroring the Core assessment program for surgical interventional therapies in Parkinson’s disease (CAPSIT) protocol [@defer1999], consequently p**atients with atypical parkinsonian syndromes, dementia, depression at the time of pre-surgery assessment (according to an independent psychiatric evaluation), recurrent psychotic conditions or a gait disorder despite optimal dopaminergic therapy during pre-surgery assessment were not implanted and were thus not included in the study. Furthermore, only patients who underwent pre-surgery and at least one post-surgery assessment were included. All included patients were treated via continuous bilateral STN DBS in conjunction with dopaminergic therapy. Bilateral STN DBS implantation was performed as previously described [@jech2012; @jech2006; @urgosik2011]. All patients provided signed informed consent and the study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic.
 
 ## Assessments
 
@@ -887,7 +886,7 @@ ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 30
 
 ```{r}
 #| label: tbl-contr
-#| tbl-cap: "Posterior predictions of cognitive changes after surgery"
+#| tbl-cap: "Posterior predictions of cognitive change after surgery"
 
 # prepare the table
 t4 <-
@@ -1073,7 +1072,7 @@ Both predictive longitudinal GLMMs converged within a specified number of iterat
 
 Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery **DRS-2** performance while there was no cognitive test that clearly indicated pre-surgery **DRS-2** impairment performance (see Tables S2 and S3 in **the** Supplementary material). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postdist). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[['b']]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[['PPI']]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero**, see Table S2**). Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S**5** and S**6** in **the** Supplementary material).
 
-![Interaction terms of the “test scores” (left column) and the “factor scores” (right column) models predicting post-surgery cognitive decline. Each density represents full posterior estimate of additive predictive value of the cognitive variable (test or factor) listed on the ordinate. All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. Vertical lines represent zero (no effect, solid black line) and average post-surgery decline in our sample accroding to the descriptive linear model predictive before (blue dashed line). Acronyms are explained in the text.](../figs/posterior_distributions.jpg){#fig-postdist}
+![Interaction terms of the “test scores” (left column) and the “factor scores” (right column) models predicting post-surgery cognitive decline. Each density represents full posterior estimate of additive predictive value of the cognitive variable (test or factor) listed on the ordinate. All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. Vertical lines represent zero (no effect, solid black line) and average post-surgery decline in our sample according to the descriptive linear model predictive before (blue dashed line). Acronyms are explained in the text.](../figs/posterior_distributions.jpg){#fig-postdist}
 
 ## Electrode localization exploration
 
@@ -1237,7 +1236,11 @@ Our findings imply that STN DBS in combination with oral dopaminergic therapy is
 
 This work was supported by the Czech Ministry of Health under Grant AZV NV19-04-00233; Grant Agency of Charles University under Grant GA UK 254121; EU Joint Programme on Neurodegenerative Disease Research under Grant JPND 733051123; and by The project National Institute for Neurological Research (Programme EXCELES, ID Project No. LX22NPO5107). We further wish to thank all the patients, family members and staff from all the units that participated in the study. In particular, we wish to thank Markéta Fialová, Radka Steinbachová and Anna Rezková for their management of data collection and patient care**,** Petra Balabánová for her assistance with neuropsychological assessments**, and Martina Kvapilová for reading and commenting on later versions of this article**.
 
-# Conflict of interest
+# Abbreviations
+
+**An., Anxiety; BDI-II, Beck Depression Inventory, second edition; CFT, category verbal fluency test; CAPSIT-PD, Core assessment program for surgical interventional therapies in parkinson’s disease; CI, confidence interval; COWAT, Controlled Oral Word Association Test; DBS, deep brain stimulation; DRS-2, Mattis Dementia Rating Scale, second edition; DS-B, Digit Span backward; DS-F, Digit Span forward; EF/Att., executive functions/attention; EFA, exploratory factor analysis; ELPD, expected log pointwise predictive density; EM, episodic memory; ETI, equal-tailed interval; FP-DR, Family Pictures delayed recall; FP-IR, Family Pictures immediate recall; GLMM, generalized linear mixed model; LEDD, levodopa equivalent daily dose; LNS, letter-number sequencing; LOO-CV, leave-one-out cross-validation; MCI, mild cognitive impairment; MDS, Movement Disorder Society; MDS-UPDRS III, Movement Disorders Society Unified Parkinson’s Disease Rating Scale, motor scale; MRI, magnetic resonance imaging; PD, Parkinson's disease; PPI, posterior probability interval; PSIS, Pareto-smoothed importance sampling; PST-C, Prague Stroop Test, interference condition; PST-D, Prague Stroop Test, dot color naming condition; PST-W, Prague Stroop Test, naming color of neutral words; RAVLT-B, Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR, Rey Auditory Verbal Learning Test delayed recall; RAVLT-IR, Rey Auditory Verbal Learning Test, immediate recall; RAVLT-Rec15, Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; RAVLT- Rec50, Rey Auditory Verbal Learning Test, delayed recognition from 50 items; RCT, randomized controlled trial; RMSEA, root-mean-square error approximation; RQ, research question; SD, standard deviation; Sim., Similarities; STAI-X1, State-Trait Anxiety Inventory, the state version; STAI-X2, State-Trait Anxiety Inventory, the trait version; STN, subthalamic nucleus; SS, set shifting; SS-B, Spatial Span backward; SS-F, Spatial Span forward; SWM, spatial working memory; TLI, Tucker-Lewis Index; TMT-A, Trail Making Test, part A; TMT-B, Trail Making Test, part B; TOL, Tower of London; UPDRS III, Unified Parkinson’s Disease Rating Scale, motor scale; VAT, volume of affected tissue; VM, visuospatial memory; VWM, verbal working memory; WAIS-III, Wechsler Adult Intelligence Scale, third revision; WMS-III, Wechsler Memory Scale, third edition.**
+
+# Conflict of interest statement
 
 Nothing to report.
 
@@ -1245,7 +1248,7 @@ Nothing to report.
 
 The study was approved by the General University Hospital Ethics Committee in Prague, Czech Republic. All Participants provided informed consent.
 
-# Data availability
+# Data availability statement
 
 **The data that support the findings of this study are not currently publicly available due institutional regulations protecting patient clinical data but are available from the corresponding author on request (may require data use agreements to be developed).** The computer code used in our analysis as well as supplementary presentation of our results can be accessed at **[https://github.com/josefmana/dbs_cogPRED](https://github.com/josefmana/dbs_cogPRED)**.
 

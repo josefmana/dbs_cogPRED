@@ -182,8 +182,8 @@ post <- as_draws_df(m0$m0_linear) %>% select( !contains("IPN") & !starts_with("p
 scale <- data.frame( central_tendecy = c( DRS = scl$M$drs, Time = scl$Md$time ), standard_deviation = c( DRS = scl$SD$drs, Time = 1 ) )
 
 # save them
-write.csv( post, here("mods","m0_linear_posteriors.csv"), sep = ",", row.names = F, quote = F )
-write.csv( scale, here("mods","m0_linear_scaling.csv"), sep = ",", row.names = F, quote = F )
+write.table( post, here("mods","m0_linear_posteriors.csv"), sep = ",", row.names = F, quote = F )
+write.table( scale, here("mods","m0_linear_scaling.csv"), sep = ",", row.names = F, quote = F )
 
 
 ## POSTERIOR PREDICTIONS ----
@@ -224,13 +224,16 @@ if ( !file.exists( here("_data","ppred.rds") ) ) {
   # loop through ids and add predictions
   for ( j in unique(d_seq$id) ) {
     
+    print( paste0( "Computing predictions for patient ", j, " via ", i, " model ..." ) ) # print info
+    
+    # do it
     ppred[[names(m0)[1]]][[j]] <-
       
       d_seq[ d_seq$id == j, ] %>%
       add_predicted_draws( m0[[1]], seed = s ) %>%
       mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
-      median_hdci( .width = .95 ) %>% # need HDCI instead of HDI to deal with multimodality
-      mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) )
+      mutate(drs = case_when( drs > 144 ~ 144, drs < 0 ~ 0, .default = drs ) ) %>%
+      median_hdci( .width = .95 ) # need HDCI instead of HDI to deal with multimodality
     
   }
   
@@ -345,13 +348,16 @@ if( !file.exists( here("_data","ppred.csv") ) ) {
     for (i in names(m1) ) {
       for ( j in unique(d_seq$id) ) {
         
+        print( paste0( "Computing predictions for patient ", j, " via ", i, " model ..." ) ) # print info
+        
+        # compute it
         ppred[[i]][[j]] <-
           
           d_seq[ d_seq$id == j, ] %>%
           add_predicted_draws( m1[[i]], seed = s ) %>%
           mutate(drs = scl$M$drs + scl$SD$drs * .prediction) %>%
-          median_hdi( .width = .95 ) %>%
-          mutate(drs.upper = ifelse(drs.upper > 144, 144, drs.upper) ) # manual censoring
+          mutate(drs = case_when( drs > 144 ~ 144, drs < 0 ~ 0, .default = drs ) ) %>% # manual censoring
+          median_hdci( .width = .95 )
         
       }
     } # took 6558.316 sec in total

@@ -14,7 +14,6 @@ library(tidybayes) # posterior manipulation
 for ( i in names( readRDS( here("_data","longitudinal_df.rds") ) ) ) assign( i, readRDS( here("_data","longitudinal_df.rds") )[[i]] ) # load all the data
 m <- readRDS( here("mods","m1_lasso_doms.rds") ) # load the model
 prds <- doms
-#prds <- c("exec_fun","epis_mem") # list of predictors effect which we're going to visualize
 
 
 # PRE-PROCESSING ----
@@ -99,13 +98,11 @@ if ( !file.exists( here("_data","graphstract_epred.csv") ) ) {
     )
   
   # save it
-  #saveRDS( d_seq, here("_data","graphstract_epred.rds") )
   write.table( d_seq, file = here("_data","graphstract_epred.csv"), sep = ",", row.names = F, quote = F )
 
 } else {
   
   # if it was calculated in past, just load it
-  #d_seq <- readRDS( here("_data","graphstract_epred.rds") )
   d_seq <- read.csv( here("_data","graphstract_epred.csv"), sep = "," )
   
 }
@@ -153,7 +150,7 @@ d %>%
   geom_line( data = subset( d_seq, type == "epred_fix" ), linewidth = 1, aes( x = time_y, y = .epred, colour = predictor ) ) +
   
   # tidy-up axes and colours
-  scale_y_continuous( name = "DRS-2", limits = c(80,153), breaks = seq(80,140,20), labels = seq(80,140,20) ) +
+  scale_y_continuous( name = "DRS-2", limits = c(80,155), breaks = seq(80,140,20), labels = seq(80,140,20) ) +
   scale_x_continuous( name = "Time from surgery (years)", limits = c(-2,12), breaks = seq(-2,12,2), labels = seq(-2,12,2) ) +
   scale_colour_manual( values = clr ) +
   scale_fill_manual( values = clr ) +

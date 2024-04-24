@@ -449,7 +449,7 @@ post <-
         2 , function(x) {
           c(
             b = median(x), # posterior median
-            PPI = hdi(x, .width = .95), # 95% PPI
+            PPI = hdci(x, .width = .95), # 95% PPI
             pdir = sum(x<0)/length(x) # Pr(b<0)
           )
         }

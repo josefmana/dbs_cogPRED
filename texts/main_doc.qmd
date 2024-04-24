@@ -1000,7 +1000,7 @@ post <-
       drws[[i]] %>%
       
       # calculate median posterior, 95% PPI and probability of being negative
-      apply( . , 2 , function(x) { c(b = median(x), PPI = hdi(x,.width =.95), pd = sum(x<0)/length(x) ) } ) %>%
+      apply( . , 2 , function(x) { c(b = median(x), PPI = hdci(x,.width =.95), pd = sum(x<0)/length(x) ) } ) %>%
       t() %>%
       as.data.frame() %>%
       rownames_to_column( var = "Parameter" )

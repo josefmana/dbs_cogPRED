@@ -3,6 +3,7 @@ mods/**/*.rds
 **/.DS_Store
 **/*.docx
 **/*.pages
+**/*.tiff
 **/*.aux
 **/*.out
 **/*.ttt

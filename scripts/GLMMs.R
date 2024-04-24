@@ -259,8 +259,8 @@ p1 <-
     prior( normal(0.3, .1), class = Intercept ),
     prior( lasso(1), class = b ),
     # random effects
-    prior( normal(0, .1), class = sd, coef = Intercept, group = id ),
-    prior( normal(0, .1), class = sd, coef = time, group = id ),
+    prior( exponential(1), class = sd, coef = Intercept, group = id ),
+    prior( exponential(1), class = sd, coef = time, group = id ),
     prior( lkj(2), class = cor ),
     # other distributional parameters
     prior( exponential(1), class = sigma ),
@@ -339,7 +339,6 @@ if( !file.exists( here("_data","ppred.csv") ) ) {
     
     # prepare a list for predictions stratified by subjects chunks
     # calculating prediction of single data points based on fixed-effects, random-effects and remaining distributional (residual) parameters
-    #ppred <- list()
     gc()
     
     # add predictions to ppred
@@ -422,8 +421,8 @@ p <-
     # DRS-2
     prior( normal(0.3, .1), class = Intercept, resp = drs),
     prior( lasso(1), class = b, resp = drs ),
-    prior( normal(0, .1), class = sd, coef = Intercept, group = id, resp = drs ),
-    prior( normal(0, .1), class = sd, coef = time, group = id, resp = drs ),
+    prior( exponential(1), class = sd, coef = Intercept, group = id, resp = drs ),
+    prior( exponential(1), class = sd, coef = time, group = id, resp = drs ),
     prior( exponential(1), class = sigma, resp = drs ),
     prior( gamma(2, 0.1), class = nu, resp = drs ),
     # BDI-II

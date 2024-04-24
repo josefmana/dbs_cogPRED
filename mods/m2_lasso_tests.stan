@@ -85,10 +85,8 @@ transformed parameters {
   lprior += exponential_lpdf(sigma | 1);
   lprior += gamma_lpdf(nu | 2, 0.1)
     - 1 * gamma_lccdf(1 | 2, 0.1);
-  lprior += normal_lpdf(sd_1[1] | 0, 0.1)
-    - 1 * normal_lccdf(0 | 0, 0.1);
-  lprior += normal_lpdf(sd_1[2] | 0, 0.1)
-    - 1 * normal_lccdf(0 | 0, 0.1);
+  lprior += exponential_lpdf(sd_1[1] | 1);
+  lprior += exponential_lpdf(sd_1[2] | 1);
   lprior += lkj_corr_cholesky_lpdf(L_1 | 2);
 }
 model {
@@ -127,8 +125,8 @@ generated quantities {
   real prior_lasso_inv_lambda = chi_square_rng(lasso_df);
   real prior_sigma = exponential_rng(1);
   real prior_nu = gamma_rng(2,0.1);
-  real prior_sd_1__1 = normal_rng(0,0.1);
-  real prior_sd_1__2 = normal_rng(0,0.1);
+  real prior_sd_1__1 = exponential_rng(1);
+  real prior_sd_1__2 = exponential_rng(1);
   real prior_cor_1 = lkj_corr_rng(M_1,2)[1, 2];
   // extract upper diagonal of correlation matrix
   for (k in 1:M_1) {
@@ -147,9 +145,9 @@ generated quantities {
     prior_nu = gamma_rng(2,0.1);
   }
   while (prior_sd_1__1 < 0) {
-    prior_sd_1__1 = normal_rng(0,0.1);
+    prior_sd_1__1 = exponential_rng(1);
   }
   while (prior_sd_1__2 < 0) {
-    prior_sd_1__2 = normal_rng(0,0.1);
+    prior_sd_1__2 = exponential_rng(1);
   }
 }

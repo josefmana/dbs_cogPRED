@@ -168,15 +168,13 @@ transformed parameters {
   lprior += normal_lpdf(Intercept_bdi | 0.6, 0.5);
   lprior += normal_lpdf(bsp_bdi[1] | 0, 0.5);
   lprior += exponential_lpdf(sigma_bdi | 1);
-  lprior += normal_lpdf(Intercept_led | 0, 100);
-  lprior += normal_lpdf(bs_led[1] | 0, 100);
+  lprior += normal_lpdf(Intercept_led | 0, 10);
+  lprior += normal_lpdf(bs_led[1] | 0, 10);
   lprior += student_t_lpdf(sds_led_1_1 | 3, 0, 2.5)
     - 1 * student_t_lccdf(0 | 3, 0, 2.5);
   lprior += exponential_lpdf(sigma_led | 1);
-  lprior += normal_lpdf(sd_1[1] | 0, 0.1)
-    - 1 * normal_lccdf(0 | 0, 0.1);
-  lprior += normal_lpdf(sd_1[2] | 0, 0.1)
-    - 1 * normal_lccdf(0 | 0, 0.1);
+  lprior += exponential_lpdf(sd_1[1] | 1);
+  lprior += exponential_lpdf(sd_1[2] | 1);
   lprior += lkj_corr_cholesky_lpdf(L_1 | 2);
   lprior += normal_lpdf(sd_2[1] | 0, 0.5)
     - 1 * normal_lccdf(0 | 0, 0.5);
@@ -258,12 +256,12 @@ generated quantities {
   real prior_Intercept_bdi = normal_rng(0.6,0.5);
   real prior_bsp_bdi__1 = normal_rng(0,0.5);
   real prior_sigma_bdi = exponential_rng(1);
-  real prior_Intercept_led = normal_rng(0,100);
-  real prior_bs_led__1 = normal_rng(0,100);
+  real prior_Intercept_led = normal_rng(0,10);
+  real prior_bs_led__1 = normal_rng(0,10);
   real prior_sds_led_1_1 = student_t_rng(3,0,2.5);
   real prior_sigma_led = exponential_rng(1);
-  real prior_sd_1__1 = normal_rng(0,0.1);
-  real prior_sd_1__2 = normal_rng(0,0.1);
+  real prior_sd_1__1 = exponential_rng(1);
+  real prior_sd_1__2 = exponential_rng(1);
   real prior_cor_1 = lkj_corr_rng(M_1,2)[1, 2];
   real prior_sd_2__1 = normal_rng(0,0.5);
   real prior_sd_2__2 = normal_rng(0,0.5);
@@ -301,10 +299,10 @@ generated quantities {
     prior_sigma_led = exponential_rng(1);
   }
   while (prior_sd_1__1 < 0) {
-    prior_sd_1__1 = normal_rng(0,0.1);
+    prior_sd_1__1 = exponential_rng(1);
   }
   while (prior_sd_1__2 < 0) {
-    prior_sd_1__2 = normal_rng(0,0.1);
+    prior_sd_1__2 = exponential_rng(1);
   }
   while (prior_sd_2__1 < 0) {
     prior_sd_2__1 = normal_rng(0,0.5);

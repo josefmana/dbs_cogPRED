@@ -224,7 +224,7 @@ if ( !file.exists( here("_data","ppred.rds") ) ) {
   # loop through ids and add predictions
   for ( j in unique(d_seq$id) ) {
     
-    print( paste0( "Computing predictions for patient ", j, " via ", names(m0)[1], " model ..." ) ) # print info
+    print( paste0("Computing predictions for patient ",which( unique(d_seq$id) == j)," via ",names(m0)[1]," model ... ") ) # print info
     
     # do it
     ppred[[names(m0)[1]]][[j]] <-
@@ -348,7 +348,7 @@ if( !file.exists( here("_data","ppred.csv") ) ) {
     for (i in names(m1) ) {
       for ( j in unique(d_seq$id) ) {
         
-        print( paste0( "Computing predictions for patient ", j, " via ", i, " model ..." ) ) # print info
+        print( paste0("Computing predictions for patient no. ",which( unique(d_seq$id) == j)," via ",i," model ... ") ) # print info
         
         # compute it
         ppred[[i]][[j]] <-
@@ -360,7 +360,7 @@ if( !file.exists( here("_data","ppred.csv") ) ) {
           median_hdci( .width = .95 )
         
       }
-    } # took 6558.316 sec in total
+    }
     
     # save the original prediction file as .rds
     saveRDS( ppred, here("_data","ppred.rds") )
@@ -440,8 +440,8 @@ p <-
     prior( normal(0, .5), class = sd, coef = time, group = id, resp = bdi ),
     prior( exponential(1), class = sigma, resp = bdi ),
     # LEDD
-    prior( normal(0, 100), class = Intercept, resp = led ),
-    prior( normal(0, 100), class = b, coef = t2time_1, resp = led ),
+    prior( normal(0, 10), class = Intercept, resp = led ),
+    prior( normal(0, 10), class = b, coef = t2time_1, resp = led ),
     prior( normal(0, .5), class = sd, coef = Intercept, group = id, resp = led ),
     prior( exponential(1), class = sigma, resp = led ),
     # covariance structure
@@ -455,10 +455,10 @@ m <-
     setNames( names(f.drs), names(f.drs) ),
     function(i)
       brm_multiple( formula = f.drs[[i]] + f.bdi + f.led, prior = p,
-                    data = df, sample_prior = T, seed = s, chains = ch,
+                    data = d1, sample_prior = T, seed = s, chains = ch,
                     iter = it, warmup = wu, control = list( adapt_delta = ad ),
                     file = here( "mods", paste0(i,".rds") ),
-                    save_model = here("mods", pastee0(i,".stan") )
+                    save_model = here("mods", paste0(i,".stan") )
                     )
   )
 

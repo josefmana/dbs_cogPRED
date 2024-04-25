@@ -224,7 +224,7 @@ if ( !file.exists( here("_data","ppred.rds") ) ) {
   # loop through ids and add predictions
   for ( j in unique(d_seq$id) ) {
     
-    print( paste0("Computing predictions for patient ",which( unique(d_seq$id) == j)," via ",names(m0)[1]," model ... ") ) # print info
+    print( paste0("Computing predictions for patient #",sprintf( "%03d", which(unique(d_seq$id) == j) )," via ",names(m0)[1]," model ... ") ) # print info
     
     # do it
     ppred[[names(m0)[1]]][[j]] <-
@@ -348,7 +348,7 @@ if( !file.exists( here("_data","ppred.csv") ) ) {
     for (i in names(m1) ) {
       for ( j in unique(d_seq$id) ) {
         
-        print( paste0("Computing predictions for patient no. ",which( unique(d_seq$id) == j)," via ",i," model ... ") ) # print info
+        print( paste0("Computing predictions for patient #",sprintf( "%03d", which(unique(d_seq$id) == j) )," via ",i," model ... ") ) # print info
         
         # compute it
         ppred[[i]][[j]] <-

@@ -154,13 +154,13 @@ echo: false
 
 # Introduction
 
-Bilateral subthalamic nucleus (STN) deep brain stimulation (DBS) is an advanced symptomatic treatment of Parkinson’s disease (PD) that can successfully reduce motor symptoms and improve patients’ quality of life [@armstrong2020; @bratsos2018]. On the other hand, prior research revealed considerable heterogeneity in cognitive outcomes after STN DBS with a small to moderate post-surgery decline in verbal fluency and equivocal results for other cognitive domains [@combs2015; @mehanna2017; @parsons2006]. The ability to predict which patients are likely to develop post-surgery cognitive decline can thus prove useful for patient selection and for guiding post-surgery patient monitoring. In this article, we aim to describe **annual rate of long-term post-surgery cognitive decline after STN DBS in PD as well as** pre-surgery cognitive profile extractable from clinically available neuropsychological evaluation that **predicts faster post-surgery decline**.
+Bilateral subthalamic nucleus (STN) deep brain stimulation (DBS) is an advanced symptomatic treatment of Parkinson’s disease (PD) that can successfully reduce motor symptoms and improve patients’ quality of life [@pollak1993; @limousin1995; @armstrong2020; @bratsos2018]. On the other hand, prior research revealed considerable heterogeneity in cognitive outcomes after STN DBS with a small to moderate post-surgery decline in verbal fluency and equivocal results for other cognitive domains [@combs2015; @mehanna2017; @parsons2006]. The ability to predict which patients are likely to develop post-surgery cognitive decline can thus prove useful for patient selection and for guiding post-surgery patient monitoring. In this article, we aim to describe **annual rate of long-term post-surgery cognitive decline after STN DBS in PD as well as** pre-surgery cognitive profile extractable from clinically available neuropsychological evaluation that **predicts faster post-surgery decline**.
 
-**The majority of prior studies describing longitudinal post-surgery cognitive decline employed pre-surgery/post-surgery design with change scores as their dependent variable [@gruber2019; @kim2014] or estimated dementia-free survival time [@barbosa2024; @bove2020; @kishore2019]. When conversion to dementia is the outcome, studies do not estimate annual rate of post-surgery decline but the time it takes to reach clinically salient cognitive deficit. On the other hand, change scores have a drawback of confounding true change with measurement error [@singer2003]. Furthermore, the focus on change scores allows researchers to estimate group-level post-surgery changes describing their sample but ignores patient-level variability which is necessary to generalize findings beyond the sample [@yarkoni2020]. In this study, we leverage the fact that our data set includes three or more observations in large enough number of patients to estimate both group-level post-surgery cognitive decline to describe our sample as well as patient-level variability to provide predictions for other similar samples.**
+**The majority of prior studies describing longitudinal post-surgery cognitive decline employed pre-surgery/post-surgery design with change scores as their dependent variable [@gruber2019; @kim2014] or estimated dementia-free survival time [@barbosa2024; @bove2020; @krishan2019]. When conversion to dementia is the outcome, studies do not estimate annual rate of post-surgery decline but the time it takes to reach clinically salient cognitive deficit. On the other hand, change scores have a drawback of confounding true change with measurement error [@singer2003]. Furthermore, the focus on change scores allows researchers to estimate group-level post-surgery changes describing their sample but ignores patient-level variability which is necessary to generalize findings beyond the sample [@yarkoni2020]. In this study, we leverage the fact that our data set includes three or more observations in large enough number of patients to estimate both group-level post-surgery cognitive decline to describe our sample as well as patient-level variability to provide predictions for other similar samples.**
 
 **With regards to predicting post-surgery cognitive decline from patients' pre-surgery cognitive profile, s**tudies can be broadly divided to two groups, randomized controlled trials (RCT**s**) and long-term observational studies. In a typical RCT, patients are randomized to treatment and placebo groups and outcomes are compared in a full factorial design (**representing the estimand of interest** as interactions between group and time of assessment) [@schupbach2007]. Courtesy of their experimental control, RCTs allow for causal inference and are well suited for providing guidelines for patient selection. However, even though RCTs are regarded as a gold standard for causal inference, it is ethically unacceptable to deny DBS treatment for PD patients for longer time intervals than necessary. Long-term (i.e., more than three years after surgery) outcomes can thus be best described by observational studies. While observational studies usually do not allow for causal inference and are not well suited for guiding patient selection due to a lack of proper control group and resulting collider bias [@cinelli2022], they are well suited for description of patients’ long-term outcomes. Longitudinal observational studies can serve as a basis for selecting high-risk STN DBS treated patients that would benefit from increased monitoring.
 
-Previous longitudinal observational studies reported that PD patients treated with STN DBS showing pre-surgery deficit in executive functions **or poorer memory** are at risk of faster post-surgery cognitive decline or developing dementia [@bove2020; @gruber2019; @kim2014; @kishore2019; @smeding2009; @jahanshahi2022]. However, previous studies aimed at identifying any possible pre-surgery predictors of post-surgery cognitive decline accepting high false positive error rates **and effect sizes inflation** in the process. In this study, we complement prior findings by identifying a sparse solution to the problem of identifying pre-surgery cognitive profile that is predictive of long-term post-surgery cognitive decline in naturalistic clinical settings. In other words, we aim to describe a minimal significant pre-surgery cognitive profile that predicts higher rate of post-surgery cognitive decline in a sample derived from everyday clinical practice.
+Previous longitudinal observational studies reported that PD patients treated with STN DBS showing pre-surgery deficit in executive functions **or poorer memory** are at risk of faster post-surgery cognitive decline or developing dementia [@bove2020; @gruber2019; @kim2014; @krishan2019; @smeding2009; @jahanshahi2022]. However, previous studies aimed at identifying any possible pre-surgery predictors of post-surgery cognitive decline accepting high false positive error rates **and effect sizes inflation** in the process. In this study, we complement prior findings by identifying a sparse solution to the problem of identifying pre-surgery cognitive profile that is predictive of long-term post-surgery cognitive decline in naturalistic clinical settings. In other words, we aim to describe a minimal significant pre-surgery cognitive profile that predicts higher rate of post-surgery cognitive decline in a sample derived from everyday clinical practice.
 
 In a typical observational study aiming to determine pre-surgery risk factors of post-surgery cognitive decline, authors employ the following two-step procedure. In the first step, a series of separate univariate analyses for each potential predictor is conducted to pre-select variables for further analysis. In the second step, predictors that achieved an arbitrary threshold (e.g., *p* \< 0.05) are used to predict the cognitive decline in a subsequent multiple regression model [@bove2020; @gruber2019; @kim2014; @smeding2009]. This procedure **was named "univariable screening" in biomedical statistics literature and was shown to systematically overestimate effect sizes [@vanzwet2019; @vanzwet2021]. In this article, we show that it** can **also** lead to false positive error rates that are magnitudes higher than the expected nominal five percent.
 
@@ -409,11 +409,11 @@ f1 <- " digraph {
   }"
 
 # save the flowchart as Fig 1
-grViz(f1) %>% export_svg() %>% charToRaw() %>% rsvg_png( here("figs","inclusion_flowchart.png") )
+grViz(f1) %>% export_svg() %>% charToRaw() %>% rsvg_png( here("figs","demo_flowchart.png") )
 
 ```
 
-![Patients inclusion/exclusion flowchart. The plot shows reasons for excluding patients from the total sample of 200 patients considered for subthalamic nucleus deep brain stimulation treatment.](../figs/inclusion_flowchart.png){#fig-flow}
+![Patients inclusion/exclusion flowchart. The plot shows reasons for excluding patients from the total sample of 200 patients considered for subthalamic nucleus deep brain stimulation treatment.](../figs/demo_flowchart.png){#fig-flow}
 ```{r}
 #| label: tabs-prep
 
@@ -488,8 +488,8 @@ t1 <-
 t2 <- t$tests %>% rename( "Test" = "Characteristic" )
 
 # save both of them as .csv
-write.table( t1, file = here("tabs","clinical_characteristics.csv"), sep = ",", row.names = F, quote = F )
-write.table( t2, file = here("tabs","baseline_neuropsychology.csv"), sep = ",", row.names = F, quote = F )
+write.table( t1, file = here("tabs","demo_clinchar.csv"), sep = ",", row.names = F, quote = F )
+write.table( t2, file = here("tabs","demo_basepsych.csv"), sep = ",", row.names = F, quote = F )
 
 ```
 
@@ -511,7 +511,7 @@ t1 <-
   )
 
 # save & print it
-gtsave( data = t1, filename = here("tabs","clinical_characteristics.docx") )
+gtsave( data = t1, filename = here("tabs","demo_clinchar.docx") )
 t1
 ```
 
@@ -529,7 +529,7 @@ t2 <-
   )
 
 # save & print it
-gtsave( data = t2, filename = here("tabs","baseline_neuropsychology.docx") )
+gtsave( data = t2, filename = here("tabs","demo_basepsych.docx") )
 t2
 ```
 
@@ -571,7 +571,7 @@ ggsave(
   plot = with( fig2, hist / bin ) +
     plot_annotation( tag_levels = "A" ) &
     theme( plot.tag = element_text(face = "bold") ),
-  filename = here("figs","assessments_desc.jpg"),
+  filename = here("figs","demo_assessments.jpg"),
   dpi = 300,
   width = 7,
   height = 7.8
@@ -579,7 +579,7 @@ ggsave(
 
 ```
 
-![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments, number of assessments in (B) includes one pre-surgery and various number of post-surgery assessments.](../figs/assessments_desc.jpg){#fig-dist}
+![Distribution of assessments. Distribution of (A) follow-up years and (B) number of assessments per patient for N = 126 patients. Negative values on horizontal axis in (A) represent pre-surgery assessments, number of assessments in (B) includes one pre-surgery and various number of post-surgery assessments.](../figs/demo_assessments.jpg){#fig-dist}
 
 ```{r}
 #| label: fact-anal
@@ -876,11 +876,11 @@ f3 <-
   theme( legend.position = c(0.15,0.21), legend.key.width = unit(2.2,"cm"), legend.key.height = unit(1.2,"cm") )
 
 # save them
-ggsave( plot = f3, filename = here("figs","expected_trajectories.jpg"), dpi = 300, width = 7, height = 4.16 )
+ggsave( plot = f3, filename = here("figs","desc_nonlinear.jpg"), dpi = 300, width = 7, height = 4.16 )
 
 ```
 
-![Comparison of linear versus non-linear models of the longitudinal cognitive trajectory. The figure shows expected true scores in Mattis Dementia Rating Scale (DRS-2) as estimated by the descriptive linear (pink line) and  non-linear (black line) models with their 95% posterior probability intervals (shades).](../figs/expected_trajectories.jpg){#fig-traj}
+![Comparison of linear versus non-linear models of the longitudinal cognitive trajectory. The figure shows expected true scores in Mattis Dementia Rating Scale (DRS-2) as estimated by the descriptive linear (pink line) and  non-linear (black line) models with their 95% posterior probability intervals (shades).](../figs/desc_nonlinear.jpg){#fig-traj}
 
 **In @tbl-contr, we present expected true score differences as well as model's predictions for new observations at five yearly post-surgery assessment times compared to pre-surgery assessment derived from group-level parameters only (reflecting the sample version of our** ***RQ1*** **estimand), both group- and patient-level parameters (reflecting the population version of our** ***RQ1*** **estimand), and the full model with both true score and measurement error. Although median expected post-surgery cognitive decline was similar across versions, the ETIs of the population estimates and full model's predictions indicate that a large proportion of observed variability in post-surgery cognitive decline is due to inter-individual heterogeneity and measurement error respectively (see also Figures S3 and S4 in the Supplementary material).**
 
@@ -925,7 +925,7 @@ t4 <-
   )
 
 # save & print it
-gtsave( data = t4, filename = here("tabs","expectation_contrasts.docx") )
+gtsave( data = t4, filename = here("tabs","desc_contrasts.docx") )
 t4
 
 ```
@@ -962,7 +962,21 @@ parkmax <-
   
   apply( ., 2, max ) %>%
   max() %>%
-  ubound(1)
+  ubound(2)
+
+# extract all PSIS LOO Pareto-k > .7
+loo_k <-
+  
+  sapply(
+    names(l),
+    function(i)
+        sapply( 1:imp, function(j) l[[i]][[j]]$diagnostics$pareto_k )
+    ) %>%
+  
+  as.data.frame() %>%
+  mutate( across( everything(), ~ ifelse( .x > .7, .x, NA ) ) ) %>%
+  mutate( keep = ifelse( !is.na(`test scores`), T, ifelse( !is.na(`factor scores`), T, F ) ) ) %>%
+  filter( keep == T )
 
 
 # POSTERIORS ----
@@ -1045,7 +1059,7 @@ f4 <-
 # save the plots
 ggsave(
   plot = f4,
-  filename = here("figs","posterior_distributions.jpg"),
+  filename = here("figs","pred_deltas.jpg"),
   dpi = 300,
   width = 7,
   height = 7.7
@@ -1068,11 +1082,11 @@ delta_ef <-
 
 ```
 
-Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`) with all observations having Pareto-k below `r parkmax`. **Including either pre-surgery cognitive tests or pre-surgery cognitive factors as predictors notably decreased patient-level inter-individual heterogeneity compared to the time only model even though all three models generated similar predictions for majority of included patients (see Figures S2 and S4 in the Supplementary material)**
+Both predictive longitudinal GLMMs converged within a specified number of iterations ($\hat{R} \le$ `r rhatmax`). **The largest Pareto-k value observed was** `r parkmax`. **However, there was no observation with Pareto-k above 0.7 in factor scores model and only `r length(loo_k[["test scores"]])` observations in total that exceeded 0.7 in test scores model across one hundred imputations. Including either pre-surgery cognitive tests or pre-surgery cognitive factors as predictors notably decreased patient-level inter-individual heterogeneity compared to the time only model even though all three models generated similar predictions for majority of included patients (see Figures S2 and S4 in the Supplementary material).**
 
-Patients with lower verbal working memory or set shifting showed relatively impaired pre-surgery **DRS-2** performance while there was no cognitive test that clearly indicated pre-surgery **DRS-2** impairment performance (see Tables S2 and S3 in **the** Supplementary material). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postdist). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[['b']]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[['PPI']]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero**, see Table S2**). Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S**5** and S**6** in **the** Supplementary material).
+**Although p**atients with lower verbal working memory showed relatively **worse** pre-surgery **DRS-2** performance, there was no cognitive test that **would** clearly indicate pre-surgery **DRS-2** impairment (see Tables S2 and S3 in **the** Supplementary material). Patients with lower pre-surgery executive functions/attention performance showed faster post-surgery cognitive decline (see @fig-postdist). Pre-surgery executive functions/attention performance that was one standard deviation below sample average was associated with additional `r delta_ef[['b']]` DRS-2 points post-surgery annual decline (95% PPI `r delta_ef[['PPI']]`). There was no single cognitive test that clearly indicated faster-than-average post-surgery cognitive decline (all 95% PPIs included zero**, see Table S2**). Adding group-level effects of age, LEDD and BDI-II did not reveal any substantial deviation from these results (see Figures S**5** and S**6** in **the** Supplementary material).
 
-![Interaction terms of the “test scores” (left column) and the “factor scores” (right column) models predicting post-surgery cognitive decline. Each density represents full posterior estimate of additive predictive value of the cognitive variable (test or factor) listed on the ordinate. All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. Vertical lines represent zero (no effect, solid black line) and average post-surgery decline in our sample according to the descriptive linear model predictive before (blue dashed line). Acronyms are explained in the text.](../figs/posterior_distributions.jpg){#fig-postdist}
+![Interaction terms of the “test scores” (left column) and the “factor scores” (right column) models predicting post-surgery cognitive decline. Each density represents full posterior estimate of additive predictive value of the cognitive variable (test or factor) listed on the ordinate. All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. Vertical lines represent zero (no effect, solid black line) and average post-surgery decline in our sample according to the descriptive linear model predictive before (blue dashed line). Acronyms are explained in the text.](../figs/pred_deltas.jpg){#fig-postdist}
 
 ## Electrode localization exploration
 
@@ -1204,7 +1218,7 @@ lbound <- rprint( -contr[ with( contr, grepl("&",`Generated by: `) & grepl("Y1",
 
 **When predicting post-surgery cognitive decline via pre-surgery cognitive profile, we aimed to identify a sparse solution including only these pre-surgery cognitive variables that are the most likely to be truly predictive. To achieve this goal, we applied the Bayesian Lasso and factor analysis to decrease false positive error rates of our analysis and validated effectiveness of these procedures via a set of simulations.**
 
-In **our sample**, lower performance on the latent factor of executive functions/attention (EF/Att.) was reliably predictive of post-surgery cognitive decline. Similarly, previous studies suggested that patients with executive deficit (operationalized as performance on tasks such as Stroop test, TMT, Wisconsin Card Sorting Test and verbal fluency test) are at a high risk of developing dementia and experiencing fast cognitive decline after STN DBS surgery [@bove2020; @kishore2019; @smeding2009]. **On the other hand, recent meta-analysis [@jahanshahi2022] identified both pre-surgery executive dysfunction as well as poorer pre-surgery memory to be predictive of post-surgery cognitive decline, the latter of which was not replicated in our study.**
+In **our sample**, lower performance on the latent factor of executive functions/attention (EF/Att.) was reliably predictive of post-surgery cognitive decline. Similarly, previous studies suggested that patients with executive deficit (operationalized as performance on tasks such as Stroop test, TMT, Wisconsin Card Sorting Test and verbal fluency test) are at a high risk of developing dementia and experiencing fast cognitive decline after STN DBS surgery [@bove2020; @krishan2019; @smeding2009]. **On the other hand, recent meta-analysis [@jahanshahi2022] identified both pre-surgery executive dysfunction as well as poorer pre-surgery memory to be predictive of post-surgery cognitive decline, the latter of which was not replicated in our study.**
 
 **Although there is a large body of evidence showing that pre-surgery executive deficit is predictive of post-surgery cognitive decline, it is unclear which executive functions components provide the most information. In our study, the EF/Att. factor was loaded on primarily by timed test scores and could be specific to processing speed component of executive functions. Conversely, the set shifting factor which represents another executive functions' component did not clearly predict post-surgery cognitive decline above and beyond the remaining pre-surgery cognitive variables in our data set. However, the set shifting factor part of our** ***RQ2*** **estimand showed less consistency across imputations in its derivation (see high standard deviations in @tbl-factanal) and high variability in its predictive value (see @fig-postdist). We thus cannot give any firm conclusion regarding the role of set shifting in post-surgery cognitive decline prediction. Future studies could benefit from further differentiating executive functions to identify the best predictive executive components.**
 

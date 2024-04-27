@@ -63,7 +63,7 @@ author:
         name: "First Faculty of Medicine and General University Hospital in Prague, Charles University, Czech Republic"
         department: "Department of Neurology and Centre of Clinical Neuroscience"
 format:
- apaquarto-pdf:
+ apaquarto-docx:
    documentmode: man
    a4paper: true
    docx-engine: lualatex
@@ -356,71 +356,6 @@ reff <-
     )
 
 
-## post-minus-pre contrast of linear descriptive model ----
-# prepare data
-d_seq <-
-  
-  data.frame( id = "sub000", time_y = c( -.3, seq(.5,5,1/12) ) ) %>%
-  mutate( time = time_y + scl$Md$time )
-
-# contrast for the true score
-contr <-
-  
-  lapply(
-    
-    c("fixed","random"),
-    function(i)
-      
-      # extract predictions
-      d_seq %>%
-      add_epred_draws(
-        object = readRDS( here("mods","m0_linear.rds") ),
-        newdata = . ,
-        allow_new_levels = T,
-        if ( i == "fixed" ) { re_formula = NA },
-        seed = 87542
-      ) %>%
-      
-      # post-process
-      mutate( pred = scl$M$drs + scl$SD$drs * .epred ) %>%
-      mutate( pred = case_when( pred > 144 ~ 144, pred < 0 ~ 0, .default = pred) ) %>%
-      ungroup() %>%
-      select( id, time_y, .draw, pred ) %>%
-      pivot_wider( names_from = time_y, values_from = pred ) %>%
-      mutate( across( all_of( as.character( d_seq$time_y ) ), ~ .x-`-0.3` ) ) %>%
-      pivot_longer( cols = -c("id",".draw"), names_to = "contrast" ) %>%
-      group_by(contrast) %>%
-      summarise( md = median(value), eti_low = qi(value,.width=.9)[1], eti_hig = qi(value,.width=.9)[2] ) %>%
-      mutate( model = i, .before = 1 )
-    
-  )
-
-# extract predictive contrast of one year post-minus-pre assessments
-contr$all <-
-  
-  d_seq %>%
-  add_predicted_draws( object = readRDS( here("mods","m0_linear.rds") ), newdata = . , allow_new_levels = T, re_formula = NA, seed = 87542 ) %>%
-  mutate( pred = scl$M$drs + scl$SD$drs * .prediction ) %>%
-  mutate( pred = case_when( pred > 144 ~ 144, pred < 0 ~ 0, .default = pred ) ) %>%
-  ungroup() %>%
-  select( id, time_y, .draw, pred ) %>%
-  pivot_wider( names_from = time_y, values_from = pred ) %>%
-  mutate( across( all_of( as.character( d_seq$time_y ) ), ~ .x - `-0.3` ) ) %>%
-  pivot_longer( cols = -c("id",".draw"), names_to = "contrast" ) %>%
-  group_by(contrast) %>%
-  summarise( md = median(value), eti_low = qi(value,.width=.9)[1], eti_hig = qi(value,.width=.9)[2] ) %>%
-  mutate( model = "all", .before = 1 )
-
-# put it together
-contr <-
-  
-  contr %>%
-  do.call( rbind.data.frame, . ) %>%
-  filter( !grepl("-",contrast) ) %>%
-  pivot_wider( names_from = model, values_from = c("md","eti_low","eti_hig") ) %>%
-  mutate( contrast = as.numeric(contrast) )
-
-
 ## posterior draws of fixed effects of all prediction models ----
 post <-
   
@@ -524,7 +459,7 @@ t2 <-
         )
 
     )
-    
+
   )
 
 
@@ -556,30 +491,7 @@ f2 <-
   )
 
 # save it
-ggsave( plot = f2, file = here("figs","reff_variability.jpg"), dpi = 300, width = 6.6, height = 8 )
-
-
-## contrast predictions ----
-f3 <-
-  
-  contr %>%
-  ggplot() +
-  aes( y = contrast, x = md_fixed ) +
-    
-  # add lines and points
-  geom_linerange( data = contr, aes(xmin = eti_low_all, xmax = eti_hig_all), linewidth = 5, colour = cbPal[8], alpha = .4 ) +
-  geom_linerange( data = contr, aes(xmin = eti_low_random, xmax = eti_hig_random), linewidth = 5, colour = cbPal[8], alpha = .6 ) +
-  geom_linerange( data = contr, aes(xmin = eti_low_fixed, xmax = eti_hig_fixed), linewidth = 5, colour = cbPal[8], alpha = 1 ) +
-  geom_point( size = 5, colour = "black" ) +
-    
-  # finish it
-  geom_vline( xintercept = 0, linewidth = 1, linetype = "dashed", colour = "navyblue" ) +
-  labs( y = "Years post-surgery", x = parse( text = "Delta~`DRS-2`" ) ) +
-  scale_x_continuous( breaks = seq(-15,5,1), labels = seq(-15,5,1) ) +
-  coord_flip( xlim = c(-14,3) )
-
-# save it
-ggsave( plot = f3, file = here("figs","expectation_contrasts.jpg"), dpi = 300, width = 9.66, height = 5.5 )
+ggsave( plot = f2, file = here("figs","pred_vareffects.jpg"), dpi = 300, width = 6.6, height = 8 )
 
 
 ## robustness check ----
@@ -656,7 +568,7 @@ for ( i in names(f4) ) {
       ),
     
     # specify output file
-    file = here( "figs", paste0(i,"_postsum.jpg") ),
+    file = here( "figs", paste0("pred_",i,"rob.jpg") ),
     dpi = 300,
     width = case_when( i == "test" ~ 10, i == "factor" ~ 7),
     height = case_when( i == "test" ~ 10, i == "factor" ~ 7)
@@ -720,11 +632,11 @@ ggsave( plot = f5, filename = here("figs","posterior_predictions.jpg"), dpi = 30
 
 **In @fig-contr we present visual summary of statistical estimates for both sample and population versions of our** ***RQ1*** **estimand (see Table 4 in the main text for numerical summary of this figure) as well as models prediction of raw data yet unobserved. For this presentation we selected 90% posterior equal-tailed intervals (ETIs) so that there is 5% probability the true score difference falls below the bottom bound and 5% probability the true score difference falls above the top bound of the interval. Notice that estimates for the sample are significantly more certain than estimates generalized to the assumed population via adding patient-level variability.**
 
-![Posteriors medians and 90% equal-tailed intervals (ETIs) of post-minus-pre-surgery differences at monthly post-surgery assessments separately for the sample (dark pink) and population (medium pink) version of our RQ1 estimand. Light pink lines represent model's predictions of raw data differences (change scores).](../figs/expectation_contrasts.jpg){#fig-contr}
+![Posteriors medians and 90% equal-tailed intervals (ETIs) of post-minus-pre-surgery differences at monthly post-surgery assessments separately for the sample (dark pink) and population (medium pink) version of our RQ1 estimand. Light pink lines represent model's predictions of raw data differences (change scores).](../figs/desc_contrasts.jpg){#fig-contr}
 
 **In @fig-var we present side-by-side comparison of patient-level true score variability that remains after accounting for association between time after surgery and cognitive performance (of the descriptive time only model) compared to patient-level true score variability after accounting for association between cognitive performance and time after surgery combined with pre-surgery cognitive profile (of the predictive test scores and factor scores models). To ensure estimates are comparable across models, we refitted the time only model using regularizing (Lasso) priors identical to predictive models' priors instead of the non- and weakly-informative default** ***brms*** **priors of the time only model presented in the main text. Although it can be seen that regularizing priors shifted posterior distributions of patient-specific parameters towards zero (compare the time only (default) and time only (Lasso) estimates in @fig-var), adding pre-surgery cognitive profile as predictor shifted these distributions even further (compare the test and factor scores to the time only (Lasso) estimates in @fig-var).**
 
-![Posterior distributions of patient-level true score variability after accounting for group-level association with time (time only models) or time and pre-surgery cognitive profile (test and factor scores). The plot includes standard deviations of patient-level intercepts (top row), slopes (middle row) and intercept/slope correlations (bottom row).](../figs/reff_variability.jpg){#fig-var}
+![Posterior distributions of patient-level true score variability after accounting for group-level association with time (time only models) or time and pre-surgery cognitive profile (test and factor scores). The plot includes standard deviations of patient-level intercepts (top row), slopes (middle row) and intercept/slope correlations (bottom row).](../figs/pred_vareffects.jpg){#fig-var}
 
 In @tbl-posttest we present numerical summary of group-level posterior parameters of the “test scores” model while in @tbl-postfact we present numerical summary of group-level posterior parameters of the “factor scores” model which supplement the information presented in Figure 3 in the main text. Since only the interaction terms (i.e., the $\delta$ parameters) comprised empirical estimands for our query (*RQ2*), the remaining parameters were omitted from the main text.
 
@@ -740,7 +652,7 @@ t2$test <-
   tab_source_note( source_note = "b: parameter value point estimate (posterior median); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; STAI-X1: State-Trait Anxiety Inventory, the state version; STAI-X2: State-Trait Anxiety Inventory, the trait version; TMT-A: Trail Making Test, part A; TMT-B: Trail Making Test, part B; DS-F: Digit Span forward; DS-B: Digit Span backward; LNS: letter-number sequencing; SS-F: Spatial Span forward; SS-B: Spatial Span backward; TOL: Tower of London task; PST-D: Prague Stroop Test, dot color naming; PST-W: Prague Stroop Test, word color naming; PST-C: Prague Stroop Test, interference condition; COWAT: Controlled Oral Word Association Test; CFT: category fluency test; Sim.: Similarities; RAVLT-IR: Rey Auditory Verbal Learning Test, immediate recall; RAVLT-B: Rey Auditory Verbal Learning Test, recall of the interference set; RAVLT-DR: Rey Auditory Verbal Learning Test, delayed recall; RAVLT-Rec50: Rey Auditory Verbal Learning Test, delayed recognition from 50 items (15 correct answers + 35 distractors); RAVLT-Rec15: Rey Auditory Verbal Learning Test, delayed recognition, number of correctly identified from 15 items; FP-IR: Family Pictures, immediate recall; FP-DR: Family Pictures, delayed recall." )
 
 # save & print it
-gtsave( data = t2$test, filename = here("tabs","posteriors_test.docx") )
+gtsave( data = t2$test, filename = here("tabs","pred_testrob.docx") )
 t2$test
 
 ```
@@ -757,7 +669,7 @@ t2$factor <-
     tab_source_note( source_note = "b: parameter value point estimate (posterior median); PPI: posterior probability interval; Pr(b < 0): probability that a parameter is negative, i.e., probability that the predictor has a negative effect on the outcome (this quantity does not apply to Intercept where it cannot be interpreted but it is reported for completeness); ×: statistical interaction term; EF/Att.: Executive functions/Attention; EM: Episodic memory; VWM: Verbal working memory; VM: Visuospatial memory; SS: Set shifting; An: Anxiety; SWM: Spatial working memory." )
 
 # save & print it
-gtsave( data = t2$factor, filename = here("tabs","posteriors_fact.docx") )
+gtsave( data = t2$factor, filename = here("tabs","pred_factorrob.docx") )
 t2$factor
 
 ```
@@ -768,9 +680,9 @@ To confirm that our results are robust to effects of aging, dopaminergic medicat
 
 Side-to-side comparison of models’ group-level parameters’ posterior summaries is presented in @fig-robtest for the “test scores” model and in @fig-robfact for the “factor scores” model. All models arrived at similar posteriors implying our results are robust to effects of aging, dopaminergic medication, and depressive symptoms. Importantly, the empirical estimands relating to *RQ2* (i.e., the time-dependent $\delta$ parameters) are similar across models leading to identical substantive conclusions.
 
-![Robustness check (the “test scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level parameters from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery cognitive test scores without (“test scores”) and with adjustment for covariates (“test scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. See main text for acronyms.](../figs/test_postsum.jpg){#fig-robtest}
+![Robustness check (the “test scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level parameters from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery cognitive test scores without (“test scores”) and with adjustment for covariates (“test scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. See main text for acronyms.](../figs/pred_testrob.jpg){#fig-robtest}
 
-![Robustness check (the “factor scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level parameters from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery latent cognitive factor scores without (“factor scores”) and with adjustment for covariates (“factor scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. See main text for acronyms.](../figs/factor_postsum.jpg){#fig-robfact}
+![Robustness check (the “factor scores” model). Posteriors medians and 95% posterior probability intervals (PPIs) of group-level parameters from the longitudinal generalized linear mixed model predicting post-surgery cognitive decline by pre-surgery latent cognitive factor scores without (“factor scores”) and with adjustment for covariates (“factor scores (with covariates)”). All cognitive predictors were scaled such that negative values mean negative effect of pre-surgery deficit on prediction of longitudinal cognitive trajectory. See main text for acronyms.](../figs/pred_factorrob.jpg){#fig-robfact}
 
 ## Exploring electrode localization
 
@@ -868,7 +780,7 @@ t4
 
 ```
 
-![Position of electrodes as estimated by Lead-DBS.](../figs/leadbs_snapshot.png){#fig-leads}
+![Position of electrodes as estimated by Lead-DBS.](../figs/vat_electrodes.png){#fig-leads}
 
 ### Statistical models
 
@@ -954,7 +866,7 @@ f8 <-
 # save the plot
 ggsave(
   plot = f8,
-  filename = here("figs","bayes_ttest.jpg"),
+  filename = here("figs","vat_ttest.jpg"),
   dpi = 300,
   width = 7.7,
   height = 9.5
@@ -1001,12 +913,12 @@ t5 <-
   )
 
 # save & print it
-gtsave( data = t5, filename = here("tabs","bayes_ttest.docx") )
+gtsave( data = t5, filename = here("tabs","vat_ttest.docx") )
 t5
 
 ```
 
-![Between-group comparisons of included vs excluded patients. Bayesian p-values were calculated as half of the probability that the difference parameter (described by its posterior distribution) is strictly positive or negative. Lower values imply higher probability of difference between groups. Conventional < .05 value is marked by the red dashed line. The left column relates to mean differences while the right column relates to differences in standard deviations.](../figs/bayes_ttest.jpg){#fig-ttest}
+![Between-group comparisons of included vs excluded patients. Bayesian p-values were calculated as half of the probability that the difference parameter (described by its posterior distribution) is strictly positive or negative. Lower values imply higher probability of difference between groups. Conventional < .05 value is marked by the red dashed line. The left column relates to mean differences while the right column relates to differences in standard deviations.](../figs/vat_ttest.jpg){#fig-ttest}
 
 ```{r}
 #| label: locincl-desc
@@ -1186,7 +1098,7 @@ t6 <-
   )
 
 # save & print it
-gtsave( data = t6, filename = here("tabs","posteriors_vat.docx") )
+gtsave( data = t6, filename = here("tabs","vat_posteriors.docx") )
 t6
 
 ```

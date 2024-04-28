@@ -11,4 +11,24 @@ install.packages("renv")
 renv::restore()
 ```
 
-![Graphical abstract plot.](figs/graphstract.jpg)
+## Research Questions
+
+| Research question                                                                                                                        |                                                                                                                                                   Estimand (unit specific quantity)                                                                                                                                                   |      Estimand (population)     |                                Statistical estimator                               |
+|------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------:|:----------------------------------------------------------------------------------:|
+| What is the size of expected long-term rate of cognitive decline after STN DBS in PD patients?                                           |                                                                                                            Difference between expected post-surgery cognitive performance and expected cognitive performance *k* years before                                                                                                           |         Current sample         |                              µ~i~ = α + δ~time~time~i~                             |
+|                                                                                                                                          |                                                                                                                                                                                                                                                                                                                                       | CAPSIT-based selected patients |               µ~i~ = α + δ~time~time~i~ + α~id[i]~ + δ~id[i]~time~i~               |
+| What is the pre-surgery cognitive profile that is predictive of long-term post-surgery cognitive decline in STN DBS treated PD patients? | Difference between expected post-surgery cognitive decline of a patient with fixed level of pre-surgery performance across all cognitive factors and expected post-surgery cognitive decline of patients with performance that is one unit smaller in a single cognitive factor but equal to this patient’s performance otherwise |         Current sample         | µ~i~ = α + δ~time~time~i~ + Σ β~factor[j]~factor~j~ + δ~factor[j]~factor~j~time~i~ |
+
+## Reasearch Answers
+
+Computing average linear post-surgery decline in Mattis Dementia Rating Scale (DRS-2) via Generalised Linear Mixed models with group-level and patient-level intercepts and slopes with Student-t measurement error assumption fitted via *[brms](https://paul-buerkner.github.io/brms/)* package ended up with estimates of relatively small and gradual average post-surgery (black line) decline with high inter-individual heterogeneity as well as substantial measurement error (shades represent predictions of change scores via 'fixed-effects', 'fixed- & random-effects', and full model 90% [ETIs](https://easystats.github.io/bayestestR/articles/credible_interval.html)):
+
+![](figs/desc_contrasts.jpg)
+
+Adding group-level predictors in form of pre-surgery cognitive factor/test scores resulted in some reduction of patient-level variability compared to the "time only" descriptive model while keeping posterior predictions for included very similar.
+
+![](figs/pred_vareffects.jpg)
+
+Most notably, patients with better pre-surgery executive functions had lower post-surgery rate of cognitive decline in DRS-2. In the following plot, each row includes all patient stratified to pentiles (from the lowest to highest performance) according to their pre-surgery cognitive performance in domain listed on right (the domains are colour coded based on their similarity to each other according to my judgement):
+
+![](figs/pred_stratified.jpg)

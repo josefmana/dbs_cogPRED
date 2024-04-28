@@ -11,3 +11,4 @@ install.packages("renv")
 renv::restore()
 ```
 
+![Graphical abstract plot.](figs/graphstract.jpg)

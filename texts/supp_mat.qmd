@@ -462,6 +462,8 @@ t2 <-
 
   )
 
+# save them
+for ( i in names(t2) ) write.table( x = t2[[i]], file = here( "tabs", paste0("pred_",i,"rob.csv") ), sep = ";", row.names = F, quote = F )
 
 # FIGURES ----
 

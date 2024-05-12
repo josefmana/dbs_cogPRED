@@ -1,0 +1,8 @@
+Contrast;Group-level parameters;Group- & Patient-level parameters;Full Model;block
+Intercept;140.34 [139.71, 140.95];140.35 [135.71, 144.00];140.37 [132.97, 144.00];Yearly decline
+Slope;-0.90 [-1.14, -0.67];-0.78 [-2.41, 0.52];-0.73 [-9.24, 7.63];Yearly decline
+Y1-minus-Pre;-1.17 [-1.49, -0.87];-1.03 [-3.14, 0.67];-1.09 [-9.45, 7.45];Contrasts
+Y2-minus-Pre;-2.08 [-2.63, -1.55];-1.87 [-5.60, 1.18];-2.00 [-10.11, 7.03];Contrasts
+Y3-minus-Pre;-2.98 [-3.77, -2.22];-2.71 [-8.11, 1.67];-2.84 [-11.12, 6.35];Contrasts
+Y4-minus-Pre;-3.88 [-4.92, -2.89];-3.56 [-10.65, 2.13];-3.76 [-12.04, 5.71];Contrasts
+Y5-minus-Pre;-4.79 [-6.06, -3.56];-4.41 [-13.23, 2.55];-4.71 [-12.92, 5.23];Contrasts

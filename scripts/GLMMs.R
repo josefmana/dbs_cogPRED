@@ -178,8 +178,17 @@ m0 <-
 ## SAVE POSTERIORS ----
 
 # extract posteriors (only) with the linear descriptive models & extract scaling values need for reproduction
-post <- as_draws_df(m0$m0_linear) %>% select( !contains("IPN") & !starts_with("prior") & !starts_with(".") & !starts_with("l") )
-scale <- data.frame( central_tendecy = c( DRS = scl$M$drs, Time = scl$Md$time ), standard_deviation = c( DRS = scl$SD$drs, Time = 1 ) )
+post <-
+  as_draws_df(m0$m0_linear) %>%
+  select( !contains("IPN") & !starts_with("prior") & !starts_with(".") & !starts_with("l") ) %>%
+  rename( "vartheta" = "nu" )
+
+scale <-
+  data.frame(
+    central_tendecy = c( DRS = scl$M$drs, Time = scl$Md$time ),
+    standard_deviation = c( DRS = scl$SD$drs, Time = 1 )
+  ) %>%
+  rownames_to_column("variable")
 
 # save them
 write.table( post, here("mods","m0_linear_posteriors.csv"), sep = ",", row.names = F, quote = F )

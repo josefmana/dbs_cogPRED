@@ -185,7 +185,7 @@ post <-
 
 scale <-
   data.frame(
-    central_tendecy = c( DRS = scl$M$drs, Time = scl$Md$time ),
+    central_tendency = c( DRS = scl$M$drs, Time = scl$Md$time ),
     standard_deviation = c( DRS = scl$SD$drs, Time = 1 )
   ) %>%
   rownames_to_column("variable")

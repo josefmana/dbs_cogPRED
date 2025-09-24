@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If refer to the models, please cite it as below."
+authors:
+- family-names: "Mana"
+  given-names: "Josef"
+  orcid: "https://orcid.org/0000-0002-7817-3978"
+title: "Statistical Code for the Study of Postoperative Cognitive Decline after STN DBS in PD"
+version: 1.0.0
+doi: 10.5281/zenodo.17193760
+date-released: 2025-09-24
+url: "https://doi.org/10.5281/zenodo.17193760"

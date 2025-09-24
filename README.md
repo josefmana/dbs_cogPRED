@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/701435620.svg)](https://doi.org/10.5281/zenodo.17193760)
+
 # Predicting Cognition after Bilateral Deep Brain Stimulation of Subthalamic Nucleus Surgery in Parkinson's Disease
 
 In this project, I aim to describe long-term changes in global cognitive ability of patients with Parkinson's disease (PD) treated via bilateral deep brain stimulation (DBS) of subthalamic nuclei (STN) as a function of time (the "descriptive" or "time only" portion of the manuscript) as well as a function of time and more granular pre-surgery cognitive profile (the "predictive" or "factor scores" portion of the manuscript).
